@@ -80,7 +80,8 @@ export function HomePage() {
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-400">
                 {siteConfig.tagline}. Software, AI, cloud, and digital transformation —
-                powering businesses across the continent.
+                powering businesses across the continent. Part of {siteConfig.group.name},
+                founded by {siteConfig.founder.name}.
               </p>
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
                 <Button href="/contact#quote" size="lg" icon>
@@ -157,6 +158,33 @@ export function HomePage() {
                 <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.description}</p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-white/5 py-10">
+        <div className="section-container">
+          <div className="flex flex-col items-start justify-between gap-6 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-5 sm:flex-row sm:items-center sm:px-8">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-brand-400">
+                {siteConfig.group.name}
+              </p>
+              <p className="mt-1 text-sm text-slate-400 sm:text-base">
+                Ellines Tech ·{' '}
+                <a
+                  href={siteConfig.sisterBrands[0].url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-300 underline-offset-2 hover:text-brand-300 hover:underline"
+                >
+                  Ellines Haven
+                </a>
+                {' '}· Rattan Furniture <span className="text-slate-500">(coming soon)</span>
+              </p>
+            </div>
+            <Button href="/about" variant="ghost" size="sm" icon>
+              About Ellines Tech
+            </Button>
           </div>
         </div>
       </section>
