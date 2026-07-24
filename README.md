@@ -1,4 +1,4 @@
-# Ellines Tech Website V2
+# Ellines Tech Website 
 
 Official digital headquarters for **Ellines Tech** — live at [tech.ellines.co.ke](https://tech.ellines.co.ke).
 
