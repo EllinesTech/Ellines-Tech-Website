@@ -10,17 +10,20 @@ import {
   Globe,
   Smartphone,
   Lightbulb,
+  ArrowRight,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { SEO } from '@/components/SEO'
+import { HeroVisual } from '@/components/home/HeroVisual'
+import { GroupEcosystem } from '@/components/home/GroupEcosystem'
 import { products } from '@/data/products'
 import { services, serviceCategories } from '@/data/services'
 import { industries } from '@/data/industries'
 import { portfolioProjects } from '@/data/portfolio'
-import { siteConfig } from '@/data/site'
+import { siteConfig, technologies } from '@/data/site'
 
 const iconMap: Record<string, React.ElementType> = {
   Code2,
@@ -36,30 +39,45 @@ const stats = [
   { value: '50+', label: 'Projects Delivered' },
   { value: '25+', label: 'Products & Solutions' },
   { value: '12', label: 'Industries Served' },
-  { value: '100%', label: 'Client-Focused' },
+  { value: '3+', label: 'Years Building' },
 ]
 
 const valueProps = [
   {
     icon: Sparkles,
-    title: 'Innovation First',
-    description: 'Cutting-edge AI, cloud, and software solutions built for African markets.',
-  },
-  {
-    icon: Shield,
-    title: 'Enterprise Grade',
-    description: 'Secure, scalable systems trusted by healthcare, finance, and government.',
+    title: 'Perfect Business Solutions',
+    description:
+      'We provide perfect business solutions tailored to your unique needs, ensuring efficiency and effectiveness in every aspect of your operations.',
+    image: '/founder/elijah-4.jpg',
   },
   {
     icon: Zap,
-    title: 'Fast Delivery',
-    description: 'Agile development with rapid iteration and continuous deployment.',
+    title: 'Business Growth Planning',
+    description:
+      'Our business growth planning services help you strategize for the future, identifying opportunities and creating actionable plans to achieve your goals.',
+    image: '/founder/elijah-5.jpg',
+  },
+  {
+    icon: Shield,
+    title: 'Strategic Development',
+    description:
+      'We specialize in comprehensive strategy development, guiding you through market challenges and positioning your business for long-term success.',
+    image: '/founder/elijah-2.jpg',
   },
   {
     icon: Globe2,
-    title: 'Africa-Focused',
-    description: 'Solutions designed for local context — M-Pesa, offline-first, multilingual.',
+    title: 'Expert Tech Services',
+    description:
+      'We provide expert tech services tailored to your needs, ensuring optimal performance and support for your business.',
+    image: '/founder/elijah-1.jpg',
   },
+]
+
+const productVisuals = [
+  '/founder/elijah-3.jpg',
+  '/founder/elijah-1.jpg',
+  '/founder/elijah-2.jpg',
+  '/media/posters/ellines-rebranding.png',
 ]
 
 export function HomePage() {
@@ -72,43 +90,35 @@ export function HomePage() {
     <>
       <SEO />
 
-      {/* Hero — brand-forward, one composition */}
+      {/* Hero — brand typography + one product canvas (no 3D logo dump) */}
       <section className="relative overflow-hidden mesh-bg">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(34,211,238,0.12),_transparent_55%)]" />
-        <div className="pointer-events-none absolute -left-32 top-24 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl animate-pulse-slow" />
-        <div className="pointer-events-none absolute -right-24 bottom-0 h-80 w-80 rounded-full bg-sky-600/15 blur-3xl animate-pulse-slow" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/40 to-transparent" />
+        <div className="pointer-events-none absolute -left-40 top-10 h-[28rem] w-[28rem] rounded-full bg-brand-500/15 blur-[100px]" />
+        <div className="pointer-events-none absolute -right-32 bottom-0 h-[26rem] w-[26rem] rounded-full bg-sky-600/12 blur-[110px]" />
 
-        <div className="section-container relative flex min-h-[calc(100svh-4.25rem)] flex-col justify-center py-16 sm:py-20 lg:py-24">
-          <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+        <div className="section-container relative flex min-h-[calc(100svh-4rem)] flex-col justify-center py-14 sm:py-16 lg:py-20">
+          <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 xl:gap-20">
             <motion.div
-              initial={{ opacity: 0, y: 28 }}
+              initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              className="relative z-10"
             >
-              <motion.img
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.7, delay: 0.05 }}
-                src={siteConfig.logos.markNav}
-                alt=""
-                width={72}
-                height={72}
-                className="mb-7 h-[4.5rem] w-[4.5rem] object-contain"
-                fetchPriority="high"
-              />
-              <h1 className="font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-[3.75rem] lg:leading-[1.08]">
-                <span className="block">
-                  Ellines{' '}
-                  <span className="text-gradient">Tech</span>
-                </span>
-                <span className="mt-3 block text-[0.68em] font-bold text-slate-100 sm:mt-4">
-                  Building Digital Africa
-                </span>
-              </h1>
-              <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate-300/90">
-                {siteConfig.tagline}. Enterprise software, AI, and cloud — engineered for African
-                organizations.
+              <p className="mb-5 font-display text-sm font-semibold uppercase tracking-[0.32em] text-brand-300/90">
+                {siteConfig.motto}
               </p>
+
+              <h1 className="font-display text-[2.75rem] font-extrabold leading-[0.95] tracking-[-0.045em] text-white sm:text-6xl lg:text-[4.25rem] xl:text-[4.6rem]">
+                <span className="block">Ellines</span>
+                <span className="mt-1 block text-gradient">Tech</span>
+              </h1>
+
+              <p className="mt-7 max-w-md text-lg leading-relaxed text-slate-300/95 sm:text-xl">
+                Software applications, mobile apps, and digital solutions — executed from start to
+                finish for businesses that need technology built to last.
+              </p>
+
               <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Button href="/contact#quote" size="lg" icon>
                   Start Your Project
@@ -117,120 +127,148 @@ export function HomePage() {
                   Explore Products
                 </Button>
               </div>
+
+              <p className="mt-8 text-sm text-slate-500">
+                Part of{' '}
+                <span className="text-slate-400">{siteConfig.group.name}</span>
+                {' · '}
+                {siteConfig.url.replace('https://', '')}
+              </p>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 32 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.75, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-              className="relative flex flex-col items-center"
-            >
-              <div className="absolute inset-8 rounded-full bg-gradient-to-br from-brand-400/20 via-transparent to-sky-600/15 blur-3xl" />
-              <div className="animate-float relative w-full max-w-lg">
-                <img
-                  src={siteConfig.logos.hero}
-                  alt="Ellines Tech — Your Idea. Our Code."
-                  className="relative z-10 mx-auto w-full object-contain drop-shadow-[0_20px_60px_rgba(14,165,233,0.25)]"
-                />
-              </div>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.45, duration: 0.5 }}
-                className="relative z-10 mt-6 text-center font-display text-sm font-semibold uppercase tracking-[0.28em] text-slate-200 sm:text-base"
-              >
-                {siteConfig.motto}
-              </motion.p>
-            </motion.div>
+            <HeroVisual />
           </div>
         </div>
       </section>
 
-      <section className="border-t border-white/5 bg-surface/30 py-10 sm:py-12">
+      {/* Tech trust strip */}
+      <section className="overflow-hidden border-y border-white/5 bg-surface/50 py-5">
+        <div className="section-container">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 sm:justify-between">
+            {technologies.slice(0, 8).map((tech) => (
+              <span
+                key={tech}
+                className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-slate-500"
+              >
+                {tech}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="border-b border-white/5 py-12 sm:py-14">
         <div className="section-container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6"
+            className="grid grid-cols-2 gap-8 sm:grid-cols-4"
           >
             {stats.map((stat) => (
               <div key={stat.label} className="text-center sm:text-left">
-                <p className="font-display text-3xl font-bold text-brand-300 sm:text-4xl">
+                <p className="font-display text-4xl font-bold tracking-tight text-brand-300 sm:text-5xl">
                   {stat.value}
                 </p>
-                <p className="mt-1 text-xs text-slate-400 sm:text-sm">{stat.label}</p>
+                <p className="mt-2 text-sm text-slate-500">{stat.label}</p>
               </div>
             ))}
           </motion.div>
         </div>
       </section>
 
+      {/* Storytelling — full-bleed founder visual */}
+      <section className="relative min-h-[70vh] overflow-hidden">
+        <img
+          src={siteConfig.founder.images.primary}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-top"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 to-slate-950/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/50" />
+        <div className="section-container relative flex min-h-[70vh] items-center py-20">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="max-w-xl"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-300">
+              About Our Company
+            </p>
+            <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+              We execute ideas from start to finish
+            </h2>
+            <p className="mt-5 text-lg leading-relaxed text-slate-300">
+              Based in Kenya, Ellines Tech crafts cutting-edge software and mobile apps for clients
+              around the globe — with excellence, innovation, and client satisfaction at the core.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button href="/about" icon>
+                Our Story
+              </Button>
+              <Button href="/contact#quote" variant="secondary">
+                Schedule a Demo
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Why choose — media cards */}
       <section className="section-padding border-t border-white/5">
         <div className="section-container">
           <SectionHeader
             eyebrow="Why Ellines Tech"
-            title="Technology That Transforms Businesses"
-            description="From healthcare to finance, we build solutions that solve real problems for African organizations."
+            title="Why you should choose our services"
+            description="From idea to deployment, we execute meticulously — quality, innovation, and results that align with your vision."
             align="center"
-            className="mb-12"
+            className="mb-14"
           />
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {valueProps.map((item, i) => (
               <motion.div
                 key={item.title}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08 }}
-                className="rounded-2xl border border-white/10 bg-surface-elevated/40 p-6 transition-colors hover:border-brand-500/30"
+                className="group overflow-hidden rounded-[1.35rem] border border-white/10 bg-surface-elevated/30"
               >
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500/20 to-sky-700/20 text-brand-300">
-                  <item.icon className="h-5 w-5" />
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <img
+                    src={item.image}
+                    alt=""
+                    className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                  <div className="absolute bottom-4 left-4 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300 ring-1 ring-brand-400/30 backdrop-blur-md">
+                    <item.icon className="h-5 w-5" />
+                  </div>
                 </div>
-                <h3 className="font-display text-lg font-semibold text-white">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.description}</p>
+                <div className="p-5">
+                  <h3 className="font-display text-lg font-semibold text-white">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.description}</p>
+                </div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="border-t border-white/5 py-12 sm:py-14">
-        <div className="section-container">
-          <div className="grid items-center gap-8 overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-surface-elevated/80 to-surface/60 p-6 sm:grid-cols-[auto_1fr_auto] sm:gap-10 sm:p-8">
-            <img
-              src={siteConfig.founder.images.portrait}
-              alt={siteConfig.founder.name}
-              className="h-28 w-28 rounded-2xl object-cover object-top ring-1 ring-white/10 sm:h-32 sm:w-32"
-              loading="lazy"
-            />
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-400">
-                {siteConfig.group.name}
-              </p>
-              <p className="mt-2 font-display text-xl font-semibold text-white sm:text-2xl">
-                {siteConfig.founder.name}
-              </p>
-              <p className="mt-1 text-sm text-brand-300">{siteConfig.founder.role}</p>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-400">
-                Leading Ellines Tech alongside Ellines Haven and future ventures — technology built
-                for African organizations.
-              </p>
-            </div>
-            <Button href="/about" variant="secondary" icon className="self-start sm:self-center">
-              Meet the Founder
-            </Button>
-          </div>
-        </div>
-      </section>
+      {/* Ellines Group — Tech, Haven, Rattan */}
+      <GroupEcosystem className="bg-surface/35" />
 
-      <section className="section-padding border-t border-white/5 bg-surface/40">
+      {/* Products */}
+      <section className="section-padding border-t border-white/5">
         <div className="section-container">
           <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
             <SectionHeader
               eyebrow="Products"
-              title="Our Product Ecosystem"
+              title="Our product ecosystem"
               description="Every Ellines Tech product has a dedicated platform — from hospital management to AI assistants."
             />
             <Button href="/products" variant="ghost" icon>
@@ -238,24 +276,26 @@ export function HomePage() {
             </Button>
           </div>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProducts.map((product) => (
+            {featuredProducts.map((product, i) => (
               <Card
                 key={product.slug}
                 title={product.name}
                 description={product.tagline}
                 href={`/products/${product.slug}`}
                 tag={product.highlights?.[0]}
+                image={productVisuals[i % productVisuals.length]}
               />
             ))}
           </div>
         </div>
       </section>
 
-      <section className="section-padding border-t border-white/5">
+      {/* Services */}
+      <section className="section-padding border-t border-white/5 bg-surface/40">
         <div className="section-container">
           <SectionHeader
             eyebrow="Services"
-            title="End-to-End Technology Services"
+            title="End-to-end technology services"
             description="From custom software to cloud migration — we cover every stage of your digital journey."
             align="center"
             className="mb-12"
@@ -268,7 +308,7 @@ export function HomePage() {
                 <Link
                   key={key}
                   to={`/services#${key}`}
-                  className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-surface-elevated/30 p-5 transition-all hover:border-brand-500/30 hover:bg-surface-elevated/60"
+                  className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-surface-elevated/25 p-5 transition-all hover:border-brand-500/25 hover:bg-surface-elevated/50"
                 >
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-500/10 text-brand-400 transition-colors group-hover:bg-brand-500/20">
                     <Icon className="h-5 w-5" />
@@ -287,11 +327,105 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Founder spotlight + gallery */}
+      <section className="section-padding border-t border-white/5">
+        <div className="section-container">
+          <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-14">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="relative lg:col-span-5"
+            >
+              <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-brand-500/25 via-transparent to-sky-700/15 blur-2xl" />
+              <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 shadow-2xl shadow-black/50">
+                <img
+                  src={siteConfig.founder.images.portrait}
+                  alt={siteConfig.founder.name}
+                  className="aspect-[4/5] w-full object-cover object-top"
+                  loading="lazy"
+                />
+              </div>
+            </motion.div>
+            <div className="lg:col-span-7">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-400">
+                Leadership · {siteConfig.group.name}
+              </p>
+              <h2 className="mt-3 font-display text-3xl font-bold text-white sm:text-4xl">
+                {siteConfig.founder.name}
+              </h2>
+              <p className="mt-2 text-brand-300">{siteConfig.founder.role}</p>
+              <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-400">
+                {siteConfig.founder.bio}
+              </p>
+              <p className="mt-4 font-display text-sm font-semibold uppercase tracking-[0.22em] text-slate-300">
+                {siteConfig.motto}
+              </p>
+              <div className="mt-8">
+                <Button href="/about" icon>
+                  Meet the Founder
+                </Button>
+              </div>
+              <div className="mt-10 grid grid-cols-4 gap-2 sm:gap-3">
+                {siteConfig.founder.images.gallery.slice(0, 4).map((src) => (
+                  <div
+                    key={src}
+                    className="overflow-hidden rounded-xl border border-white/10"
+                  >
+                    <img
+                      src={src}
+                      alt=""
+                      className="aspect-square w-full object-cover object-top"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Brand poster moment */}
+      <section className="relative overflow-hidden border-y border-white/5">
+        <div className="grid lg:grid-cols-2">
+          <div className="relative min-h-[320px] lg:min-h-[420px]">
+            <img
+              src={siteConfig.media.rebrandPoster}
+              alt="Ellines Tech brand"
+              className="absolute inset-0 h-full w-full object-cover object-center"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-slate-950/40 lg:to-slate-950/80" />
+          </div>
+          <div className="flex flex-col justify-center bg-surface/80 px-6 py-14 sm:px-10 lg:px-14 lg:py-16">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-400">
+              Brand & craft
+            </p>
+            <h2 className="mt-3 font-display text-3xl font-bold text-white sm:text-4xl">
+              Built for serious work
+            </h2>
+            <p className="mt-4 max-w-md text-slate-400 leading-relaxed">
+              From healthcare platforms to AI assistants, we design and ship systems that teams rely
+              on every day — with the polish of a modern product company and the pragmatism of an
+              African-built engineering partner.
+            </p>
+            <Link
+              to="/portfolio"
+              className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-brand-300 hover:text-brand-200"
+            >
+              See work that ships <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Industries */}
       <section className="section-padding border-t border-white/5 bg-surface/40">
         <div className="section-container">
           <SectionHeader
             eyebrow="Industries"
-            title="Sectors We Serve"
+            title="Sectors we serve"
             description="Deep domain expertise across healthcare, education, finance, and more."
             className="mb-10"
           />
@@ -300,7 +434,7 @@ export function HomePage() {
               <Link
                 key={industry.slug}
                 to={`/industries#${industry.slug}`}
-                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition-all hover:border-brand-500/30 hover:bg-brand-500/10 hover:text-brand-300"
+                className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-slate-300 transition-all hover:border-brand-500/30 hover:bg-brand-500/10 hover:text-brand-300"
               >
                 {industry.name}
               </Link>
@@ -309,12 +443,13 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Portfolio */}
       <section className="section-padding border-t border-white/5">
         <div className="section-container">
           <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
             <SectionHeader
               eyebrow="Portfolio"
-              title="Projects That Make an Impact"
+              title="Projects that make an impact"
               description="Real results for healthcare, education, business, and AI clients."
             />
             <Button href="/portfolio" variant="ghost" icon>
@@ -322,43 +457,63 @@ export function HomePage() {
             </Button>
           </div>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredPortfolio.map((project) => (
+            {featuredPortfolio.map((project, i) => (
               <Card
                 key={project.slug}
                 title={project.name}
                 description={project.description}
                 href={`/portfolio#${project.slug}`}
                 tag={project.category}
+                image={
+                  i % 2 === 0
+                    ? siteConfig.founder.images.gallery[i % 5]
+                    : siteConfig.media.rebrandPoster
+                }
               />
             ))}
           </div>
         </div>
       </section>
 
+      {/* CTA */}
       <section className="section-padding border-t border-white/5">
         <div className="section-container">
-          <div className="relative overflow-hidden rounded-[2rem] border border-brand-500/20 bg-gradient-to-br from-brand-900/50 via-surface-elevated to-surface p-8 sm:p-12 lg:p-16">
-            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-brand-500/15 blur-3xl" />
-            <div className="relative max-w-2xl">
-              <img
-                src={siteConfig.logos.mark}
-                alt=""
-                className="mb-6 h-12 w-auto object-contain opacity-90"
-              />
-              <h2 className="font-display text-3xl font-bold text-white sm:text-4xl">
-                Ready to Transform Your Business?
-              </h2>
-              <p className="mt-4 text-lg text-slate-400">
-                Let&apos;s discuss your project. Book a meeting, request a quote, or reach out on
-                WhatsApp.
-              </p>
-              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                <Button href="/contact#quote" size="lg" icon>
-                  Request a Quote
-                </Button>
-                <Button href={waHref} variant="secondary" size="lg" external>
-                  WhatsApp Us
-                </Button>
+          <div className="relative overflow-hidden rounded-[2rem] border border-brand-500/20">
+            <img
+              src={siteConfig.founder.images.secondary}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover object-top opacity-35"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-950/95 via-brand-900/70 to-slate-950/95" />
+            <div className="relative p-8 sm:p-12 lg:p-16">
+              <div className="max-w-2xl">
+                <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+                  Ready to transform your business?
+                </h2>
+                <p className="mt-4 text-lg text-slate-300">
+                  We&apos;re here 24/7 for demos and services. Request a quote or WhatsApp us at{' '}
+                  {siteConfig.phones[1]}.
+                </p>
+                <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                  <Button href="/contact#quote" size="lg" icon>
+                    Request a Quote
+                  </Button>
+                  <Button href={waHref} variant="secondary" size="lg" external>
+                    WhatsApp Us
+                  </Button>
+                </div>
+                <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
+                  {siteConfig.emails.map((email) => (
+                    <a
+                      key={email}
+                      href={`mailto:${email}`}
+                      className="transition-colors hover:text-brand-300"
+                    >
+                      {email}
+                    </a>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

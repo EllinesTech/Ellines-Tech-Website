@@ -67,8 +67,8 @@ export function Header() {
   }, [location.pathname])
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-2xl">
-      <div className="section-container flex h-16 items-center gap-4 lg:h-[4.25rem]">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.06] bg-slate-950/75 backdrop-blur-2xl">
+      <div className="section-container flex h-14 items-center gap-4 lg:h-16">
         <Logo onClick={() => setMobileOpen(false)} className="mr-auto lg:mr-0" />
 
         <nav

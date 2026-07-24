@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion'
-import { ExternalLink } from 'lucide-react'
 import { SEO } from '@/components/SEO'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Button } from '@/components/ui/Button'
+import { GroupEcosystem } from '@/components/home/GroupEcosystem'
 import { siteConfig } from '@/data/site'
 import { Target, Eye, Heart, Users } from 'lucide-react'
 
@@ -11,13 +11,13 @@ const values = [
     icon: Target,
     title: 'Mission',
     description:
-      'Empower African businesses with world-class technology that drives growth, efficiency, and innovation.',
+      'Empower businesses with world-class technology that drives growth, efficiency, and innovation.',
   },
   {
     icon: Eye,
     title: 'Vision',
     description:
-      "Become Africa's most trusted technology partner — building the digital infrastructure of tomorrow.",
+      'Become a trusted technology partner — building digital infrastructure that scales with ambitious organizations.',
   },
   {
     icon: Heart,
@@ -40,34 +40,57 @@ export function AboutPage() {
     <>
       <SEO
         title="About Us"
-        description="Learn about Ellines Tech — founded by Elijah Mwangi M as part of Ellines Group — our mission, vision, and commitment to transforming Africa through technology."
+        description="Ellines Tech, based in Kenya, leads the IT industry with innovative solutions for global enterprises — software development, mobile apps, and digital transformation."
         path="/about"
       />
 
+      {/* Media hero band */}
+      <section className="relative min-h-[48vh] overflow-hidden">
+        <img
+          src={founder.images.primary}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-top"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/50" />
+        <div className="section-container relative flex min-h-[48vh] items-end pb-14 pt-28">
+          <div className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
+              About Our Company
+            </p>
+            <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Who we are
+            </h1>
+            <p className="mt-4 max-w-2xl text-lg text-slate-300">
+              Ellines Tech, based in Kenya, offers innovative IT solutions for global enterprises —
+              combining technical skill and creativity for top-tier software development.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="section-padding">
         <div className="section-container">
-          <SectionHeader
-            eyebrow="About Ellines Tech"
-            title="Africa's Technology Partner"
-            description="Ellines Tech is the software, AI, cloud, and digital transformation company of Ellines Group — building enterprise systems, healthcare platforms, and intelligent solutions for organizations across Africa."
-          />
-
-          <div className="mt-16 grid gap-8 lg:grid-cols-2">
+          <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-6 text-slate-400 leading-relaxed">
               <p>
-                Ellines Tech is consolidating under{' '}
-                <span className="text-slate-200">{siteConfig.url.replace('https://', '')}</span>
-                {' '}
-                — our official digital headquarters for products, services, and client engagement.
+                With years of experience in the IT services industry,{' '}
+                <span className="text-slate-200">Ellines Tech</span> specializes in crafting
+                cutting-edge software applications and mobile apps for clients around the globe. We
+                take pride in our unwavering commitment to excellence, innovation, and client
+                satisfaction.
               </p>
               <p>
-                Our product portfolio includes MedFlow Hospital Management System, AfyaVox AI Clinical
-                Assistant, RV22 AI Assistant, and dozens of business solutions — each designed with
-                African market needs in mind.
+                Leveraging the latest technologies and industry best practices, our team of skilled
+                professionals delivers tailor-made solutions that align with the unique needs and
+                objectives of each client. From concept to deployment, we foster seamless
+                collaboration and open communication throughout the development process, ensuring
+                the delivery of high-quality, scalable, and user-friendly products.
               </p>
               <p>
-                From custom software development to cloud migration and AI implementation, we partner
-                with clients at every stage of their digital transformation journey.
+                At Ellines Tech, we believe in turning visionary concepts into reality. With a proven
+                track record of over three years, our dedicated team blends technical expertise with
+                creative ingenuity — from the initial idea to final execution on{' '}
+                <span className="text-slate-200">{siteConfig.url.replace('https://', '')}</span>.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -88,7 +111,7 @@ export function AboutPage() {
         </div>
       </section>
 
-      {/* Founder — premium trust section */}
+      {/* Founder */}
       <section className="section-padding border-t border-white/5 bg-surface/40">
         <div className="section-container">
           <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
@@ -124,14 +147,13 @@ export function AboutPage() {
             >
               <SectionHeader
                 eyebrow="Leadership"
-                title="Founded by Elijah Mwangi M"
+                title={`Founded by ${founder.name}`}
                 description={founder.bio}
               />
               <p className="mt-6 max-w-xl text-slate-400 leading-relaxed">
-                Ellines Tech is the technology arm of {siteConfig.group.name} — an ecosystem spanning
-                software, publishing, and commerce. We build systems that scale with African
-                organizations: healthcare platforms, AI assistants, cloud infrastructure, and custom
-                enterprise software.
+                Ellines Tech is the technology arm of {siteConfig.group.name} — alongside Ellines
+                Haven and Ellines Rattan Furniture. We build systems that scale: healthcare
+                platforms, AI assistants, cloud infrastructure, and custom enterprise software.
               </p>
               <p className="mt-4 font-display text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">
                 {siteConfig.motto}
@@ -147,14 +169,14 @@ export function AboutPage() {
             </motion.div>
           </div>
 
-          <div className="mt-14 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-            {founder.images.gallery.slice(0, 4).map((src, i) => (
+          <div className="mt-14 grid grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-4">
+            {founder.images.gallery.map((src, i) => (
               <motion.div
                 key={src}
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.06 }}
+                transition={{ delay: i * 0.05 }}
                 className="overflow-hidden rounded-2xl border border-white/10 bg-surface-elevated"
               >
                 <img
@@ -170,58 +192,13 @@ export function AboutPage() {
         </div>
       </section>
 
+      <GroupEcosystem />
+
       <section className="section-padding border-t border-white/5">
-        <div className="section-container">
-          <SectionHeader
-            eyebrow="Ellines Group"
-            title="Part of a Growing Ecosystem"
-            description="Sister brands under Ellines Group — complementary ventures alongside Ellines Tech."
-            className="mb-10"
-          />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <article className="rounded-2xl border border-brand-500/25 bg-brand-500/5 p-6">
-              <span className="inline-flex rounded-full bg-brand-500/15 px-3 py-1 text-xs font-medium text-brand-300">
-                This site
-              </span>
-              <h3 className="mt-4 font-display text-lg font-semibold text-white">Ellines Tech</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-400">
-                Software development, AI, cloud, and digital transformation — our flagship technology
-                company.
-              </p>
-              <p className="mt-4 text-sm text-brand-400">{siteConfig.url.replace('https://', '')}</p>
-            </article>
-
-            {siteConfig.sisterBrands.map((brand) => (
-              <article
-                key={brand.name}
-                className="rounded-2xl border border-white/10 bg-surface-elevated/40 p-6"
-              >
-                <span className="inline-flex rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-slate-400">
-                  {brand.status === 'live' ? 'Live' : 'Coming soon'}
-                </span>
-                <h3 className="mt-4 font-display text-lg font-semibold text-white">{brand.name}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{brand.description}</p>
-                {brand.url ? (
-                  <a
-                    href={brand.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-400 transition-colors hover:text-brand-300"
-                  >
-                    Visit site <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
-                ) : (
-                  <p className="mt-4 text-sm text-slate-500">Website in progress</p>
-                )}
-              </article>
-            ))}
-          </div>
-
-          <div className="mt-16 text-center">
-            <Button href="/contact" size="lg" icon>
-              Work With Ellines Tech
-            </Button>
-          </div>
+        <div className="section-container text-center">
+          <Button href="/contact" size="lg" icon>
+            Work With Ellines Tech
+          </Button>
         </div>
       </section>
     </>

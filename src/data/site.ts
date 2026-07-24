@@ -1,11 +1,12 @@
 export const siteConfig = {
   name: 'Ellines Tech',
-  tagline: 'Software, AI & Digital Transformation for Africa',
+  tagline: 'Technology Solutions for the Future',
   motto: 'Your Idea. Our Code.',
   description:
-    'Ellines Tech is a leading software development, AI, cloud, and digital transformation company in Africa. We build enterprise systems, healthcare platforms, and intelligent solutions.',
+    'Ellines Tech, based in Kenya, leads the IT industry with innovative solutions for global enterprises. Our expert team combines technical skill and creativity for top-tier software development, mobile apps, and digital transformation.',
   url: 'https://tech.ellines.co.ke',
-  email: 'info@ellinestech.co.ke',
+  email: 'info@tech.ellines.co.ke',
+  emails: ['info@ellines.co.ke', 'info@tech.ellines.co.ke'] as const,
   phones: ['+254 728 807 213', '+254 748 255 466'] as const,
   phone: '+254 728 807 213',
   whatsapp: '+254748255466',
@@ -32,27 +33,61 @@ export const siteConfig = {
     description:
       'Ellines Group is the parent ecosystem founded by Elijah Mwangi M — spanning technology, publishing, and commerce.',
   },
-  sisterBrands: [
+  /** Full Ellines Group businesses — equal weight, not footnotes */
+  groupBrands: [
     {
+      id: 'tech',
+      name: 'Ellines Tech',
+      role: 'Technology',
+      description:
+        'Software development, AI, cloud, and digital transformation — the flagship technology company of Ellines Group.',
+      url: 'https://tech.ellines.co.ke',
+      status: 'live' as const,
+      statusLabel: 'Live',
+      image: '/founder/elijah-3.jpg',
+      accent: 'from-cyan-500/30 via-sky-700/10 to-transparent',
+      mark: '/logos/logo-mark-nav.png',
+    },
+    {
+      id: 'haven',
       name: 'Ellines Haven',
-      description: 'Online books and novels platform — stories by Elijah Mwangi M.',
+      role: 'Publishing',
+      description:
+        'Online books and novels platform — stories by Elijah Mwangi M. Read, discover, and get inspired.',
       url: 'https://haven.ellines.co.ke/',
       status: 'live' as const,
+      statusLabel: 'Live',
+      image: '/founder/elijah-1.jpg',
+      accent: 'from-amber-500/25 via-orange-900/10 to-transparent',
+      mark: '/media/logos/mark-nobg.png',
     },
     {
-      name: 'Rattan Furniture',
-      description: 'Existing rattan furniture business — website coming soon.',
+      id: 'rattan',
+      name: 'Ellines Rattan Furniture',
+      role: 'Commerce',
+      description:
+        'An established Ellines Group furniture business crafting quality rattan pieces for homes and commercial spaces across Kenya. Digital storefront in progress.',
       url: undefined,
-      status: 'coming-soon' as const,
+      status: 'operating' as const,
+      statusLabel: 'Operating',
+      image: '/founder/elijah-2.jpg',
+      accent: 'from-emerald-600/25 via-teal-900/10 to-transparent',
+      mark: '/media/logos/square.png',
     },
   ],
+  media: {
+    rebrandPoster: '/media/posters/ellines-rebranding.png',
+    markAccent: '/media/logos/mark-nobg.png',
+  },
   social: {
-    linkedin: 'https://linkedin.com/company/ellines-tech',
-    twitter: 'https://twitter.com/ellinestech',
+    facebook: 'https://www.facebook.com/ellines.tech/',
+    twitter: 'https://x.com/EllinesTech',
+    instagram: 'https://www.instagram.com/ellines.tech/',
+    linkedin: 'https://www.linkedin.com/in/ellines-tech-8a3788310/',
+    youtube: 'https://www.youtube.com/@EllinesTech',
     github: 'https://github.com/EllinesTech',
   },
   logos: {
-    /** Retina-ready mark sized for header (160px source → crisp at ~40–48px) */
     markNav: '/logos/logo-mark-nav.png',
     mark: '/logos/logo-mark.png',
     full: '/logos/logo-full.png',

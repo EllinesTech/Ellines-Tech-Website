@@ -17,12 +17,15 @@ export function Footer() {
               {siteConfig.description}
             </p>
             <div className="mt-6 space-y-2.5 text-sm text-slate-400">
-              <a
-                href={`mailto:${siteConfig.email}`}
-                className="flex items-center gap-2 transition-colors hover:text-brand-300"
-              >
-                <Mail className="h-4 w-4 shrink-0" /> {siteConfig.email}
-              </a>
+              {siteConfig.emails.map((email) => (
+                <a
+                  key={email}
+                  href={`mailto:${email}`}
+                  className="flex items-center gap-2 transition-colors hover:text-brand-300"
+                >
+                  <Mail className="h-4 w-4 shrink-0" /> {email}
+                </a>
+              ))}
               {siteConfig.phones.map((phone) => (
                 <a
                   key={phone}

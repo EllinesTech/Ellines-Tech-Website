@@ -27,7 +27,7 @@ export function ContactPage() {
           <SectionHeader
             eyebrow="Contact"
             title="Let's Build Something Great"
-            description="Reach out for project inquiries, demos, partnerships, or support. We're here to help."
+            description="Reach out for project inquiries, demos, partnerships, or support. We're here 24/7 to assist you with demos and services — and you can also reach us on WhatsApp or social media."
             align="center"
             className="mb-16"
           />
@@ -40,12 +40,17 @@ export function ContactPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-500">Email</p>
-                  <a
-                    href={`mailto:${siteConfig.email}`}
-                    className="text-white transition-colors hover:text-brand-300"
-                  >
-                    {siteConfig.email}
-                  </a>
+                  <div className="space-y-1">
+                    {siteConfig.emails.map((email) => (
+                      <a
+                        key={email}
+                        href={`mailto:${email}`}
+                        className="block text-white transition-colors hover:text-brand-300"
+                      >
+                        {email}
+                      </a>
+                    ))}
+                  </div>
                 </div>
               </div>
 
