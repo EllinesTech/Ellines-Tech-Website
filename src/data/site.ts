@@ -1,16 +1,31 @@
 export const siteConfig = {
   name: 'Ellines Tech',
   tagline: 'Software, AI & Digital Transformation for Africa',
+  motto: 'Your Idea. Our Code.',
   description:
     'Ellines Tech is a leading software development, AI, cloud, and digital transformation company in Africa. We build enterprise systems, healthcare platforms, and intelligent solutions.',
   url: 'https://tech.ellines.co.ke',
   email: 'info@ellinestech.co.ke',
-  phone: '+254 700 000 000',
-  whatsapp: '+254700000000',
+  phones: ['+254 728 807 213', '+254 748 255 466'] as const,
+  phone: '+254 728 807 213',
+  whatsapp: '+254748255466',
   address: 'Nairobi, Kenya',
   founder: {
     name: 'Elijah Mwangi M',
     role: 'Founder, Ellines Group',
+    bio: 'Founder of Ellines Group — building technology, publishing, and commerce ventures that serve African markets. Ellines Tech is the group\'s software, AI, and digital transformation company.',
+    images: {
+      primary: '/founder/elijah-3.jpg',
+      portrait: '/founder/elijah-1.jpg',
+      secondary: '/founder/elijah-2.jpg',
+      gallery: [
+        '/founder/elijah-3.jpg',
+        '/founder/elijah-1.jpg',
+        '/founder/elijah-2.jpg',
+        '/founder/elijah-4.jpg',
+        '/founder/elijah-5.jpg',
+      ],
+    },
   },
   group: {
     name: 'Ellines Group',
@@ -37,6 +52,8 @@ export const siteConfig = {
     github: 'https://github.com/EllinesTech',
   },
   logos: {
+    /** Retina-ready mark sized for header (160px source → crisp at ~40–48px) */
+    markNav: '/logos/logo-mark-nav.png',
     mark: '/logos/logo-mark.png',
     full: '/logos/logo-full.png',
     hero: '/logos/logo-hero.png',

@@ -1,25 +1,44 @@
 import { Link } from 'react-router-dom'
-import { Mail, Phone, MapPin } from 'lucide-react'
+import { Mail, Phone, MapPin, MessageCircle } from 'lucide-react'
 import { footerNavigation } from '@/data/navigation'
 import { siteConfig, technologies } from '@/data/site'
 import { Logo } from '@/components/ui/Logo'
 
 export function Footer() {
+  const waHref = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
+
   return (
     <footer className="border-t border-white/5 bg-surface/80">
       <div className="section-container section-padding">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-4">
-            <Logo variant="full" className="h-14 sm:h-16" />
+            <Logo variant="nav" />
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-slate-400">
               {siteConfig.description}
             </p>
-            <div className="mt-6 space-y-2 text-sm text-slate-400">
-              <a href={`mailto:${siteConfig.email}`} className="flex items-center gap-2 hover:text-brand-300 transition-colors">
+            <div className="mt-6 space-y-2.5 text-sm text-slate-400">
+              <a
+                href={`mailto:${siteConfig.email}`}
+                className="flex items-center gap-2 transition-colors hover:text-brand-300"
+              >
                 <Mail className="h-4 w-4 shrink-0" /> {siteConfig.email}
               </a>
-              <a href={`tel:${siteConfig.phone.replace(/\s/g, '')}`} className="flex items-center gap-2 hover:text-brand-300 transition-colors">
-                <Phone className="h-4 w-4 shrink-0" /> {siteConfig.phone}
+              {siteConfig.phones.map((phone) => (
+                <a
+                  key={phone}
+                  href={`tel:${phone.replace(/\s/g, '')}`}
+                  className="flex items-center gap-2 transition-colors hover:text-brand-300"
+                >
+                  <Phone className="h-4 w-4 shrink-0" /> {phone}
+                </a>
+              ))}
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 transition-colors hover:text-brand-300"
+              >
+                <MessageCircle className="h-4 w-4 shrink-0" /> WhatsApp
               </a>
               <p className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 shrink-0" /> {siteConfig.address}
@@ -71,10 +90,15 @@ export function Footer() {
             © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500">
-            <a href={siteConfig.url} className="hover:text-brand-300 transition-colors">{siteConfig.url.replace('https://', '')}</a>
-            <Link to="/resources#faqs" className="hover:text-brand-300 transition-colors">Privacy</Link>
-            <Link to="/resources#faqs" className="hover:text-brand-300 transition-colors">Terms</Link>
-            <span className="text-slate-600">Client Portal — Coming Soon</span>
+            <a href={siteConfig.url} className="transition-colors hover:text-brand-300">
+              {siteConfig.url.replace('https://', '')}
+            </a>
+            <Link to="/resources#faqs" className="transition-colors hover:text-brand-300">
+              Privacy
+            </Link>
+            <Link to="/resources#faqs" className="transition-colors hover:text-brand-300">
+              Terms
+            </Link>
           </div>
         </div>
       </div>

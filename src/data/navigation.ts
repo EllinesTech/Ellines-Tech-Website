@@ -4,7 +4,8 @@ export interface NavItem {
   children?: { label: string; href: string; description?: string }[]
 }
 
-export const mainNavigation: NavItem[] = [
+/** Primary desktop nav — keep short to avoid logo collision */
+export const primaryNavigation: NavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'About', href: '/about' },
   {
@@ -20,7 +21,6 @@ export const mainNavigation: NavItem[] = [
       { label: 'IT Consulting', href: '/services#consulting', description: 'Digital transformation' },
     ],
   },
-  { label: 'Solutions', href: '/solutions' },
   {
     label: 'Products',
     href: '/products',
@@ -31,12 +31,22 @@ export const mainNavigation: NavItem[] = [
       { label: 'Digital Products', href: '/products#digital', description: 'Websites, apps & e-commerce' },
     ],
   },
-  { label: 'Industries', href: '/industries' },
   { label: 'Portfolio', href: '/portfolio' },
+]
+
+/** Secondary items — shown under “More” on desktop */
+export const moreNavigation: NavItem[] = [
+  { label: 'Solutions', href: '/solutions' },
+  { label: 'Industries', href: '/industries' },
   { label: 'Resources', href: '/resources' },
   { label: 'Careers', href: '/careers' },
+  { label: 'Clients', href: '/clients' },
+  { label: 'Success Stories', href: '/success-stories' },
   { label: 'Contact', href: '/contact' },
 ]
+
+/** Full list for mobile drawer */
+export const mainNavigation: NavItem[] = [...primaryNavigation, ...moreNavigation]
 
 export const footerNavigation = {
   company: [

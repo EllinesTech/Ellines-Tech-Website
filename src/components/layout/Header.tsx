@@ -1,67 +1,95 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, ChevronDown } from 'lucide-react'
-import { mainNavigation } from '@/data/navigation'
+import { primaryNavigation, moreNavigation, mainNavigation, type NavItem } from '@/data/navigation'
 import { Button } from '@/components/ui/Button'
 import { Logo } from '@/components/ui/Logo'
 import { cn } from '@/lib/utils'
+
+function NavDropdown({
+  item,
+  open,
+  onOpen,
+  onClose,
+}: {
+  item: NavItem
+  open: boolean
+  onOpen: () => void
+  onClose: () => void
+}) {
+  const location = useLocation()
+  const active = location.pathname.startsWith(item.href)
+
+  return (
+    <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
+      <Link
+        to={item.href}
+        className={cn(
+          'flex items-center gap-1 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors',
+          active ? 'text-brand-300' : 'text-slate-300 hover:text-white',
+        )}
+        aria-expanded={open}
+      >
+        {item.label}
+        <ChevronDown className={cn('h-3.5 w-3.5 opacity-60 transition-transform', open && 'rotate-180')} />
+      </Link>
+      {open && item.children && (
+        <div className="absolute left-0 top-full z-50 pt-2">
+          <div className="w-72 rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-black/50 backdrop-blur-xl">
+            {item.children.map((child) => (
+              <Link
+                key={child.href}
+                to={child.href}
+                className="block rounded-xl px-3 py-2.5 transition-colors hover:bg-white/5"
+                onClick={onClose}
+              >
+                <span className="block text-sm font-medium text-white">{child.label}</span>
+                {child.description && (
+                  <span className="mt-0.5 block text-xs text-slate-400">{child.description}</span>
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const location = useLocation()
 
-  return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-slate-950/70 backdrop-blur-2xl">
-      <div className="section-container flex h-16 items-center justify-between lg:h-[4.5rem]">
-        <Logo onClick={() => setMobileOpen(false)} />
+  useEffect(() => {
+    setMobileOpen(false)
+    setOpenDropdown(null)
+  }, [location.pathname])
 
-        <nav className="hidden items-center gap-0.5 xl:flex" aria-label="Main navigation">
-          {mainNavigation.map((item) =>
+  return (
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-2xl">
+      <div className="section-container flex h-16 items-center gap-4 lg:h-[4.25rem]">
+        <Logo onClick={() => setMobileOpen(false)} className="mr-auto lg:mr-0" />
+
+        <nav
+          className="ml-auto hidden min-w-0 items-center gap-0.5 lg:flex"
+          aria-label="Main navigation"
+        >
+          {primaryNavigation.map((item) =>
             item.children ? (
-              <div
+              <NavDropdown
                 key={item.label}
-                className="relative"
-                onMouseEnter={() => setOpenDropdown(item.label)}
-                onMouseLeave={() => setOpenDropdown(null)}
-              >
-                <Link
-                  to={item.href}
-                  className={cn(
-                    'flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    location.pathname.startsWith(item.href)
-                      ? 'text-brand-300'
-                      : 'text-slate-300 hover:text-white',
-                  )}
-                >
-                  {item.label}
-                  <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-                </Link>
-                {openDropdown === item.label && (
-                  <div className="absolute left-0 top-full pt-2">
-                    <div className="w-72 rounded-2xl border border-white/10 bg-surface-elevated/95 p-2 shadow-2xl shadow-black/40 backdrop-blur-xl">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          to={child.href}
-                          className="block rounded-xl px-3 py-2.5 transition-colors hover:bg-white/5"
-                        >
-                          <span className="block text-sm font-medium text-white">{child.label}</span>
-                          {child.description && (
-                            <span className="mt-0.5 block text-xs text-slate-400">{child.description}</span>
-                          )}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+                item={item}
+                open={openDropdown === item.label}
+                onOpen={() => setOpenDropdown(item.label)}
+                onClose={() => setOpenDropdown(null)}
+              />
             ) : (
               <Link
                 key={item.label}
                 to={item.href}
                 className={cn(
-                  'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  'rounded-lg px-2.5 py-2 text-sm font-medium transition-colors',
                   location.pathname === item.href
                     ? 'text-brand-300'
                     : 'text-slate-300 hover:text-white',
@@ -71,12 +99,50 @@ export function Header() {
               </Link>
             ),
           )}
+
+          <div
+            className="relative"
+            onMouseEnter={() => setOpenDropdown('More')}
+            onMouseLeave={() => setOpenDropdown(null)}
+          >
+            <button
+              type="button"
+              className={cn(
+                'flex items-center gap-1 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors',
+                moreNavigation.some((i) => location.pathname.startsWith(i.href) && i.href !== '/')
+                  ? 'text-brand-300'
+                  : 'text-slate-300 hover:text-white',
+              )}
+              aria-expanded={openDropdown === 'More'}
+            >
+              More
+              <ChevronDown
+                className={cn(
+                  'h-3.5 w-3.5 opacity-60 transition-transform',
+                  openDropdown === 'More' && 'rotate-180',
+                )}
+              />
+            </button>
+            {openDropdown === 'More' && (
+              <div className="absolute right-0 top-full z-50 pt-2">
+                <div className="w-56 rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-black/50 backdrop-blur-xl">
+                  {moreNavigation.map((item) => (
+                    <Link
+                      key={item.href}
+                      to={item.href}
+                      className="block rounded-xl px-3 py-2.5 text-sm font-medium text-slate-200 transition-colors hover:bg-white/5 hover:text-white"
+                      onClick={() => setOpenDropdown(null)}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </nav>
 
-        <div className="hidden items-center gap-3 xl:flex">
-          <Button href="/contact" variant="ghost" size="sm">
-            Get in Touch
-          </Button>
+        <div className="hidden shrink-0 items-center gap-2 xl:flex">
           <Button href="/contact#quote" size="sm" icon>
             Request a Quote
           </Button>
@@ -84,7 +150,7 @@ export function Header() {
 
         <button
           type="button"
-          className="rounded-lg p-2 text-slate-300 hover:bg-white/5 hover:text-white xl:hidden"
+          className="shrink-0 rounded-lg p-2 text-slate-300 hover:bg-white/5 hover:text-white lg:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
         >
@@ -93,7 +159,7 @@ export function Header() {
       </div>
 
       {mobileOpen && (
-        <div className="max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-white/5 bg-slate-950/95 backdrop-blur-2xl xl:hidden">
+        <div className="max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-white/5 bg-slate-950/98 backdrop-blur-2xl lg:hidden">
           <nav className="section-container space-y-1 py-4" aria-label="Mobile navigation">
             {mainNavigation.map((item) => (
               <div key={item.label}>
