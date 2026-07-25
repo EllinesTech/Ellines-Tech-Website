@@ -114,9 +114,15 @@ export function posterForPackage(pkg: {
   category?: string
   image?: string
 }): string {
+  // Catalog id always wins — real JPG photos, never stale SVG illustrations
   if (pkg.id && packagePosterMap[pkg.id]) return packagePosterMap[pkg.id]
 
-  const image = pkg.image || ''
+  let image = pkg.image || ''
+  // If CMS still has an old packages/*.svg path, swap to the matching JPG
+  if (image.includes('/media/posters/packages/') && image.endsWith('.svg')) {
+    image = image.replace(/\.svg$/i, '.jpg')
+  }
+
   const isGraphicsPoster = image === GRAPHICS_POSTER || image.includes('poster-graphics')
   const category = pkg.category || ''
 

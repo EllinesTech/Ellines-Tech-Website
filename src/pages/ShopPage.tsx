@@ -95,6 +95,16 @@ export function PricingPage() {
                             alt={`${p.name} — package preview`}
                             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                             loading="lazy"
+                            onError={(e) => {
+                              const el = e.currentTarget
+                              if (el.dataset.fallback === '1') return
+                              el.dataset.fallback = '1'
+                              el.src = posterForPackage({
+                                ...p,
+                                id: undefined,
+                                image: undefined,
+                              })
+                            }}
                           />
                           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-slate-950/75 via-slate-950/25 to-transparent" />
                           <img
