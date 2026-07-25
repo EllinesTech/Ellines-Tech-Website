@@ -152,8 +152,8 @@ export function HomePage() {
       {/* Storytelling — real workplace / team imagery from Ellines Tech */}
       <section className="relative min-h-[70vh] overflow-hidden">
         <img
-          src={siteConfig.media.scenes.heroTech}
-          alt=""
+          src={siteConfig.media.banners.homeStory}
+          alt="Ellines Tech — Your Idea. Our Code."
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/88 to-slate-950/45" />
@@ -407,8 +407,8 @@ export function HomePage() {
         <div className="grid lg:grid-cols-2">
           <div className="relative min-h-[320px] lg:min-h-[420px]">
             <img
-              src={siteConfig.media.scenes.workspace}
-              alt="Ellines Tech delivery workspace"
+              src={siteConfig.media.banners.homeCraft}
+              alt="Ellines Tech software craft"
               className="absolute inset-0 h-full w-full object-cover object-center"
               loading="lazy"
             />

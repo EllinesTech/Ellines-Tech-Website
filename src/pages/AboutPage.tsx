@@ -47,8 +47,8 @@ export function AboutPage() {
 
       <section className="relative min-h-[52vh] overflow-hidden">
         <img
-          src={siteConfig.media.scenes.heroTech}
-          alt=""
+          src={siteConfig.media.banners.aboutHero}
+          alt="About Ellines Tech"
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/78 to-slate-950/50" />
@@ -82,8 +82,8 @@ export function AboutPage() {
               <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-brand-500/20 via-transparent to-sky-700/15 blur-2xl" />
               <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 shadow-2xl shadow-black/40">
                 <img
-                  src={siteConfig.media.scenes.aboutTeam}
-                  alt="Ellines Tech team and delivery"
+                  src={siteConfig.media.banners.aboutStory}
+                  alt="Ellines Tech — who we are"
                   className="aspect-[5/4] w-full object-cover"
                   loading="lazy"
                 />
@@ -113,8 +113,8 @@ export function AboutPage() {
         <div className="grid lg:grid-cols-2">
           <div className="relative min-h-[360px] lg:min-h-full">
             <img
-              src={siteConfig.media.scenes.workspace}
-              alt=""
+              src={siteConfig.media.banners.execute}
+              alt="Ellines Tech executes ideas from start to finish"
               className="absolute inset-0 h-full w-full object-cover"
               loading="lazy"
             />
@@ -152,7 +152,7 @@ export function AboutPage() {
           <div className="grid gap-6 sm:grid-cols-3">
             {aboutStory.capabilities.map((item, i) => {
               const images = [
-                siteConfig.media.scenes.webDesign,
+                siteConfig.media.banners.homeCraft,
                 siteConfig.media.scenes.aiVisual,
                 siteConfig.media.scenes.solutionsAi,
               ]

@@ -101,6 +101,13 @@ export const siteConfig = {
       contact: '/media/scenes/growth.png',
       growth: '/media/scenes/growth.png',
     },
+    banners: {
+      homeStory: '/media/banners/home-story.png',
+      homeCraft: '/media/banners/home-craft.png',
+      aboutHero: '/media/banners/about-hero.png',
+      aboutStory: '/media/banners/about-story.png',
+      execute: '/media/banners/execute.png',
+    },
   },
   social: {
     facebook: 'https://www.facebook.com/ellines.tech/',
