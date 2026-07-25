@@ -23,6 +23,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { to: '/admin/media', label: 'Site Photos', icon: 'Image' },
       { to: '/admin/clients', label: 'Clients', icon: 'Building2' },
       { to: '/admin/leads', label: 'Leads', icon: 'Inbox' },
+      { to: '/admin/invoices', label: 'Invoices', icon: 'Receipt' },
       { to: '/admin/users', label: 'Users', icon: 'Users' },
       { to: '/admin/permissions', label: 'Permissions', icon: 'KeyRound' },
       { to: '/admin/reviews', label: 'Reviews', icon: 'Star' },

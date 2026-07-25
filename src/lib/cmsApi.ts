@@ -234,3 +234,78 @@ export async function subscribeNewsletter(email: string) {
     body: JSON.stringify({ action: 'newsletter_subscribe', email }),
   })
 }
+
+export type InvoiceItem = {
+  description: string
+  qty: number
+  unitPrice: number
+}
+
+export type Invoice = {
+  id: string
+  number: string
+  publicToken: string
+  clientName: string
+  clientEmail: string
+  clientPhone?: string
+  clientCompany?: string
+  items: InvoiceItem[]
+  currency: string
+  subtotal: number
+  tax: number
+  total: number
+  status: 'draft' | 'sent' | 'paid' | 'cancelled'
+  notes?: string
+  dueDate?: string
+  createdAt: string
+  updatedAt: string
+  paidAt?: string | null
+  paymentMethod?: string
+  paymentRef?: string
+  receiptNumber?: string | null
+}
+
+export async function fetchInvoices(): Promise<Invoice[]> {
+  const data = await cmsFetch('resource=invoices', { headers: adminHeaders() })
+  return data.invoices || []
+}
+
+export async function fetchInvoicePublic(id: string, token: string): Promise<Invoice> {
+  const data = await cmsFetch(
+    `resource=invoices&id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}`,
+  )
+  return data.invoice
+}
+
+export async function saveInvoice(invoice: Partial<Invoice>) {
+  return cmsFetch('resource=invoices', {
+    method: 'POST',
+    headers: adminHeaders(true),
+    body: JSON.stringify({ action: 'save_invoice', invoice }),
+  })
+}
+
+export async function markInvoicePaid(
+  id: string,
+  paymentMethod?: string,
+  paymentRef?: string,
+) {
+  return cmsFetch('resource=invoices', {
+    method: 'POST',
+    headers: adminHeaders(true),
+    body: JSON.stringify({ action: 'mark_invoice_paid', id, paymentMethod, paymentRef }),
+  })
+}
+
+export async function deleteInvoice(id: string) {
+  return cmsFetch('resource=invoices', {
+    method: 'POST',
+    headers: adminHeaders(true),
+    body: JSON.stringify({ action: 'delete_invoice', id }),
+  })
+}
+
+export async function fetchReports() {
+  const data = await cmsFetch('resource=reports', { headers: adminHeaders() })
+  return data.report
+}

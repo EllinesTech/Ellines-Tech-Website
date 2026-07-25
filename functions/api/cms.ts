@@ -165,6 +165,49 @@ export async function onRequestGet(context) {
     })
   }
 
+  if (resource === 'invoices') {
+    const invoiceId = url.searchParams.get('id')
+    const token = url.searchParams.get('token')
+    const invoices = await getJson(env, 'cms:invoices', [])
+    if (invoiceId && token) {
+      const inv = invoices.find((i) => i.id === invoiceId && i.publicToken === token)
+      if (!inv) return json({ error: 'not found' }, 404)
+      return json({ invoice: inv })
+    }
+    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    return json({ invoices })
+  }
+
+  if (resource === 'reports') {
+    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    const leads = await getJson(env, 'cms:leads', [])
+    const invoices = await getJson(env, 'cms:invoices', [])
+    const visitors = await getJson(env, 'cms:visitors', { total: 0, today: 0, pages: {} })
+    const paid = invoices.filter((i) => i.status === 'paid')
+    const unpaid = invoices.filter((i) => i.status === 'sent' || i.status === 'draft')
+    const revenue = paid.reduce((sum, i) => sum + Number(i.total || 0), 0)
+    const outstanding = unpaid.reduce((sum, i) => sum + Number(i.total || 0), 0)
+    const byIntent = {}
+    for (const l of leads) {
+      const key = l.intent || 'other'
+      byIntent[key] = (byIntent[key] || 0) + 1
+    }
+    return json({
+      report: {
+        leadsTotal: leads.length,
+        leadsByIntent: byIntent,
+        invoicesTotal: invoices.length,
+        invoicesPaid: paid.length,
+        invoicesUnpaid: unpaid.length,
+        revenueKes: revenue,
+        outstandingKes: outstanding,
+        visitors,
+        recentPaid: paid.slice(0, 8),
+        recentLeads: leads.slice(0, 8),
+      },
+    })
+  }
+
   return json({ error: 'unknown resource' }, 400)
 }
 
@@ -409,6 +452,7 @@ export async function onRequestPost(context) {
       reviews: await getJson(env, 'cms:reviews', []),
       newsletter: await getJson(env, 'cms:newsletter', []),
       leads: await getJson(env, 'cms:leads', []),
+      invoices: await getJson(env, 'cms:invoices', []),
     }
     await putJson(env, `cms:backup:${Date.now()}`, backup)
     await putJson(env, 'cms:backup:latest', backup)
@@ -424,7 +468,91 @@ export async function onRequestPost(context) {
     if (backup.reviews) await putJson(env, 'cms:reviews', backup.reviews)
     if (backup.newsletter) await putJson(env, 'cms:newsletter', backup.newsletter)
     if (backup.leads) await putJson(env, 'cms:leads', backup.leads)
+    if (backup.invoices) await putJson(env, 'cms:invoices', backup.invoices)
     await logActivity(env, { type: 'system', message: 'Restored latest backup' })
+    return json({ ok: true })
+  }
+
+  if (action === 'save_invoice') {
+    const invoices = await getJson(env, 'cms:invoices', [])
+    const input = body.invoice || {}
+    if (!input.clientName || !input.clientEmail) {
+      return json({ error: 'client name and email required' }, 400)
+    }
+    const items = Array.isArray(input.items) ? input.items : []
+    const subtotal = items.reduce(
+      (sum, row) => sum + Number(row.qty || 0) * Number(row.unitPrice || 0),
+      0,
+    )
+    const tax = Number(input.tax || 0)
+    const total = subtotal + tax
+    const existing = invoices.findIndex((i) => i.id === input.id)
+    const record = {
+      id: input.id || id('inv'),
+      number:
+        input.number ||
+        `ET-${new Date().getFullYear()}-${String(invoices.length + 1).padStart(4, '0')}`,
+      publicToken: input.publicToken || id('tok').replace('tok_', ''),
+      clientName: input.clientName,
+      clientEmail: input.clientEmail,
+      clientPhone: input.clientPhone || '',
+      clientCompany: input.clientCompany || '',
+      items,
+      currency: input.currency || 'KES',
+      subtotal,
+      tax,
+      total,
+      status: input.status || 'draft',
+      notes: input.notes || '',
+      dueDate: input.dueDate || '',
+      createdAt: input.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      paidAt: input.paidAt || null,
+      paymentMethod: input.paymentMethod || '',
+      paymentRef: input.paymentRef || '',
+      receiptNumber: input.receiptNumber || null,
+    }
+    if (existing >= 0) invoices[existing] = { ...invoices[existing], ...record }
+    else invoices.unshift(record)
+    await putJson(env, 'cms:invoices', invoices)
+    await logActivity(env, {
+      type: 'invoice',
+      message: `Invoice ${record.number} saved (${record.status})`,
+    })
+    return json({ ok: true, invoice: record })
+  }
+
+  if (action === 'mark_invoice_paid') {
+    const invoices = await getJson(env, 'cms:invoices', [])
+    const idx = invoices.findIndex((i) => i.id === body.id)
+    if (idx < 0) return json({ error: 'invoice not found' }, 404)
+    const receiptNumber =
+      invoices[idx].receiptNumber ||
+      `RCP-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`
+    invoices[idx] = {
+      ...invoices[idx],
+      status: 'paid',
+      paidAt: new Date().toISOString(),
+      paymentMethod: body.paymentMethod || invoices[idx].paymentMethod || 'M-Pesa / Bank',
+      paymentRef: body.paymentRef || invoices[idx].paymentRef || '',
+      receiptNumber,
+      updatedAt: new Date().toISOString(),
+    }
+    await putJson(env, 'cms:invoices', invoices)
+    await logActivity(env, {
+      type: 'receipt',
+      message: `Receipt ${receiptNumber} for invoice ${invoices[idx].number}`,
+    })
+    return json({ ok: true, invoice: invoices[idx] })
+  }
+
+  if (action === 'delete_invoice') {
+    const invoices = await getJson(env, 'cms:invoices', [])
+    await putJson(
+      env,
+      'cms:invoices',
+      invoices.filter((i) => i.id !== body.id),
+    )
     return json({ ok: true })
   }
 

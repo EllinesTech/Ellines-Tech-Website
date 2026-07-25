@@ -20,6 +20,7 @@ import { CmsPageView } from '@/pages/CmsPageView'
 import { ShopPage as PricingPage } from '@/pages/ShopPage'
 import { AccountPage } from '@/pages/AccountPage'
 import { RequestServicePage } from '@/pages/RequestServicePage'
+import { InvoicePublicPage } from '@/pages/InvoicePublicPage'
 import { AdminLoginPage, AdminLayout } from '@/pages/admin/AdminShell'
 import { AdminOverviewPage } from '@/pages/admin/AdminOverviewPage'
 import { AdminLiveChatPage } from '@/pages/admin/AdminLiveChatPage'
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="media" element={<Module name="media" />} />
           <Route path="clients" element={<Module name="clients" />} />
           <Route path="leads" element={<Module name="leads" />} />
+          <Route path="invoices" element={<Module name="invoices" />} />
           <Route path="users" element={<Module name="users" />} />
           <Route path="permissions" element={<Module name="permissions" />} />
           <Route path="reviews" element={<Module name="reviews" />} />
@@ -85,6 +87,7 @@ export default function App() {
           <Route path="request" element={<RequestServicePage />} />
           <Route path="account" element={<AccountPage />} />
           <Route path="p/:slug" element={<CmsPageView />} />
+          <Route path="invoice/:id" element={<InvoicePublicPage />} />
           <Route path="solutions" element={<SolutionsPage />} />
           <Route path="industries" element={<IndustriesPage />} />
           <Route path="portfolio" element={<PortfolioPage />} />

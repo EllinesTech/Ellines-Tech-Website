@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/Button'
 import { AdminChatPage } from '@/pages/admin/AdminChatPage'
 import { AdminSettingsPage } from '@/pages/admin/AdminSettingsPage'
 import { AdminPagesEditor } from '@/pages/admin/AdminPagesEditor'
+import { AdminInvoicesModule } from '@/pages/admin/AdminInvoicesModule'
+import { AdminReportsModule } from '@/pages/admin/AdminReportsModule'
 import {
   backupCms,
   createAdminUser,
@@ -751,12 +753,16 @@ export function AdminModulePage({ module }: { module: string }) {
   if (module === 'chat-settings') return <AdminChatPage />
   if (module === 'settings' || module === 'site-controls') return <AdminSettingsPage />
   if (module === 'pages') return <AdminPagesEditor />
+  if (module === 'invoices') return <AdminInvoicesModule />
+  if (module === 'reports') return <AdminReportsModule />
   if (module === 'activity' || module === 'logs') return <ActivityModule />
   if (module === 'leads') return <LeadsModule />
   if (module === 'users' || module === 'permissions') return <UsersModule />
   if (module === 'shop') return <ShopModule />
-  if (module === 'analytics' || module === 'reports' || module === 'visitors')
-    return <AnalyticsModule title={module === 'visitors' ? 'Site Visitors' : module === 'reports' ? 'Reports' : 'Analytics'} />
+  if (module === 'analytics' || module === 'visitors')
+    return (
+      <AnalyticsModule title={module === 'visitors' ? 'Site Visitors' : 'Analytics'} />
+    )
   if (module === 'online') {
     return (
       <div className="space-y-4">
