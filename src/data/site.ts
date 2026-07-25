@@ -89,6 +89,17 @@ export const siteConfig = {
     afyavox: '/project-logos/afyavox.png',
     lmar: '/project-logos/lmar.png',
     brandWork: '/project-logos/brand-work-collection.png',
+    scenes: {
+      aboutTeam: '/media/scenes/about-team.jpg',
+      heroTech: '/media/scenes/hero-tech.jpg',
+      serviceTech: '/media/scenes/service-full.jpg',
+      solutionsAi: '/media/scenes/solutions-ai.jpg',
+      uiDesign: '/media/scenes/ui-design.jpg',
+      webDesign: '/media/scenes/web-design.png',
+      aiVisual: '/media/scenes/ai-visual.png',
+      workspace: '/media/scenes/bg-full.jpg',
+      contact: '/media/scenes/contact-desk.jpg',
+    },
   },
   social: {
     facebook: 'https://www.facebook.com/ellines.tech/',

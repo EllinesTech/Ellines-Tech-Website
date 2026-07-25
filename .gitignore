@@ -13,6 +13,9 @@ npm-debug.log*
 .env
 .env.*
 
+# Live site scrape scratch
+_live_fetch
+
 # OS / editor
 .DS_Store
 .vscode

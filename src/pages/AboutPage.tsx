@@ -3,6 +3,7 @@ import { SEO } from '@/components/SEO'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Button } from '@/components/ui/Button'
 import { GroupEcosystem } from '@/components/home/GroupEcosystem'
+import { aboutStory } from '@/data/content'
 import { siteConfig } from '@/data/site'
 import { Target, Eye, Heart, Users } from 'lucide-react'
 
@@ -44,69 +45,141 @@ export function AboutPage() {
         path="/about"
       />
 
-      {/* Media hero band — brand poster, not founder */}
-      <section className="relative min-h-[48vh] overflow-hidden">
+      <section className="relative min-h-[52vh] overflow-hidden">
         <img
-          src={siteConfig.media.rebrandPoster}
+          src={siteConfig.media.scenes.heroTech}
           alt=""
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/50" />
-        <div className="section-container relative flex min-h-[48vh] items-end pb-14 pt-28">
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/78 to-slate-950/50" />
+        <div className="section-container relative flex min-h-[52vh] items-end pb-14 pt-28">
           <div className="max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
-              About Our Company
+              {aboutStory.eyebrow}
             </p>
             <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Who we are
+              {aboutStory.title}
             </h1>
-            <p className="mt-4 max-w-2xl text-lg text-slate-300">
-              Ellines Tech, based in Kenya, offers innovative IT solutions for global enterprises —
-              combining technical skill and creativity for top-tier software development.
-            </p>
+            <p className="mt-4 max-w-2xl text-lg text-slate-300">{aboutStory.lead}</p>
           </div>
         </div>
       </section>
 
       <section className="section-padding">
         <div className="section-container">
-          <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
-            <div className="space-y-6 text-slate-400 leading-relaxed">
+          <div className="grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="space-y-6 text-slate-400 leading-relaxed lg:col-span-6">
+              {aboutStory.paragraphs.map((paragraph) => (
+                <p key={paragraph.slice(0, 32)}>{paragraph}</p>
+              ))}
               <p>
-                With years of experience in the IT services industry,{' '}
-                <span className="text-slate-200">Ellines Tech</span> specializes in crafting
-                cutting-edge software applications and mobile apps for clients around the globe. We
-                take pride in our unwavering commitment to excellence, innovation, and client
-                satisfaction.
-              </p>
-              <p>
-                Leveraging the latest technologies and industry best practices, our team of skilled
-                professionals delivers tailor-made solutions that align with the unique needs and
-                objectives of each client. From concept to deployment, we foster seamless
-                collaboration and open communication throughout the development process, ensuring
-                the delivery of high-quality, scalable, and user-friendly products.
-              </p>
-              <p>
-                At Ellines Tech, we believe in turning visionary concepts into reality. With a proven
-                track record of over three years, our dedicated team blends technical expertise with
-                creative ingenuity — from the initial idea to final execution on{' '}
-                <span className="text-slate-200">{siteConfig.url.replace('https://', '')}</span>.
+                Visit us at{' '}
+                <span className="text-slate-200">{siteConfig.url.replace('https://', '')}</span> —
+                the digital headquarters of Ellines Tech, part of {siteConfig.group.name}.
               </p>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {values.map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-2xl border border-white/10 bg-surface-elevated/50 p-6"
-                >
-                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-brand-500/10 text-brand-400">
-                    <item.icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="font-display font-semibold text-white">{item.title}</h3>
-                  <p className="mt-2 text-sm text-slate-400">{item.description}</p>
+            <div className="relative lg:col-span-6">
+              <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-brand-500/20 via-transparent to-sky-700/15 blur-2xl" />
+              <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 shadow-2xl shadow-black/40">
+                <img
+                  src={siteConfig.media.scenes.aboutTeam}
+                  alt="Ellines Tech team and delivery"
+                  className="aspect-[5/4] w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {values.map((item) => (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-white/10 bg-surface-elevated/50 p-6"
+              >
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-brand-500/10 text-brand-400">
+                  <item.icon className="h-5 w-5" />
                 </div>
+                <h3 className="font-display font-semibold text-white">{item.title}</h3>
+                <p className="mt-2 text-sm text-slate-400">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Execute story — from live about page */}
+      <section className="relative overflow-hidden border-y border-white/5">
+        <div className="grid lg:grid-cols-2">
+          <div className="relative min-h-[360px] lg:min-h-full">
+            <img
+              src={siteConfig.media.scenes.workspace}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/30 to-slate-950/80" />
+          </div>
+          <div className="section-padding bg-surface/60 px-6 sm:px-10 lg:px-14">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-400">
+              Ellines Tech
+            </p>
+            <h2 className="mt-3 max-w-xl font-display text-3xl font-bold text-white sm:text-4xl">
+              {aboutStory.executeTitle}
+            </h2>
+            <div className="mt-6 max-w-xl space-y-4 text-slate-400 leading-relaxed">
+              {aboutStory.executeBody.map((paragraph) => (
+                <p key={paragraph.slice(0, 28)}>{paragraph}</p>
               ))}
             </div>
+            <div className="mt-8">
+              <Button href="/contact#quote" icon>
+                Start a Project
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-padding border-t border-white/5 bg-surface/35">
+        <div className="section-container">
+          <SectionHeader
+            eyebrow="Capabilities"
+            title="What we stand behind"
+            description="High-quality products and services drawn from how Ellines Tech serves clients today."
+            className="mb-10"
+          />
+          <div className="grid gap-6 sm:grid-cols-3">
+            {aboutStory.capabilities.map((item, i) => {
+              const images = [
+                siteConfig.media.scenes.webDesign,
+                siteConfig.media.scenes.aiVisual,
+                siteConfig.media.scenes.solutionsAi,
+              ]
+              return (
+                <motion.article
+                  key={item.title}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.06 }}
+                  className="overflow-hidden rounded-[1.35rem] border border-white/10 bg-surface-elevated/30"
+                >
+                  <div className="aspect-[16/10] overflow-hidden bg-slate-900">
+                    <img
+                      src={images[i]}
+                      alt=""
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="p-5">
+                    <h3 className="font-display text-lg font-semibold text-white">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.description}</p>
+                  </div>
+                </motion.article>
+              )
+            })}
           </div>
         </div>
       </section>

@@ -22,6 +22,7 @@ import { services, serviceCategories } from '@/data/services'
 import { industries } from '@/data/industries'
 import { portfolioProjects } from '@/data/portfolio'
 import { clientBrands } from '@/data/clients'
+import { homeCopy, testimonials, valueProps as valuePropData } from '@/data/content'
 import { siteConfig, technologies } from '@/data/site'
 
 const iconMap: Record<string, React.ElementType> = {
@@ -32,6 +33,13 @@ const iconMap: Record<string, React.ElementType> = {
   Shield,
 }
 
+const valueIconMap = {
+  Sparkles,
+  Zap,
+  Shield,
+  Globe2,
+} as const
+
 const stats = [
   { value: '50+', label: 'Projects Delivered' },
   { value: '25+', label: 'Products & Solutions' },
@@ -39,39 +47,13 @@ const stats = [
   { value: '3+', label: 'Years Building' },
 ]
 
-const valueProps = [
-  {
-    icon: Sparkles,
-    title: 'Perfect Business Solutions',
-    description:
-      'We provide perfect business solutions tailored to your unique needs, ensuring efficiency and effectiveness in every aspect of your operations.',
-    image: siteConfig.media.rebrandPoster,
-  },
-  {
-    icon: Zap,
-    title: 'Business Growth Planning',
-    description:
-      'Our business growth planning services help you strategize for the future, identifying opportunities and creating actionable plans to achieve your goals.',
-    image: siteConfig.media.techSquare,
-  },
-  {
-    icon: Shield,
-    title: 'Strategic Development',
-    description:
-      'We specialize in comprehensive strategy development, guiding you through market challenges and positioning your business for long-term success.',
-    image: siteConfig.media.techHero,
-  },
-  {
-    icon: Globe2,
-    title: 'Expert Tech Services',
-    description:
-      'We provide expert tech services tailored to your needs, ensuring optimal performance and support for your business.',
-    image: siteConfig.media.techMark,
-  },
-]
+const valueProps = valuePropData.map((item) => ({
+  ...item,
+  icon: valueIconMap[item.icon],
+}))
 
 const productVisuals = [
-  siteConfig.media.rebrandPoster,
+  siteConfig.media.scenes.solutionsAi,
   siteConfig.media.rv22,
   siteConfig.media.juno4,
   siteConfig.media.afyavox,
@@ -175,15 +157,15 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Storytelling — brand poster (not founder) */}
+      {/* Storytelling — real workplace / team imagery from Ellines Tech */}
       <section className="relative min-h-[70vh] overflow-hidden">
         <img
-          src={siteConfig.media.rebrandPoster}
+          src={siteConfig.media.scenes.heroTech}
           alt=""
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 to-slate-950/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/88 to-slate-950/45" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/55" />
         <div className="section-container relative flex min-h-[70vh] items-center py-20">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -193,15 +175,12 @@ export function HomePage() {
             className="max-w-xl"
           >
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-300">
-              About Our Company
+              {homeCopy.storyEyebrow}
             </p>
             <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
-              We execute ideas from start to finish
+              {homeCopy.storyTitle}
             </h2>
-            <p className="mt-5 text-lg leading-relaxed text-slate-300">
-              Based in Kenya, Ellines Tech crafts cutting-edge software and mobile apps for clients
-              around the globe — with excellence, innovation, and client satisfaction at the core.
-            </p>
+            <p className="mt-5 text-lg leading-relaxed text-slate-300">{homeCopy.storyBody}</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button href="/about" icon>
                 Our Story
@@ -214,13 +193,13 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Why choose — media cards */}
+      {/* Why choose — real scene photos, not logos */}
       <section className="section-padding border-t border-white/5">
         <div className="section-container">
           <SectionHeader
-            eyebrow="Why Ellines Tech"
-            title="Why you should choose our services"
-            description="From idea to deployment, we execute meticulously — quality, innovation, and results that align with your vision."
+            eyebrow={homeCopy.whyEyebrow}
+            title={homeCopy.whyTitle}
+            description={homeCopy.whyBody}
             align="center"
             className="mb-14"
           />
@@ -234,15 +213,15 @@ export function HomePage() {
                 transition={{ delay: i * 0.08 }}
                 className="group overflow-hidden rounded-[1.35rem] border border-white/10 bg-surface-elevated/30"
               >
-                <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-500/20 via-surface to-sky-900/30">
+                <div className="relative aspect-[4/3] overflow-hidden">
                   <img
                     src={item.image}
                     alt=""
-                    className="h-full w-full object-contain p-6 transition-transform duration-700 group-hover:scale-105"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
-                  <div className="absolute bottom-4 left-4 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300 ring-1 ring-brand-400/30 backdrop-blur-md">
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/35 to-transparent" />
+                  <div className="absolute bottom-4 left-4 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/25 text-brand-200 ring-1 ring-brand-400/35 backdrop-blur-md">
                     <item.icon className="h-5 w-5" />
                   </div>
                 </div>
@@ -430,8 +409,8 @@ export function HomePage() {
         <div className="grid lg:grid-cols-2">
           <div className="relative min-h-[320px] lg:min-h-[420px]">
             <img
-              src={siteConfig.media.rebrandPoster}
-              alt="Ellines Tech brand"
+              src={siteConfig.media.scenes.workspace}
+              alt="Ellines Tech delivery workspace"
               className="absolute inset-0 h-full w-full object-cover object-center"
               loading="lazy"
             />
@@ -455,6 +434,39 @@ export function HomePage() {
             >
               See work that ships <ArrowRight className="h-4 w-4" />
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials from live Ellines Tech site */}
+      <section className="section-padding border-t border-white/5">
+        <div className="section-container">
+          <SectionHeader
+            eyebrow="Our feedbacks"
+            title="What they are saying about us"
+            description="Clients and partners across Kenya trust Ellines Tech for software, AI, and digital delivery."
+            align="center"
+            className="mb-12"
+          />
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {testimonials.slice(0, 6).map((item, i) => (
+              <motion.blockquote
+                key={item.name}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="flex h-full flex-col rounded-[1.35rem] border border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent p-6"
+              >
+                <p className="flex-1 text-sm leading-relaxed text-slate-300">“{item.quote}”</p>
+                <footer className="mt-5 border-t border-white/8 pt-4">
+                  <p className="font-display text-sm font-semibold text-white">{item.name}</p>
+                  <p className="mt-0.5 text-xs uppercase tracking-[0.14em] text-slate-500">
+                    {item.role}
+                  </p>
+                </footer>
+              </motion.blockquote>
+            ))}
           </div>
         </div>
       </section>
