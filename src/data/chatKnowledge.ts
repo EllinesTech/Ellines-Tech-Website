@@ -26,6 +26,21 @@ export const defaultChatFaqs: ChatFaq[] = [
     ],
   },
   {
+    id: 'ellines-group',
+    questions: [
+      'ellines group',
+      'sister companies',
+      'sister brands',
+      'ellines haven',
+      'ellines rattan',
+      'parent company',
+      'group companies',
+    ],
+    answer:
+      'Ellines Tech is part of Ellines Group — the parent company of Ellines Tech (technology), Ellines Haven (publishing), and Ellines Rattan (furniture).',
+    links: [{ label: 'About Ellines Group', href: '/about' }],
+  },
+  {
     id: 'consulting',
     questions: ['consulting', 'it consulting', 'advisor', 'advisory', 'roadmap', 'digital transformation'],
     answer:

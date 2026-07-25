@@ -227,7 +227,7 @@ export function AboutPage() {
               />
               <p className="mt-6 max-w-xl text-slate-400 leading-relaxed">
                 Ellines Tech is the technology arm of {siteConfig.group.name} — alongside Ellines
-                Haven and Ellines Rattan Furniture. We build systems that scale: healthcare
+                Haven and Ellines Rattan (Furniture). We build systems that scale: healthcare
                 platforms, AI assistants, cloud infrastructure, and custom enterprise software.
               </p>
               <p className="mt-4 font-display text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">

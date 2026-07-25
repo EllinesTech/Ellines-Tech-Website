@@ -14,8 +14,8 @@ export function GroupEcosystem({ className, compact }: GroupEcosystemProps) {
     <section className={cn('section-padding border-t border-white/5', className)}>
       <div className="section-container">
         <SectionHeader
-          eyebrow={siteConfig.group.name}
-          title="Three ventures. One vision."
+          eyebrow="Company group"
+          title={siteConfig.group.name}
           description={siteConfig.group.description}
           align="center"
           className="mb-12 lg:mb-16"

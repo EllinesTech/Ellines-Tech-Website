@@ -31,7 +31,7 @@ export const siteConfig = {
   group: {
     name: 'Ellines Group',
     description:
-      'Ellines Group is the parent ecosystem founded by Elijah Mwangi M — spanning technology, publishing, and commerce.',
+      'Ellines Group is the parent company behind Ellines Tech, Ellines Haven, and Ellines Rattan — technology, publishing, and furniture under one vision.',
   },
   /** Full Ellines Group businesses — equal weight, not footnotes */
   groupBrands: [
@@ -40,7 +40,7 @@ export const siteConfig = {
       name: 'Ellines Tech',
       role: 'Technology',
       description:
-        'Software development, AI, cloud, and digital transformation — the flagship technology company of Ellines Group.',
+        'Software development, AI, cloud, and digital transformation — the technology company of Ellines Group.',
       url: 'https://tech.ellines.co.ke',
       status: 'live' as const,
       statusLabel: 'Live',
@@ -63,10 +63,10 @@ export const siteConfig = {
     },
     {
       id: 'rattan',
-      name: 'Ellines Rattan Furniture',
-      role: 'Commerce',
+      name: 'Ellines Rattan',
+      role: 'Furniture',
       description:
-        'An established Ellines Group furniture business crafting quality rattan pieces for homes and commercial spaces across Kenya.',
+        'Quality rattan furniture for homes and commercial spaces across Kenya — the commerce brand of Ellines Group.',
       url: 'https://rattan.ellines.co.ke',
       status: 'operating' as const,
       statusLabel: 'Operating',

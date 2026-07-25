@@ -89,6 +89,17 @@ export function SEO({
         addressLocality: 'Nairobi',
         addressCountry: 'KE',
       },
+      parentOrganization: {
+        '@type': 'Organization',
+        name: siteConfig.group.name,
+        description: siteConfig.group.description,
+        brand: siteConfig.groupBrands.map((brand) => ({
+          '@type': 'Brand',
+          name: brand.name,
+          url: brand.url,
+          description: brand.description,
+        })),
+      },
       sameAs: Object.values(siteConfig.social || {}),
     })
 

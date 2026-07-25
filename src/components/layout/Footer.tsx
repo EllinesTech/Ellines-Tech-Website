@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Mail, Phone, MapPin, MessageCircle, Clock3 } from 'lucide-react'
-import { footerNavigation } from '@/data/navigation'
+import { footerNavigation, footerSectionLabels } from '@/data/navigation'
 import { siteConfig, technologies } from '@/data/site'
 import { Logo } from '@/components/ui/Logo'
 import { SocialLinks } from '@/components/engagement/SocialLinks'
@@ -87,13 +87,13 @@ export function Footer() {
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-8 lg:grid-cols-5">
-            {Object.entries(footerNavigation).map(([key, links]) => (
+            {(Object.keys(footerNavigation) as (keyof typeof footerNavigation)[]).map((key) => (
               <div key={key}>
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-white capitalize">
-                  {key}
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-white">
+                  {footerSectionLabels[key]}
                 </h3>
                 <ul className="mt-4 space-y-2.5">
-                  {links.map((link) => (
+                  {footerNavigation[key].map((link) => (
                     <li key={`${link.href}-${link.label}`}>
                       <FooterLink href={link.href} label={link.label} />
                     </li>
