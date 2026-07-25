@@ -87,6 +87,16 @@
   .animate-pulse-slow {
     animation: pulse-glow 5.5s ease-in-out infinite;
   }
+
+  .tech-scanline {
+    background-image: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(34, 211, 238, 0.035) 50%,
+      transparent 100%
+    );
+    background-size: 100% 8px;
+  }
 }
 
 @keyframes float {

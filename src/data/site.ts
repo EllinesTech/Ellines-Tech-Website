@@ -114,8 +114,19 @@ export const siteConfig = {
     twitter: 'https://x.com/EllinesTech',
     instagram: 'https://www.instagram.com/ellines.tech/',
     linkedin: 'https://www.linkedin.com/in/ellines-tech-8a3788310/',
-    youtube: 'https://www.youtube.com/@EllinesTech',
     github: 'https://github.com/EllinesTech',
+  },
+  socialLinks: [
+    { id: 'facebook', label: 'Facebook', handle: '@ellines.tech', href: 'https://www.facebook.com/ellines.tech/' },
+    { id: 'twitter', label: 'X (Twitter)', handle: '@EllinesTech', href: 'https://x.com/EllinesTech' },
+    { id: 'instagram', label: 'Instagram', handle: '@ellines.tech', href: 'https://www.instagram.com/ellines.tech/' },
+    { id: 'linkedin', label: 'LinkedIn', handle: 'Ellines Tech', href: 'https://www.linkedin.com/in/ellines-tech-8a3788310/' },
+    { id: 'github', label: 'GitHub', handle: 'EllinesTech', href: 'https://github.com/EllinesTech' },
+  ],
+  hours: {
+    label: 'Always open',
+    detail: '24/7 — demos, support, and project inquiries',
+    alwaysOpen: true,
   },
   logos: {
     markNav: '/logos/logo-mark-nav.png',

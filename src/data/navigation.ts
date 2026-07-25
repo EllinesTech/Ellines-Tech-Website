@@ -40,6 +40,7 @@ export const moreNavigation: NavItem[] = [
   { label: 'Solutions', href: '/solutions' },
   { label: 'Industries', href: '/industries' },
   { label: 'Resources', href: '/resources' },
+  { label: 'FAQ', href: '/faq' },
   { label: 'Careers', href: '/careers' },
   { label: 'Clients', href: '/clients' },
   { label: 'Success Stories', href: '/success-stories' },
@@ -80,7 +81,8 @@ export const footerNavigation = {
   resources: [
     { label: 'Articles', href: '/resources#articles' },
     { label: 'Case Studies', href: '/resources#case-studies' },
-    { label: 'Documentation', href: '/resources#documentation' },
-    { label: 'FAQs', href: '/resources#faqs' },
+    { label: 'FAQ', href: '/faq' },
+    { label: 'Privacy', href: '/privacy' },
+    { label: 'Terms', href: '/terms' },
   ],
 }

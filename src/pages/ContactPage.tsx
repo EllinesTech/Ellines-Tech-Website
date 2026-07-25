@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Mail, Phone, MapPin, MessageCircle, Calendar } from 'lucide-react'
+import { Mail, Phone, MapPin, MessageCircle, Calendar, Clock3 } from 'lucide-react'
 import { SEO } from '@/components/SEO'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Button } from '@/components/ui/Button'
+import { SocialLinks } from '@/components/engagement/SocialLinks'
 import { siteConfig } from '@/data/site'
 
 export function ContactPage() {
@@ -99,6 +100,17 @@ export function ContactPage() {
               </div>
 
               <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-300">
+                  <Clock3 className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-500">Hours</p>
+                  <p className="text-white">{siteConfig.hours.label}</p>
+                  <p className="mt-1 text-sm text-slate-400">{siteConfig.hours.detail}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-500/10 text-brand-400">
                   <Calendar className="h-5 w-5" />
                 </div>
@@ -114,13 +126,23 @@ export function ContactPage() {
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-surface-elevated/50 p-6">
-                <h3 className="font-display font-semibold text-white">Google Maps</h3>
+                <h3 className="font-display font-semibold text-white">Social</h3>
+                <p className="mt-2 text-sm text-slate-400">Follow Ellines Tech online.</p>
+                <SocialLinks className="mt-4" showLabels />
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-surface-elevated/50 p-6">
+                <h3 className="font-display font-semibold text-white">Location</h3>
                 <p className="mt-2 text-sm text-slate-400">
-                  Visit our office in {siteConfig.address}. Map integration can be added during
-                  deployment.
+                  Based in {siteConfig.address}. Serving clients across Africa and globally.
                 </p>
-                <div className="mt-4 flex h-40 items-center justify-center rounded-xl bg-white/5 text-sm text-slate-500">
-                  Map placeholder — Nairobi, Kenya
+                <div className="mt-4 overflow-hidden rounded-xl border border-white/10">
+                  <iframe
+                    title="Ellines Tech Nairobi"
+                    src="https://www.openstreetmap.org/export/embed.html?bbox=36.75%2C-1.35%2C36.95%2C-1.20&layer=mapnik&marker=-1.286389%2C36.817223"
+                    className="h-40 w-full grayscale invert-[0.9] contrast-125"
+                    loading="lazy"
+                  />
                 </div>
               </div>
             </div>

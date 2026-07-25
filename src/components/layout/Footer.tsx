@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
-import { Mail, Phone, MapPin, MessageCircle } from 'lucide-react'
+import { Mail, Phone, MapPin, MessageCircle, Clock3 } from 'lucide-react'
 import { footerNavigation } from '@/data/navigation'
 import { siteConfig, technologies } from '@/data/site'
 import { Logo } from '@/components/ui/Logo'
+import { SocialLinks } from '@/components/engagement/SocialLinks'
 
 function FooterLink({ href, label }: { href: string; label: string }) {
   const external = href.startsWith('http')
@@ -37,6 +38,10 @@ export function Footer() {
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-slate-400">
               {siteConfig.description}
             </p>
+            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              {siteConfig.hours.label} · 24/7
+            </div>
             <div className="mt-6 space-y-2.5 text-sm text-slate-400">
               {siteConfig.emails.map((email) => (
                 <a
@@ -67,7 +72,11 @@ export function Footer() {
               <p className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 shrink-0" /> {siteConfig.address}
               </p>
+              <p className="flex items-center gap-2">
+                <Clock3 className="h-4 w-4 shrink-0" /> {siteConfig.hours.detail}
+              </p>
             </div>
+            <SocialLinks className="mt-6" size="sm" />
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-8 lg:grid-cols-5">
@@ -78,7 +87,7 @@ export function Footer() {
                 </h3>
                 <ul className="mt-4 space-y-2.5">
                   {links.map((link) => (
-                    <li key={link.href}>
+                    <li key={`${link.href}-${link.label}`}>
                       <FooterLink href={link.href} label={link.label} />
                     </li>
                   ))}
@@ -112,10 +121,13 @@ export function Footer() {
             <a href={siteConfig.url} className="transition-colors hover:text-brand-300">
               {siteConfig.url.replace('https://', '')}
             </a>
-            <Link to="/resources#faqs" className="transition-colors hover:text-brand-300">
+            <Link to="/faq" className="transition-colors hover:text-brand-300">
+              FAQ
+            </Link>
+            <Link to="/privacy" className="transition-colors hover:text-brand-300">
               Privacy
             </Link>
-            <Link to="/resources#faqs" className="transition-colors hover:text-brand-300">
+            <Link to="/terms" className="transition-colors hover:text-brand-300">
               Terms
             </Link>
           </div>
