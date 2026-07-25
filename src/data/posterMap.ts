@@ -109,23 +109,38 @@ export function posterForCategory(category: string): string {
 /** Shared marketing poster — only valid for Graphics packages */
 const GRAPHICS_POSTER = '/media/posters/packages/design_graphics_pack.jpg'
 
+function isSharedGraphicsArt(image: string): boolean {
+  return (
+    image === GRAPHICS_POSTER ||
+    image.includes('poster-graphics') ||
+    image.includes('design_graphics_pack')
+  )
+}
+
+function isLegacyPosterArt(image: string): boolean {
+  return (
+    !image ||
+    image.endsWith('.svg') ||
+    /\/media\/posters\/poster-/.test(image) ||
+    /\/media\/scenes\//.test(image)
+  )
+}
+
 export function posterForPackage(pkg: {
   id?: string
   name?: string
   category?: string
   image?: string
 }): string {
+  // Package id map always wins — unique JPG per product
   if (pkg.id && packagePosterMap[pkg.id]) return packagePosterMap[pkg.id]
 
   const image = pkg.image || ''
-  const isGraphicsPoster =
-    image === GRAPHICS_POSTER ||
-    image.includes('poster-graphics') ||
-    image.includes('design_graphics_pack')
   const category = pkg.category || ''
+  const rejectSharedGraphics = isSharedGraphicsArt(image) && category !== 'Graphics'
 
-  // Never reuse the Graphics Design poster on Web / other categories
-  if (image && !(isGraphicsPoster && category !== 'Graphics')) {
+  // Never reuse Graphics Design / legacy campaign PNGs on Web or other categories
+  if (image && !rejectSharedGraphics && !isLegacyPosterArt(image)) {
     return image
   }
 

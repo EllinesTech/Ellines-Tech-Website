@@ -400,22 +400,41 @@ export async function onRequestGet(context) {
           changed = true
         }
       }
-      // Repair SVG / branded poster art → unique catalog photos
+      // Repair SVG / branded poster art → unique catalog photos (KV self-heals on fetch)
       products = products.map((p) => {
         const d = defaultById.get(p.id)
         if (!d) return p
         const image = String(p.image || '')
+        const category = String(p.category || d.category || '')
         const wrongGraphics =
-          (image.includes('poster-graphics') || image.includes('design_graphics_pack')) &&
-          d.category !== 'Graphics'
+          (image.includes('poster-graphics') ||
+            image.includes('design_graphics_pack') ||
+            image.includes('GRAPHICS')) &&
+          category !== 'Graphics'
+        // Web (and any non-Graphics) must never keep the shared Graphics Design poster
+        const webStuckOnGraphics =
+          category === 'Web' &&
+          (wrongGraphics ||
+            image.includes('poster-graphics') ||
+            image.includes('design_graphics_pack') ||
+            !image)
         const isLegacyArt =
           !image ||
           image.endsWith('.svg') ||
+          image.endsWith('.png') ||
           image.includes('logo-hero') ||
           image.includes('ellines-rebranding') ||
           /\/media\/posters\/poster-/.test(image) ||
           /\/media\/scenes\//.test(image)
-        const needsImage = Boolean(d.image) && (wrongGraphics || isLegacyArt) && image !== d.image
+        const catalogPhoto = String(d.image || '')
+        const shouldUseCatalog =
+          Boolean(catalogPhoto) &&
+          catalogPhoto.includes('/media/posters/packages/') &&
+          image !== catalogPhoto
+        const needsImage =
+          Boolean(d.image) &&
+          image !== d.image &&
+          (wrongGraphics || webStuckOnGraphics || isLegacyArt || shouldUseCatalog)
         const needsPrice =
           ['shop_starter_web', 'shop_business_web', 'shop_ecommerce', 'shop_logo_pack'].includes(
             p.id,

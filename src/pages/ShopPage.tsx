@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { fetchShop } from '@/lib/cmsApi'
 import { loadAuthUser } from '@/lib/auth'
 import { starterPricingPackages, retiredPricingIds, type PricingPackage } from '@/data/pricingPackages'
-import { posterForPackage } from '@/data/posterMap'
+import { packagePosterMap, posterForPackage } from '@/data/posterMap'
 
 export function PricingPage() {
   const [products, setProducts] = useState<PricingPackage[]>([])
@@ -83,7 +83,8 @@ export function PricingPage() {
                 {products
                   .filter((p) => p.category === category)
                   .map((p) => {
-                    const poster = posterForPackage(p)
+                    // Prefer id→JPG map so stale CMS / old category fallbacks cannot win
+                    const poster = packagePosterMap[p.id] || posterForPackage(p)
                     return (
                       <article
                         key={p.id}
