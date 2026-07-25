@@ -16,6 +16,9 @@ import { SuccessStoriesPage } from '@/pages/SuccessStoriesPage'
 import { SolutionsPage } from '@/pages/SolutionsPage'
 import { FaqPage, PrivacyPage, TermsPage } from '@/pages/LegalPages'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import { CmsPageView } from '@/pages/CmsPageView'
+import { ShopPage } from '@/pages/ShopPage'
+import { AccountPage } from '@/pages/AccountPage'
 import { AdminLoginPage, AdminLayout } from '@/pages/admin/AdminShell'
 import { AdminOverviewPage } from '@/pages/admin/AdminOverviewPage'
 import { AdminLiveChatPage } from '@/pages/admin/AdminLiveChatPage'
@@ -35,6 +38,7 @@ export default function App() {
           <Route path="live-chat" element={<AdminLiveChatPage />} />
           <Route path="activity" element={<Module name="activity" />} />
           <Route path="products" element={<Module name="products" />} />
+          <Route path="shop" element={<Module name="shop" />} />
           <Route path="services" element={<Module name="services" />} />
           <Route path="portfolio" element={<Module name="portfolio" />} />
           <Route path="media" element={<Module name="media" />} />
@@ -75,6 +79,9 @@ export default function App() {
           <Route path="services/:slug" element={<ServiceDetailPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="products/:slug" element={<ProductDetailPage />} />
+          <Route path="shop" element={<ShopPage />} />
+          <Route path="account" element={<AccountPage />} />
+          <Route path="p/:slug" element={<CmsPageView />} />
           <Route path="solutions" element={<SolutionsPage />} />
           <Route path="industries" element={<IndustriesPage />} />
           <Route path="portfolio" element={<PortfolioPage />} />

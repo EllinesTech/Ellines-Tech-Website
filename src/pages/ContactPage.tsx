@@ -8,11 +8,32 @@ import { siteConfig } from '@/data/site'
 
 export function ContactPage() {
   const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
   const waHref = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setSubmitted(true)
+    setError('')
+    const form = e.currentTarget
+    const data = new FormData(form)
+    try {
+      const res = await fetch('/api/cms?resource=leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'lead',
+          name: data.get('name'),
+          email: data.get('email'),
+          phone: data.get('company') || '',
+          message: `${data.get('interest') || ''}: ${data.get('message') || ''}`,
+          source: 'contact',
+        }),
+      })
+      if (!res.ok) throw new Error('Could not send message')
+      setSubmitted(true)
+    } catch {
+      setError('Could not reach the server. Please try WhatsApp or email.')
+    }
   }
 
   return (
@@ -163,6 +184,7 @@ export function ContactPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                    {error && <p className="text-sm text-amber-200">{error}</p>}
                     <div className="grid gap-5 sm:grid-cols-2">
                       <div>
                         <label htmlFor="name" className="block text-sm font-medium text-slate-300">

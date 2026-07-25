@@ -31,6 +31,7 @@ import {
   Settings,
   Share2,
   Shield,
+  ShoppingBag,
   SlidersHorizontal,
   Star,
   User,
@@ -84,6 +85,7 @@ const iconMap: Record<string, React.ElementType> = {
   Database,
   Zap,
   User,
+  ShoppingBag,
 }
 
 export function AdminLoginPage() {

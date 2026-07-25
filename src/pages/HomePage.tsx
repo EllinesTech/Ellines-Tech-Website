@@ -24,6 +24,7 @@ import { portfolioProjects } from '@/data/portfolio'
 import { clientBrands } from '@/data/clients'
 import { homeCopy, testimonials, valueProps as valuePropData } from '@/data/content'
 import { siteConfig, technologies } from '@/data/site'
+import { useSiteCopy } from '@/hooks/useSiteCopy'
 
 const iconMap: Record<string, React.ElementType> = {
   Code2,
@@ -56,6 +57,7 @@ export function HomePage() {
   const featuredProducts = products.filter((p) => p.highlights && p.image).slice(0, 4)
   const featuredPortfolio = portfolioProjects.slice(0, 6)
   const waHref = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
+  const { home: liveHome } = useSiteCopy()
 
   return (
     <>
@@ -86,8 +88,8 @@ export function HomePage() {
               </h1>
 
               <p className="mt-7 max-w-md text-lg leading-relaxed text-slate-300/95 sm:text-xl">
-                Software applications, mobile apps, and digital solutions — executed from start to
-                finish for businesses that need technology built to last.
+                {liveHome.heroSub ||
+                  'Software applications, mobile apps, and digital solutions — executed from start to finish for businesses that need technology built to last.'}
               </p>
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -170,9 +172,9 @@ export function HomePage() {
               {homeCopy.storyEyebrow}
             </p>
             <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
-              {homeCopy.storyTitle}
+              {liveHome.storyTitle}
             </h2>
-            <p className="mt-5 text-lg leading-relaxed text-slate-300">{homeCopy.storyBody}</p>
+            <p className="mt-5 text-lg leading-relaxed text-slate-300">{liveHome.storyBody}</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button href="/about" icon>
                 Our Story

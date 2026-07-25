@@ -2,6 +2,7 @@ import { SEO } from '@/components/SEO'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { siteConfig } from '@/data/site'
 import { Link } from 'react-router-dom'
+import { useSiteCopy } from '@/hooks/useSiteCopy'
 
 export function PrivacyPage() {
   return (
@@ -86,7 +87,8 @@ export function TermsPage() {
 }
 
 export function FaqPage() {
-  const faqs = [
+  const { faq: cmsFaq } = useSiteCopy()
+  const fallback = [
     {
       q: 'What does Ellines Tech build?',
       a: 'Software applications, AI products, websites, brand identity, and digital transformation systems for African and global businesses.',
@@ -108,6 +110,7 @@ export function FaqPage() {
       a: 'Nairobi, Kenya — serving clients across Africa and beyond.',
     },
   ]
+  const faqs = cmsFaq?.length ? cmsFaq : fallback
 
   return (
     <>

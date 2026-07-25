@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { GroupEcosystem } from '@/components/home/GroupEcosystem'
 import { aboutStory } from '@/data/content'
 import { siteConfig } from '@/data/site'
+import { useSiteCopy } from '@/hooks/useSiteCopy'
 import { Target, Eye, Heart, Users } from 'lucide-react'
 
 const values = [
@@ -36,6 +37,7 @@ const values = [
 
 export function AboutPage() {
   const { founder } = siteConfig
+  const { about: liveAbout } = useSiteCopy()
 
   return (
     <>
@@ -58,9 +60,9 @@ export function AboutPage() {
               {aboutStory.eyebrow}
             </p>
             <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              {aboutStory.title}
+              {liveAbout.title}
             </h1>
-            <p className="mt-4 max-w-2xl text-lg text-slate-300">{aboutStory.lead}</p>
+            <p className="mt-4 max-w-2xl text-lg text-slate-300">{liveAbout.lead}</p>
           </div>
         </div>
       </section>

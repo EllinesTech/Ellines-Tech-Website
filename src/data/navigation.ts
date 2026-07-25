@@ -33,6 +33,7 @@ export const primaryNavigation: NavItem[] = [
     ],
   },
   { label: 'Portfolio', href: '/portfolio' },
+  { label: 'Shop', href: '/shop' },
 ]
 
 /** Secondary items — shown under “More” on desktop */
@@ -44,6 +45,7 @@ export const moreNavigation: NavItem[] = [
   { label: 'Careers', href: '/careers' },
   { label: 'Clients', href: '/clients' },
   { label: 'Success Stories', href: '/success-stories' },
+  { label: 'Account', href: '/account' },
   { label: 'Contact', href: '/contact' },
 ]
 
