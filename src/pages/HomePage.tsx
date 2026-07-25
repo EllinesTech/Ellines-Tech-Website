@@ -25,6 +25,8 @@ import { clientBrands } from '@/data/clients'
 import { homeCopy, testimonials, valueProps as valuePropData } from '@/data/content'
 import { siteConfig, technologies } from '@/data/site'
 import { useSiteCopy } from '@/hooks/useSiteCopy'
+import { ProcessSection } from '@/components/home/ProcessSection'
+import { NewsletterSignup } from '@/components/NewsletterSignup'
 
 const iconMap: Record<string, React.ElementType> = {
   Code2,
@@ -93,11 +95,11 @@ export function HomePage() {
               </p>
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Button href="/contact#quote" size="lg" icon>
-                  Start Your Project
+                <Button href="/request" size="lg" icon>
+                  Request a service
                 </Button>
-                <Button href="/products" variant="secondary" size="lg">
-                  Explore Products
+                <Button href="/pricing" variant="secondary" size="lg">
+                  View pricing
                 </Button>
               </div>
 
@@ -413,6 +415,8 @@ export function HomePage() {
       </section>
 
       {/* Testimonials from live Ellines Tech site */}
+      <ProcessSection />
+
       <section className="section-padding border-t border-white/5">
         <div className="section-container">
           <SectionHeader
@@ -525,12 +529,16 @@ export function HomePage() {
                   {siteConfig.phones[1]}.
                 </p>
                 <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                  <Button href="/contact#quote" size="lg" icon>
-                    Request a Quote
+                  <Button href="/request" size="lg" icon>
+                    Request a service
                   </Button>
                   <Button href={waHref} variant="secondary" size="lg" external>
                     WhatsApp Us
                   </Button>
+                </div>
+                <div className="mt-10 max-w-md">
+                  <p className="mb-3 text-sm font-medium text-slate-300">Product & delivery notes</p>
+                  <NewsletterSignup />
                 </div>
                 <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
                   {siteConfig.emails.map((email) => (

@@ -195,3 +195,33 @@ export async function trackVisit(path: string) {
     /* ignore */
   }
 }
+
+export async function submitServiceRequest(input: {
+  name: string
+  email: string
+  phone?: string
+  company?: string
+  message?: string
+  source?: string
+  intent?: string
+  budget?: string
+  timeline?: string
+  packageId?: string
+  packageName?: string
+  packagePrice?: string
+  service?: string
+}) {
+  return cmsFetch('resource=leads', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'lead', ...input }),
+  })
+}
+
+export async function subscribeNewsletter(email: string) {
+  return cmsFetch('resource=newsletter', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'newsletter_subscribe', email }),
+  })
+}

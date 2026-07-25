@@ -4,6 +4,7 @@ import { footerNavigation } from '@/data/navigation'
 import { siteConfig, technologies } from '@/data/site'
 import { Logo } from '@/components/ui/Logo'
 import { SocialLinks } from '@/components/engagement/SocialLinks'
+import { NewsletterSignup } from '@/components/NewsletterSignup'
 
 function FooterLink({ href, label }: { href: string; label: string }) {
   const external = href.startsWith('http')
@@ -77,6 +78,12 @@ export function Footer() {
               </p>
             </div>
             <SocialLinks className="mt-6" size="sm" />
+            <div className="mt-8">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Newsletter
+              </p>
+              <NewsletterSignup />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-8 lg:grid-cols-5">

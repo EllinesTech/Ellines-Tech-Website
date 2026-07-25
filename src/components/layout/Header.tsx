@@ -143,8 +143,8 @@ export function Header() {
         </nav>
 
         <div className="hidden shrink-0 items-center gap-2 xl:flex">
-          <Button href="/contact#quote" size="sm" icon>
-            Request a Quote
+          <Button href="/request" size="sm" icon>
+            Request a service
           </Button>
         </div>
 

@@ -103,7 +103,22 @@ function ActivityModule() {
 
 function LeadsModule() {
   const [leads, setLeads] = useState<
-    { id: string; name: string; email: string; phone?: string; message?: string; at: string }[]
+    {
+      id: string
+      name: string
+      email: string
+      phone?: string
+      message?: string
+      at: string
+      intent?: string
+      packageName?: string
+      packagePrice?: string
+      service?: string
+      budget?: string
+      timeline?: string
+      status?: string
+      company?: string
+    }[]
   >([])
   const [error, setError] = useState('')
   useEffect(() => {
@@ -112,16 +127,43 @@ function LeadsModule() {
       .catch((e) => setError(e instanceof Error ? e.message : 'Failed'))
   }, [])
   return (
-    <Panel title="Leads" description="Inquiries captured from the contact form and website.">
+    <Panel
+      title="Leads & purchase requests"
+      description="Quotes, service requests, and package buy requests from /request and contact."
+    >
       <Err message={error} />
       <ul className="space-y-3">
         {leads.length === 0 && <li className="text-sm text-slate-500">No leads yet.</li>}
         {leads.map((l) => (
           <li key={l.id} className="rounded-xl border border-white/10 p-3 text-sm">
-            <p className="font-medium text-white">
-              {l.name || 'Anonymous'} · {l.email}
-            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="font-medium text-white">
+                {l.name || 'Anonymous'} · {l.email}
+              </p>
+              {l.intent && (
+                <span className="rounded-full bg-brand-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand-200">
+                  {l.intent}
+                </span>
+              )}
+              {l.status && (
+                <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] uppercase text-slate-400">
+                  {l.status}
+                </span>
+              )}
+            </div>
+            {(l.packageName || l.service) && (
+              <p className="mt-1 text-brand-300">
+                {l.packageName || l.service}
+                {l.packagePrice ? ` · ${l.packagePrice}` : ''}
+              </p>
+            )}
+            {l.company && <p className="text-slate-400">{l.company}</p>}
             {l.phone && <p className="text-slate-400">{l.phone}</p>}
+            {(l.budget || l.timeline) && (
+              <p className="text-xs text-slate-500">
+                {[l.budget, l.timeline].filter(Boolean).join(' · ')}
+              </p>
+            )}
             {l.message && <p className="mt-1 text-slate-300">{l.message}</p>}
             <p className="mt-1 text-xs text-slate-500">{new Date(l.at).toLocaleString()}</p>
           </li>
@@ -882,43 +924,69 @@ export function AdminModulePage({ module }: { module: string }) {
     return (
       <Panel
         title={module === 'email' ? 'Email Config' : 'Integrations'}
-        description="Contact and messaging endpoints used by the site."
+        description="Live endpoints and channels wired into Ellines Tech."
       >
         <ul className="space-y-2 text-sm text-slate-300">
           <li>Public email: {siteConfig.email}</li>
           <li>WhatsApp: {siteConfig.whatsapp}</li>
+          <li>Service requests: /request → Leads inbox</li>
           <li>CMS API: /api/cms</li>
           <li>Live chat API: /api/live-chat</li>
           <li>AI assist API: /api/ai</li>
         </ul>
+        <div className="mt-4 flex flex-wrap gap-3 text-sm">
+          <Link to="/admin/leads" className="text-brand-300">
+            → Leads
+          </Link>
+          <Link to="/admin/live-chat" className="text-brand-300">
+            → Live Chat
+          </Link>
+          <Link to="/request" className="text-brand-300">
+            → Public request flow
+          </Link>
+        </div>
       </Panel>
     )
   }
 
   if (module === 'design') {
     return (
-      <Panel title="Design Studio" description="Brand tokens and visual system references.">
+      <Panel title="Design Studio" description="Brand system and content surfaces you can edit live.">
         <ul className="space-y-2 text-sm text-slate-300">
-          <li>Brand cyan / sky on deep slate surfaces</li>
-          <li>Display + body type from site CSS variables</li>
-          <li>Edit Home/About copy in Page Editor → Home & About copy</li>
+          <li>Fonts: Outfit (display) + DM Sans (body)</li>
+          <li>Accent: cyan brand scale on deep slate</li>
+          <li>Edit Home/About copy → Page Editor</li>
+          <li>Edit packages → Product Pricing</li>
+          <li>Banners & scenes → Site Photos</li>
         </ul>
-        <Link to="/admin/pages" className="mt-3 inline-block text-sm text-brand-300">
-          → Page Editor
-        </Link>
+        <div className="mt-4 flex flex-wrap gap-3 text-sm">
+          <Link to="/admin/pages" className="text-brand-300">
+            → Page Editor
+          </Link>
+          <Link to="/admin/shop" className="text-brand-300">
+            → Product Pricing
+          </Link>
+          <Link to="/admin/media" className="text-brand-300">
+            → Site Photos
+          </Link>
+        </div>
       </Panel>
     )
   }
 
   if (module === 'security') {
     return (
-      <Panel title="Security" description="Admin access and session notes.">
+      <Panel title="Security" description="Access control for Super Admin and customer accounts.">
         <ul className="list-disc space-y-2 pl-5 text-sm text-slate-300">
-          <li>Super Admin login uses ADMIN_API_KEY / VITE_ADMIN_PASSWORD</li>
+          <li>Super Admin login uses ADMIN_API_KEY / panel password</li>
           <li>Customer passwords are PBKDF2-hashed in KV</li>
-          <li>Rotate the admin key in Cloudflare Pages environment variables</li>
-          <li>Do not share God Mode credentials publicly</li>
+          <li>Roles: super_admin, admin, customer — managed under Users</li>
+          <li>Rotate secrets in Cloudflare Pages environment variables</li>
+          <li>Purchase requests are not charged online until you confirm payment offline</li>
         </ul>
+        <Link to="/admin/users" className="mt-4 inline-block text-sm text-brand-300">
+          → Users & roles
+        </Link>
       </Panel>
     )
   }
@@ -928,8 +996,16 @@ export function AdminModulePage({ module }: { module: string }) {
       <Panel title="Profile" description="Signed-in Super Admin session.">
         <p className="text-sm text-slate-300">Role: Super Admin (God Mode)</p>
         <p className="mt-2 text-sm text-slate-400">
-          Manage staff under Users. Customer shop accounts register at /account.
+          Day-to-day: Leads, Live Chat, Product Pricing, Page Editor. Customers use /account.
         </p>
+        <div className="mt-4 flex flex-wrap gap-3 text-sm">
+          <Link to="/admin/leads" className="text-brand-300">
+            → Leads
+          </Link>
+          <Link to="/admin/live-chat" className="text-brand-300">
+            → Live Chat
+          </Link>
+        </div>
       </Panel>
     )
   }

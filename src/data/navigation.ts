@@ -34,6 +34,7 @@ export const primaryNavigation: NavItem[] = [
   },
   { label: 'Portfolio', href: '/portfolio' },
   { label: 'Pricing', href: '/pricing' },
+  { label: 'Request', href: '/request' },
 ]
 
 /** Secondary items — shown under “More” on desktop */
@@ -58,6 +59,7 @@ export const footerNavigation = {
     { label: 'Careers', href: '/careers' },
     { label: 'Clients', href: '/clients' },
     { label: 'Success Stories', href: '/success-stories' },
+    { label: 'Request a service', href: '/request' },
     { label: 'Contact', href: '/contact' },
   ],
   products: [

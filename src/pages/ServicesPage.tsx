@@ -1,6 +1,8 @@
 import { SEO } from '@/components/SEO'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { ProcessSection } from '@/components/home/ProcessSection'
 import { services, serviceCategories, type ServiceCategory } from '@/data/services'
 import { Brain, Code2, Megaphone, Palette, Shield } from 'lucide-react'
 
@@ -22,20 +24,33 @@ export function ServicesPage() {
     <>
       <SEO
         title="Services"
-        description="Logo design, web design, UI/UX, software development, AI automation, marketing, and cyber security from Ellines Tech."
+        description="Logo design, web design, UI/UX, software development, AI automation, marketing, cyber security, and career documents from Ellines Tech."
         path="/services"
       />
 
-      <section className="section-padding">
-        <div className="section-container">
+      <section className="relative overflow-hidden border-b border-white/5">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(34,211,238,0.1),_transparent_55%)]" />
+        <div className="section-container relative section-padding pb-14">
           <SectionHeader
             eyebrow="Our Services"
-            title="Complete Technology Services"
-            description="Synced with Ellines Tech’s live offerings — design, development, AI, marketing, and cyber security."
+            title="Technology services built to ship"
+            description="Design, development, AI, marketing, security, and career documents — scoped professionally with transparent pricing."
             align="center"
-            className="mb-16"
+            className="mb-10"
           />
+          <div className="flex flex-wrap justify-center gap-3">
+            <Button href="/request" icon>
+              Request a service
+            </Button>
+            <Button href="/pricing" variant="secondary">
+              Product pricing
+            </Button>
+          </div>
+        </div>
+      </section>
 
+      <section className="section-padding">
+        <div className="section-container">
           <div className="space-y-20">
             {categories.map(([key, cat]) => {
               const Icon = iconMap[cat.icon] ?? Code2
@@ -67,6 +82,8 @@ export function ServicesPage() {
           </div>
         </div>
       </section>
+
+      <ProcessSection />
     </>
   )
 }

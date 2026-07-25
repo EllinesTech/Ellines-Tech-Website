@@ -171,14 +171,25 @@ export async function onRequestPost(context) {
       name: body.name || '',
       email: body.email || '',
       phone: body.phone || '',
+      company: body.company || '',
       message: body.message || '',
       source: body.source || 'website',
+      intent: body.intent || 'quote',
+      budget: body.budget || '',
+      timeline: body.timeline || '',
+      packageId: body.packageId || '',
+      packageName: body.packageName || '',
+      packagePrice: body.packagePrice || '',
+      service: body.service || '',
+      status: body.intent === 'buy' ? 'purchase_request' : 'new',
       at: new Date().toISOString(),
-      status: 'new',
     }
     leads.unshift(lead)
     await putJson(env, 'cms:leads', leads.slice(0, 500))
-    await logActivity(env, { type: 'lead', message: `New lead from ${lead.name || lead.email}` })
+    await logActivity(env, {
+      type: 'lead',
+      message: `${lead.intent || 'Lead'}: ${lead.packageName || lead.service || lead.name || lead.email}`,
+    })
     return json({ ok: true, lead })
   }
 

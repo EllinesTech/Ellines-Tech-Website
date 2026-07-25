@@ -22,7 +22,11 @@ export function PricingPage() {
             !retired.has(p.id) &&
             !String(p.name || '').toLowerCase().includes('hosting'),
         )
-        setProducts(published.length ? published : starterPricingPackages.filter((p) => p.status === 'published'))
+        setProducts(
+          published.length
+            ? published
+            : starterPricingPackages.filter((p) => p.status === 'published'),
+        )
       })
       .catch((e) => {
         setError(e instanceof Error ? e.message : 'Could not load pricing')
@@ -36,7 +40,7 @@ export function PricingPage() {
     <>
       <SEO
         title="Product Pricing"
-        description="Transparent product pricing for Ellines Tech packages — websites, design, software, AI, and support."
+        description="Transparent product pricing for Ellines Tech packages — websites, design, software, AI, career documents, and more."
         path="/pricing"
       />
       <section className="section-padding">
@@ -44,17 +48,25 @@ export function PricingPage() {
           <SectionHeader
             eyebrow="Product pricing"
             title="Packages & starting prices"
-            description="Clear starting prices for common IT packages. Need something custom? Enquire and we’ll scope a fit."
+            description="Clear Kenya-market starting prices. Request a package or buy through our professional intake — we confirm scope, then share payment details."
             align="center"
-            className="mb-12"
+            className="mb-8"
           />
+          <div className="mb-12 flex flex-wrap justify-center gap-3">
+            <Button href="/request?intent=buy" icon>
+              Buy a package
+            </Button>
+            <Button href="/request?intent=quote" variant="secondary">
+              Custom quote
+            </Button>
+          </div>
           {error && <p className="mb-6 text-center text-sm text-amber-200">{error}</p>}
           {!user && (
             <p className="mb-8 text-center text-sm text-slate-400">
               <Link to="/account" className="font-semibold text-brand-300">
                 Create an account
               </Link>{' '}
-              to save packages when checkout goes live.
+              to save packages when checkout expands.
             </p>
           )}
 
@@ -67,16 +79,24 @@ export function PricingPage() {
                   .map((p) => (
                     <article
                       key={p.id}
-                      className="rounded-2xl border border-white/10 bg-white/[0.03] p-6"
+                      className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-6"
                     >
                       <h3 className="font-display text-xl font-bold text-white">{p.name}</h3>
-                      <p className="mt-3 text-sm text-slate-400">{p.description}</p>
+                      <p className="mt-3 flex-1 text-sm text-slate-400">{p.description}</p>
                       <p className="mt-6 text-lg font-semibold text-white">
                         From {p.currency} {Number(p.price).toLocaleString()}
                       </p>
-                      <Button href="/contact#quote" className="mt-4" variant="secondary">
-                        Enquire
-                      </Button>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <Button
+                          href={`/request?intent=buy&package=${encodeURIComponent(p.id)}`}
+                          size="sm"
+                        >
+                          Buy / request
+                        </Button>
+                        <Button href="/contact#quote" size="sm" variant="ghost">
+                          Ask a question
+                        </Button>
+                      </div>
                     </article>
                   ))}
               </div>

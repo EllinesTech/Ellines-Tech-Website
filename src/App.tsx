@@ -19,6 +19,7 @@ import { NotFoundPage } from '@/pages/NotFoundPage'
 import { CmsPageView } from '@/pages/CmsPageView'
 import { ShopPage as PricingPage } from '@/pages/ShopPage'
 import { AccountPage } from '@/pages/AccountPage'
+import { RequestServicePage } from '@/pages/RequestServicePage'
 import { AdminLoginPage, AdminLayout } from '@/pages/admin/AdminShell'
 import { AdminOverviewPage } from '@/pages/admin/AdminOverviewPage'
 import { AdminLiveChatPage } from '@/pages/admin/AdminLiveChatPage'
@@ -81,6 +82,7 @@ export default function App() {
           <Route path="products/:slug" element={<ProductDetailPage />} />
           <Route path="pricing" element={<PricingPage />} />
           <Route path="shop" element={<PricingPage />} />
+          <Route path="request" element={<RequestServicePage />} />
           <Route path="account" element={<AccountPage />} />
           <Route path="p/:slug" element={<CmsPageView />} />
           <Route path="solutions" element={<SolutionsPage />} />

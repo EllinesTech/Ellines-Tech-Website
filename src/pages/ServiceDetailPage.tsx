@@ -60,11 +60,11 @@ export function ServiceDetailPage() {
             {service.description}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button href="/contact#quote" icon>
-              Request a Quote
+            <Button href={`/request?intent=request&service=${service.slug}`} icon>
+              Request this service
             </Button>
-            <Button href="/contact" variant="secondary">
-              Talk to Us
+            <Button href="/pricing" variant="secondary">
+              View pricing
             </Button>
           </div>
         </div>
@@ -113,7 +113,7 @@ export function ServiceDetailPage() {
                     Based in {siteConfig.address} · {siteConfig.phones[0]}
                   </p>
                 </div>
-                <Button href="/contact#quote" className="mt-8 w-full sm:w-auto" icon>
+                <Button href={`/request?intent=request&service=${service.slug}`} className="mt-8 w-full sm:w-auto" icon>
                   Start this service
                 </Button>
               </div>
