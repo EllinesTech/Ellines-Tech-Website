@@ -106,7 +106,7 @@ export function PricingPage() {
                               })
                             }}
                           />
-                          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-slate-950/75 via-slate-950/25 to-transparent" />
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-slate-950/10" />
                           <img
                             src="/logos/logo-mark-nav.png"
                             alt=""

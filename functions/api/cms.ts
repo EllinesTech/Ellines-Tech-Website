@@ -400,23 +400,22 @@ export async function onRequestGet(context) {
           changed = true
         }
       }
-      // Repair stale SVG / shared posters so pricing cards show catalog photos
+      // Repair SVG / branded poster art → unique catalog photos
       products = products.map((p) => {
         const d = defaultById.get(p.id)
         if (!d) return p
         const image = String(p.image || '')
         const wrongGraphics =
-          (image.includes('poster-graphics') || image === '/media/posters/poster-graphics.png') &&
+          (image.includes('poster-graphics') || image.includes('design_graphics_pack')) &&
           d.category !== 'Graphics'
-        const staleIllustration =
+        const isLegacyArt =
           !image ||
           image.endsWith('.svg') ||
           image.includes('logo-hero') ||
           image.includes('ellines-rebranding') ||
-          image === '/media/posters/poster-campaign.png' ||
-          image === '/media/posters/poster-business-card.png' ||
-          image === '/media/posters/poster-graphics.png'
-        const needsImage = (wrongGraphics || staleIllustration) && Boolean(d.image)
+          /\/media\/posters\/poster-/.test(image) ||
+          /\/media\/scenes\//.test(image)
+        const needsImage = Boolean(d.image) && (wrongGraphics || isLegacyArt) && image !== d.image
         const needsPrice =
           ['shop_starter_web', 'shop_business_web', 'shop_ecommerce', 'shop_logo_pack'].includes(
             p.id,
@@ -1385,7 +1384,7 @@ function defaultShop() {
       category: 'Web',
       description: 'One-page to multi-page business website — design, build, and launch.',
       status: 'published',
-      image: '/media/posters/packages/shop_starter_web.svg',
+      image: '/media/posters/packages/shop_starter_web.jpg',
     },
     {
       id: 'shop_business_web',
@@ -1395,7 +1394,7 @@ function defaultShop() {
       category: 'Web',
       description: 'Multi-page site with CMS-ready structure, contact flows, and SEO basics.',
       status: 'published',
-      image: '/media/posters/packages/shop_business_web.svg',
+      image: '/media/posters/packages/shop_business_web.jpg',
     },
     {
       id: 'shop_ecommerce',
@@ -1405,7 +1404,7 @@ function defaultShop() {
       category: 'Web',
       description: 'Online storefront for products, carts, and order enquiries.',
       status: 'published',
-      image: '/media/posters/packages/shop_ecommerce.svg',
+      image: '/media/posters/packages/shop_ecommerce.jpg',
     },
     {
       id: 'shop_logo_pack',
@@ -1415,7 +1414,7 @@ function defaultShop() {
       category: 'Design',
       description: 'Logo concepts, revisions, and delivery formats for brand launch.',
       status: 'published',
-      image: '/logos/logo-hero.png',
+      image: '/media/posters/packages/shop_logo_pack.jpg',
     },
     {
       id: 'shop_brand_kit',
@@ -1425,7 +1424,7 @@ function defaultShop() {
       category: 'Design',
       description: 'Logo, colour system, typography, and basic brand guidelines.',
       status: 'published',
-      image: '/media/posters/ellines-rebranding.png',
+      image: '/media/posters/packages/shop_brand_kit.jpg',
     },
     {
       id: 'shop_uiux',
@@ -1435,7 +1434,7 @@ function defaultShop() {
       category: 'Design',
       description: 'Wireframes and high-fidelity screens for web or mobile products.',
       status: 'published',
-      image: '/media/scenes/solutions.png',
+      image: '/media/posters/packages/shop_uiux.jpg',
     },
     {
       id: 'shop_mobile_app',
@@ -1445,7 +1444,7 @@ function defaultShop() {
       category: 'Software',
       description: 'Cross-platform MVP app scope — core screens, auth, and API wiring.',
       status: 'published',
-      image: '/media/posters/packages/shop_mobile_app.svg',
+      image: '/media/posters/packages/shop_mobile_app.jpg',
     },
     {
       id: 'shop_custom_software',
@@ -1455,7 +1454,7 @@ function defaultShop() {
       category: 'Software',
       description: 'Scoped business system or internal tool with discovery and first release.',
       status: 'published',
-      image: '/media/scenes/hero-tech.png',
+      image: '/media/posters/packages/shop_custom_software.jpg',
     },
     {
       id: 'shop_ai_automation',
@@ -1465,7 +1464,7 @@ function defaultShop() {
       category: 'AI',
       description: 'Chatbot or workflow automation tailored to your operations.',
       status: 'published',
-      image: '/media/scenes/ai.png',
+      image: '/media/posters/packages/shop_ai_automation.jpg',
     },
     {
       id: 'shop_digital_marketing',
@@ -1475,7 +1474,7 @@ function defaultShop() {
       category: 'Marketing',
       description: 'Campaign setup, social assets, and performance tracking kickoff.',
       status: 'published',
-      image: '/media/posters/packages/shop_digital_marketing.svg',
+      image: '/media/posters/packages/shop_digital_marketing.jpg',
     },
     {
       id: 'shop_cyber_audit',
@@ -1485,7 +1484,7 @@ function defaultShop() {
       category: 'Security',
       description: 'Baseline security review for websites and apps with actionable fixes.',
       status: 'published',
-      image: '/media/posters/packages/shop_cyber_audit.svg',
+      image: '/media/posters/packages/shop_cyber_audit.jpg',
     },
     {
       id: 'consult_it_halfday',
@@ -1495,7 +1494,7 @@ function defaultShop() {
       category: 'Consulting',
       description: 'Focused advisory session — systems review, decisions, and next steps.',
       status: 'published',
-      image: '/media/scenes/workspace.png',
+      image: '/media/posters/packages/consult_it_halfday.jpg',
     },
     {
       id: 'consult_it_fullday',
@@ -1505,7 +1504,7 @@ function defaultShop() {
       category: 'Consulting',
       description: 'Deep-dive workshop with stakeholders — architecture, priorities, and roadmap sketch.',
       status: 'published',
-      image: '/media/posters/packages/consult_it_fullday.svg',
+      image: '/media/posters/packages/consult_it_fullday.jpg',
     },
     {
       id: 'consult_tech_roadmap',
@@ -1515,7 +1514,7 @@ function defaultShop() {
       category: 'Consulting',
       description: 'Multi-week advisory: assessment, target architecture, and prioritised delivery plan.',
       status: 'published',
-      image: '/media/scenes/strategy.png',
+      image: '/media/posters/packages/consult_tech_roadmap.jpg',
     },
     {
       id: 'consult_digital_transform',
@@ -1525,7 +1524,7 @@ function defaultShop() {
       category: 'Consulting',
       description: 'Current-state audit, initiative backlog, and change-ready transformation plan.',
       status: 'published',
-      image: '/media/scenes/about.png',
+      image: '/media/posters/packages/consult_digital_transform.jpg',
     },
     {
       id: 'career_resume_revamp',
@@ -1536,7 +1535,7 @@ function defaultShop() {
       description:
         'Refresh your existing CV into a clean, ATS-friendly format — Kenya market rates for graduates and early professionals.',
       status: 'published',
-      image: '/media/posters/packages/career_resume_revamp.svg',
+      image: '/media/posters/packages/career_resume_revamp.jpg',
     },
     {
       id: 'career_resume_build',
@@ -1547,7 +1546,7 @@ function defaultShop() {
       description:
         'Full professional resume built from scratch — structure, achievements, and keywords for Kenyan and remote roles.',
       status: 'published',
-      image: '/media/posters/packages/career_resume_build.svg',
+      image: '/media/posters/packages/career_resume_build.jpg',
     },
     {
       id: 'career_resume_mid',
@@ -1558,7 +1557,7 @@ function defaultShop() {
       description:
         'Role-targeted CV for 3–9 years’ experience — impact bullets, skills mapping, and role keywords.',
       status: 'published',
-      image: '/media/posters/packages/career_resume_mid.svg',
+      image: '/media/posters/packages/career_resume_mid.jpg',
     },
     {
       id: 'career_resume_senior',
@@ -1569,7 +1568,7 @@ function defaultShop() {
       description:
         'Leadership-focused CV for managers and senior specialists — aligned with Kenya mid-to-senior market pricing.',
       status: 'published',
-      image: '/media/posters/packages/career_resume_senior.svg',
+      image: '/media/posters/packages/career_resume_senior.jpg',
     },
     {
       id: 'career_resume_executive',
@@ -1580,7 +1579,7 @@ function defaultShop() {
       description:
         'Executive / C-suite CV with career narrative and achievement framing — Kenya executive writing range.',
       status: 'published',
-      image: '/media/posters/packages/career_resume_executive.svg',
+      image: '/media/posters/packages/career_resume_executive.jpg',
     },
     {
       id: 'career_cover_letter',
@@ -1590,7 +1589,7 @@ function defaultShop() {
       category: 'Career',
       description: 'Tailored cover letter matched to your CV and target role.',
       status: 'published',
-      image: '/media/posters/packages/career_cover_letter.svg',
+      image: '/media/posters/packages/career_cover_letter.jpg',
     },
     {
       id: 'career_linkedin',
@@ -1600,7 +1599,7 @@ function defaultShop() {
       category: 'Career',
       description: 'Headline, about, and experience rewrite so recruiters find you faster.',
       status: 'published',
-      image: '/media/posters/packages/career_linkedin.svg',
+      image: '/media/posters/packages/career_linkedin.jpg',
     },
     {
       id: 'career_docs_bundle',
@@ -1610,7 +1609,7 @@ function defaultShop() {
       category: 'Career',
       description: 'Resume build or revamp + cover letter + LinkedIn optimisation in one package.',
       status: 'published',
-      image: '/media/posters/packages/career_docs_bundle.svg',
+      image: '/media/posters/packages/career_docs_bundle.jpg',
     },
     {
       id: 'tax_kenya_return',
@@ -1620,7 +1619,7 @@ function defaultShop() {
       category: 'Tax & Compliance',
       description: 'Individual Kenya tax return filing assistance — KRA iTax support at an accessible rate.',
       status: 'published',
-      image: '/media/posters/poster-tax-returns.png',
+      image: '/media/posters/packages/tax_kenya_return.jpg',
     },
     {
       id: 'tax_kenya_pin_assist',
@@ -1630,7 +1629,7 @@ function defaultShop() {
       category: 'Tax & Compliance',
       description: 'Help creating or recovering KRA PIN and basic iTax account setup.',
       status: 'published',
-      image: '/media/posters/packages/tax_kenya_pin_assist.svg',
+      image: '/media/posters/packages/tax_kenya_pin_assist.jpg',
     },
     {
       id: 'tech_os_install',
@@ -1640,7 +1639,7 @@ function defaultShop() {
       category: 'Tech Support',
       description: 'Windows or Linux OS installation / reinstall with drivers and essential updates.',
       status: 'published',
-      image: '/media/posters/poster-os-install.png',
+      image: '/media/posters/packages/tech_os_install.jpg',
     },
     {
       id: 'tech_os_install_office',
@@ -1650,7 +1649,7 @@ function defaultShop() {
       category: 'Tech Support',
       description: 'OS installation plus productivity suite setup and basic optimisation.',
       status: 'published',
-      image: '/media/posters/packages/tech_os_install_office.svg',
+      image: '/media/posters/packages/tech_os_install_office.jpg',
     },
     {
       id: 'tech_app_testing',
@@ -1660,7 +1659,7 @@ function defaultShop() {
       category: 'QA & Testing',
       description: 'Manual functional testing for web or mobile apps with a clear bug report.',
       status: 'published',
-      image: '/media/posters/poster-app-testing.png',
+      image: '/media/posters/packages/tech_app_testing.jpg',
     },
     {
       id: 'tech_app_testing_full',
@@ -1670,7 +1669,7 @@ function defaultShop() {
       category: 'QA & Testing',
       description: 'Broader test plan — functional, UI, and regression checks with prioritised findings.',
       status: 'published',
-      image: '/media/posters/packages/tech_app_testing_full.svg',
+      image: '/media/posters/packages/tech_app_testing_full.jpg',
     },
     {
       id: 'brand_identity_session',
@@ -1680,7 +1679,7 @@ function defaultShop() {
       category: 'Branding',
       description: 'Brand discovery workshop — positioning, voice, and visual direction for your business.',
       status: 'published',
-      image: '/media/posters/packages/brand_identity_session.svg',
+      image: '/media/posters/packages/brand_identity_session.jpg',
     },
     {
       id: 'brand_full_kit',
@@ -1690,7 +1689,7 @@ function defaultShop() {
       category: 'Branding',
       description: 'Logo system, colours, typography, and brand board ready for print and digital.',
       status: 'published',
-      image: '/media/posters/packages/brand_full_kit.svg',
+      image: '/media/posters/packages/brand_full_kit.jpg',
     },
     {
       id: 'brand_rebrand',
@@ -1700,7 +1699,7 @@ function defaultShop() {
       category: 'Branding',
       description: 'Full rebrand — refreshed identity, messaging, and rollout assets for an existing business.',
       status: 'published',
-      image: '/media/posters/poster-rebrand-kit.png',
+      image: '/media/posters/packages/brand_rebrand.jpg',
     },
     {
       id: 'merch_tshirt',
@@ -1710,7 +1709,7 @@ function defaultShop() {
       category: 'Merchandise',
       description: 'Company logo print on quality tee — artwork setup included. Bulk quotes available.',
       status: 'published',
-      image: '/media/posters/poster-apparel.png',
+      image: '/media/posters/packages/merch_tshirt.jpg',
     },
     {
       id: 'merch_cap',
@@ -1720,7 +1719,7 @@ function defaultShop() {
       category: 'Merchandise',
       description: 'Cap branding with your logo — embroidery or print options on request.',
       status: 'published',
-      image: '/media/posters/packages/merch_cap.svg',
+      image: '/media/posters/packages/merch_cap.jpg',
     },
     {
       id: 'merch_hoodie',
@@ -1730,7 +1729,7 @@ function defaultShop() {
       category: 'Merchandise',
       description: 'Hoodie with company logo branding for teams and events.',
       status: 'published',
-      image: '/media/posters/packages/merch_hoodie.svg',
+      image: '/media/posters/packages/merch_hoodie.jpg',
     },
     {
       id: 'merch_clothing_custom',
@@ -1740,7 +1739,7 @@ function defaultShop() {
       category: 'Merchandise',
       description: 'Logo branding on client-supplied or sourced apparel — priced from per piece.',
       status: 'published',
-      image: '/media/posters/packages/merch_clothing_custom.svg',
+      image: '/media/posters/packages/merch_clothing_custom.jpg',
     },
     {
       id: 'merch_phone_case',
@@ -1750,7 +1749,7 @@ function defaultShop() {
       category: 'Merchandise',
       description: 'Custom phone case artwork / logo decoration — model-specific production.',
       status: 'published',
-      image: '/media/posters/poster-phone-case.png',
+      image: '/media/posters/packages/merch_phone_case.jpg',
     },
     {
       id: 'design_graphics_pack',
@@ -1760,7 +1759,7 @@ function defaultShop() {
       category: 'Graphics',
       description: 'Social and marketing graphics pack — posts, story frames, and brand-aligned assets.',
       status: 'published',
-      image: '/media/posters/poster-graphics.png',
+      image: '/media/posters/packages/design_graphics_pack.jpg',
     },
     {
       id: 'design_campaign_poster',
@@ -1770,7 +1769,7 @@ function defaultShop() {
       category: 'Graphics',
       description: 'Original campaign poster design for print and digital — one concept + revisions.',
       status: 'published',
-      image: '/media/posters/poster-campaign.png',
+      image: '/media/posters/packages/design_campaign_poster.jpg',
     },
     {
       id: 'design_poster_set',
@@ -1780,7 +1779,7 @@ function defaultShop() {
       category: 'Graphics',
       description: 'Set of three coordinated campaign posters for events, launches, or ads.',
       status: 'published',
-      image: '/media/posters/packages/design_poster_set.svg',
+      image: '/media/posters/packages/design_poster_set.jpg',
     },
     {
       id: 'design_flyer',
@@ -1790,7 +1789,7 @@ function defaultShop() {
       category: 'Graphics',
       description: 'Print-ready flyer design with your brand message and call to action.',
       status: 'published',
-      image: '/media/posters/packages/design_flyer.svg',
+      image: '/media/posters/packages/design_flyer.jpg',
     },
     {
       id: 'design_business_cards',
@@ -1800,7 +1799,7 @@ function defaultShop() {
       category: 'Stationery',
       description: 'Print-ready business card design — front/back, brand-aligned, and print-file delivery.',
       status: 'published',
-      image: '/media/posters/poster-business-card.png',
+      image: '/media/posters/packages/design_business_cards.jpg',
     },
     {
       id: 'stationery_letterhead',
@@ -1810,7 +1809,7 @@ function defaultShop() {
       category: 'Stationery',
       description: 'Branded letterhead template for Word/PDF — logo, contact block, and print margins.',
       status: 'published',
-      image: '/media/posters/poster-letterhead.png',
+      image: '/media/posters/packages/stationery_letterhead.jpg',
     },
     {
       id: 'stationery_envelopes',
@@ -1820,7 +1819,7 @@ function defaultShop() {
       category: 'Stationery',
       description: 'Branded envelope artwork for DL / C5 — return address and logo placement.',
       status: 'published',
-      image: '/media/posters/packages/stationery_envelopes.svg',
+      image: '/media/posters/packages/stationery_envelopes.jpg',
     },
     {
       id: 'stationery_comp_slips',
@@ -1830,7 +1829,7 @@ function defaultShop() {
       category: 'Stationery',
       description: 'With-compliments slip design matching your letterhead and brand colours.',
       status: 'published',
-      image: '/media/posters/packages/stationery_comp_slips.svg',
+      image: '/media/posters/packages/stationery_comp_slips.jpg',
     },
     {
       id: 'stationery_stamp_seal',
@@ -1840,7 +1839,7 @@ function defaultShop() {
       category: 'Stationery',
       description: 'Company stamp or seal artwork for rubber stamp / digital seal use.',
       status: 'published',
-      image: '/media/posters/packages/stationery_stamp_seal.svg',
+      image: '/media/posters/packages/stationery_stamp_seal.jpg',
     },
     {
       id: 'stationery_full_pack',
@@ -1851,7 +1850,7 @@ function defaultShop() {
       description:
         'Business cards, letterhead, envelopes, complimentary slips, and stamp design as one coordinated pack.',
       status: 'published',
-      image: '/media/posters/packages/stationery_full_pack.svg',
+      image: '/media/posters/packages/stationery_full_pack.jpg',
     },
   ]
 }

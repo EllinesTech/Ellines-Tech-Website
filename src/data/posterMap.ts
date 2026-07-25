@@ -1,56 +1,56 @@
 /** Category → fallback poster when a package id is unknown */
 export const categoryPosterMap: Record<string, string> = {
-  Web: '/media/scenes/web.png',
-  Design: '/media/posters/poster-branding.png',
-  Software: '/media/scenes/hero-tech.png',
-  AI: '/media/scenes/ai.png',
-  Marketing: '/media/posters/poster-campaign.png',
+  Web: '/media/posters/packages/shop_starter_web.jpg',
+  Design: '/media/posters/packages/shop_brand_kit.jpg',
+  Software: '/media/posters/packages/shop_custom_software.jpg',
+  AI: '/media/posters/packages/shop_ai_automation.jpg',
+  Marketing: '/media/posters/packages/shop_digital_marketing.jpg',
   Security: '/media/posters/packages/shop_cyber_audit.jpg',
-  Consulting: '/media/scenes/strategy.png',
+  Consulting: '/media/posters/packages/consult_it_halfday.jpg',
   Career: '/media/posters/packages/career_resume_build.jpg',
-  'Tax & Compliance': '/media/posters/poster-tax-returns.png',
-  'Tech Support': '/media/posters/poster-os-install.png',
-  'QA & Testing': '/media/posters/poster-app-testing.png',
-  Branding: '/media/posters/poster-branding.png',
-  Merchandise: '/media/posters/poster-apparel.png',
-  Graphics: '/media/posters/poster-graphics.png',
-  Stationery: '/media/posters/poster-letterhead.png',
+  'Tax & Compliance': '/media/posters/packages/tax_kenya_return.jpg',
+  'Tech Support': '/media/posters/packages/tech_os_install.jpg',
+  'QA & Testing': '/media/posters/packages/tech_app_testing.jpg',
+  Branding: '/media/posters/packages/brand_full_kit.jpg',
+  Merchandise: '/media/posters/packages/merch_tshirt.jpg',
+  Graphics: '/media/posters/packages/design_graphics_pack.jpg',
+  Stationery: '/media/posters/packages/stationery_full_pack.jpg',
 }
 
 /** Service slug → poster for Services / detail pages (distinct per service) */
 export const servicePosterMap: Record<string, string> = {
-  'logo-design': '/media/posters/ellines-rebranding.png',
-  'web-design': '/media/scenes/web.png',
-  'ui-ux-designing': '/media/scenes/solutions.png',
+  'logo-design': '/media/posters/packages/shop_logo_pack.jpg',
+  'web-design': '/media/posters/packages/shop_starter_web.jpg',
+  'ui-ux-designing': '/media/posters/packages/shop_uiux.jpg',
   'product-design': '/media/posters/packages/shop_uiux.jpg',
   'resume-cv-design-revamping': '/media/posters/packages/career_resume_revamp.jpg',
   'resume-building': '/media/posters/packages/career_resume_build.jpg',
   'cover-letter-writing': '/media/posters/packages/career_cover_letter.jpg',
   'linkedin-optimisation': '/media/posters/packages/career_linkedin.jpg',
-  'software-development': '/media/scenes/hero-tech.png',
-  'web-development': '/media/banners/about-hero.png',
-  'ai-development-automation': '/media/scenes/ai.png',
-  'marketing-strategy': '/media/scenes/strategy.png',
-  'digital-marketing': '/media/scenes/growth.png',
+  'software-development': '/media/posters/packages/shop_custom_software.jpg',
+  'web-development': '/media/posters/packages/shop_business_web.jpg',
+  'ai-development-automation': '/media/posters/packages/shop_ai_automation.jpg',
+  'marketing-strategy': '/media/posters/packages/shop_digital_marketing.jpg',
+  'digital-marketing': '/media/posters/packages/shop_digital_marketing.jpg',
   'cyber-security': '/media/posters/packages/shop_cyber_audit.jpg',
-  'it-consulting': '/media/scenes/workspace.png',
-  'digital-transformation-consulting': '/media/scenes/about.png',
+  'it-consulting': '/media/posters/packages/consult_it_halfday.jpg',
+  'digital-transformation-consulting': '/media/posters/packages/consult_digital_transform.jpg',
   'cloud-infrastructure-consulting': '/media/posters/packages/consult_tech_roadmap.jpg',
-  'kenya-tax-return': '/media/posters/poster-tax-returns.png',
-  'os-installation': '/media/posters/poster-os-install.png',
-  'app-testing': '/media/posters/poster-app-testing.png',
-  'branding-services': '/media/posters/poster-branding.png',
-  'graphics-design': '/media/posters/poster-graphics.png',
-  'campaign-posters': '/media/posters/poster-campaign.png',
-  'apparel-branding': '/media/posters/poster-apparel.png',
-  'phone-case-decoration': '/media/posters/poster-phone-case.png',
-  'business-cards': '/media/posters/poster-business-card.png',
-  'stationery-rebrand': '/media/posters/poster-letterhead.png',
-  'business-rebrand-kit': '/media/posters/poster-rebrand-kit.png',
+  'kenya-tax-return': '/media/posters/packages/tax_kenya_return.jpg',
+  'os-installation': '/media/posters/packages/tech_os_install.jpg',
+  'app-testing': '/media/posters/packages/tech_app_testing.jpg',
+  'branding-services': '/media/posters/packages/brand_full_kit.jpg',
+  'graphics-design': '/media/posters/packages/design_graphics_pack.jpg',
+  'campaign-posters': '/media/posters/packages/design_campaign_poster.jpg',
+  'apparel-branding': '/media/posters/packages/merch_tshirt.jpg',
+  'phone-case-decoration': '/media/posters/packages/merch_phone_case.jpg',
+  'business-cards': '/media/posters/packages/design_business_cards.jpg',
+  'stationery-rebrand': '/media/posters/packages/stationery_letterhead.jpg',
+  'business-rebrand-kit': '/media/posters/packages/brand_rebrand.jpg',
 }
 
 /**
- * Unique photo per pricing package id — real product/context imagery for every card.
+ * Unique real photo per pricing package id (Unsplash / Pexels / CC stock, stored locally).
  */
 export const packagePosterMap: Record<string, string> = {
   shop_starter_web: '/media/posters/packages/shop_starter_web.jpg',
@@ -101,12 +101,13 @@ export const packagePosterMap: Record<string, string> = {
   stationery_stamp_seal: '/media/posters/packages/stationery_stamp_seal.jpg',
   stationery_full_pack: '/media/posters/packages/stationery_full_pack.jpg',
 }
+
 export function posterForCategory(category: string): string {
-  return categoryPosterMap[category] || '/media/posters/poster-campaign.png'
+  return categoryPosterMap[category] || '/media/posters/packages/design_campaign_poster.jpg'
 }
 
 /** Shared marketing poster — only valid for Graphics packages */
-const GRAPHICS_POSTER = '/media/posters/poster-graphics.png'
+const GRAPHICS_POSTER = '/media/posters/packages/design_graphics_pack.jpg'
 
 export function posterForPackage(pkg: {
   id?: string
@@ -114,16 +115,13 @@ export function posterForPackage(pkg: {
   category?: string
   image?: string
 }): string {
-  // Catalog id always wins — real JPG photos, never stale SVG illustrations
   if (pkg.id && packagePosterMap[pkg.id]) return packagePosterMap[pkg.id]
 
-  let image = pkg.image || ''
-  // If CMS still has an old packages/*.svg path, swap to the matching JPG
-  if (image.includes('/media/posters/packages/') && image.endsWith('.svg')) {
-    image = image.replace(/\.svg$/i, '.jpg')
-  }
-
-  const isGraphicsPoster = image === GRAPHICS_POSTER || image.includes('poster-graphics')
+  const image = pkg.image || ''
+  const isGraphicsPoster =
+    image === GRAPHICS_POSTER ||
+    image.includes('poster-graphics') ||
+    image.includes('design_graphics_pack')
   const category = pkg.category || ''
 
   // Never reuse the Graphics Design poster on Web / other categories

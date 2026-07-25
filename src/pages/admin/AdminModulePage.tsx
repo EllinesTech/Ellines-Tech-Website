@@ -39,7 +39,41 @@ import {
   type CmsUser,
 } from '@/lib/cmsApi'
 import { starterPricingPackages } from '@/data/pricingPackages'
+import { getSiteMediaLibrary, type SiteMediaItem } from '@/data/siteMediaLibrary'
 import { leadStatusOptions } from '@/data/downloads'
+
+function MediaAssetCard({ item }: { item: SiteMediaItem }) {
+  const [copied, setCopied] = useState(false)
+
+  async function copyUrl() {
+    try {
+      await navigator.clipboard.writeText(item.src)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1600)
+    } catch {
+      setCopied(false)
+    }
+  }
+
+  return (
+    <li className="overflow-hidden rounded-xl border border-white/10">
+      <img src={item.src} alt={item.label} className="h-28 w-full object-cover bg-slate-900" />
+      <div className="flex items-start justify-between gap-2 px-2 py-1.5">
+        <div className="min-w-0">
+          <p className="truncate text-xs font-medium capitalize text-slate-200">{item.label}</p>
+          <p className="truncate text-[11px] text-slate-500">{item.src}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => void copyUrl()}
+          className="shrink-0 rounded-md border border-white/10 px-2 py-1 text-[11px] text-brand-300 hover:border-brand-400/40 hover:text-white"
+        >
+          {copied ? 'Copied' : 'Copy URL'}
+        </button>
+      </div>
+    </li>
+  )
+}
 
 function Panel({
   title,
@@ -1007,30 +1041,33 @@ export function AdminModulePage({ module }: { module: string }) {
   }
 
   if (module === 'media') {
-    const banners = Object.entries(siteConfig.media.banners)
-    const scenes = Object.entries(siteConfig.media.scenes)
+    const library = getSiteMediaLibrary()
+    const banners = library.filter((i) => i.group === 'banners')
+    const scenes = library.filter((i) => i.group === 'scenes')
+    const packages = library.filter((i) => i.group === 'packages')
     return (
-      <Panel title="Site Photos" description="Banner and scene assets currently on the site.">
+      <Panel
+        title="Site Photos"
+        description="Banners, scenes, and pricing package posters — browse and copy URLs to reuse elsewhere."
+      >
         <p className="mb-3 text-sm text-slate-400">Banners</p>
-        <ul className="mb-6 grid gap-2 sm:grid-cols-2">
-          {banners.map(([key, src]) => (
-            <li key={key} className="overflow-hidden rounded-xl border border-white/10">
-              <img src={src} alt={key} className="h-28 w-full object-cover" />
-              <p className="px-2 py-1 text-xs text-slate-400">
-                {key}: {src}
-              </p>
-            </li>
+        <ul className="mb-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {banners.map((item) => (
+            <MediaAssetCard key={item.id} item={item} />
           ))}
         </ul>
         <p className="mb-3 text-sm text-slate-400">Scenes</p>
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {scenes.map(([key, src]) => (
-            <li key={key} className="overflow-hidden rounded-xl border border-white/10">
-              <img src={src} alt={key} className="h-28 w-full object-cover" />
-              <p className="px-2 py-1 text-xs text-slate-400">
-                {key}: {src}
-              </p>
-            </li>
+        <ul className="mb-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {scenes.map((item) => (
+            <MediaAssetCard key={item.id} item={item} />
+          ))}
+        </ul>
+        <p className="mb-3 text-sm text-slate-400">
+          Package posters ({packages.length}) — merch, graphics, stationery, and service photos
+        </p>
+        <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {packages.map((item) => (
+            <MediaAssetCard key={item.id} item={item} />
           ))}
         </ul>
       </Panel>
