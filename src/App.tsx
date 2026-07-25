@@ -11,6 +11,7 @@ import { PortfolioPage } from '@/pages/PortfolioPage'
 import { ContactPage } from '@/pages/ContactPage'
 import { CareersPage } from '@/pages/CareersPage'
 import { ResourcesPage } from '@/pages/ResourcesPage'
+import { ResourceDetailPage } from '@/pages/ResourceDetailPage'
 import { ClientsPage } from '@/pages/ClientsPage'
 import { SuccessStoriesPage } from '@/pages/SuccessStoriesPage'
 import { SolutionsPage } from '@/pages/SolutionsPage'
@@ -129,6 +130,7 @@ export default function App() {
           <Route path="clients" element={<ClientsPage />} />
           <Route path="success-stories" element={<SuccessStoriesPage />} />
           <Route path="resources" element={<ResourcesPage />} />
+          <Route path="resources/:slug" element={<ResourceDetailPage />} />
           <Route path="careers" element={<CareersPage />} />
           <Route path="contact" element={<ContactPage />} />
           <Route path="faq" element={<FaqPage />} />

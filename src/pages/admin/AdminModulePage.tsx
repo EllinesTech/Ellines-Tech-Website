@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button'
 import { AdminChatPage } from '@/pages/admin/AdminChatPage'
 import { AdminSettingsPage } from '@/pages/admin/AdminSettingsPage'
 import { AdminPagesEditor } from '@/pages/admin/AdminPagesEditor'
+import { AdminResourcesEditor } from '@/pages/admin/AdminResourcesEditor'
 import { AdminInvoicesModule } from '@/pages/admin/AdminInvoicesModule'
 import { AdminReportsModule } from '@/pages/admin/AdminReportsModule'
 import {
@@ -786,6 +787,7 @@ export function AdminModulePage({ module }: { module: string }) {
   if (module === 'chat-settings') return <AdminChatPage />
   if (module === 'settings' || module === 'site-controls') return <AdminSettingsPage />
   if (module === 'pages') return <AdminPagesEditor />
+  if (module === 'resources') return <AdminResourcesEditor />
   if (module === 'invoices') return <AdminInvoicesModule />
   if (module === 'reports') return <AdminReportsModule />
   if (module === 'activity' || module === 'logs') return <ActivityModule />
@@ -938,23 +940,6 @@ export function AdminModulePage({ module }: { module: string }) {
             </li>
           ))}
         </ul>
-      </Panel>
-    )
-  }
-
-  if (module === 'resources') {
-    return (
-      <Panel title="Resources" description="Public resources hub and custom CMS pages.">
-        <Link to="/resources" className="text-sm text-brand-300">
-          Open /resources →
-        </Link>
-        <p className="mt-3 text-sm text-slate-400">
-          Add articles or landing pages via{' '}
-          <Link to="/admin/pages" className="text-brand-300">
-            Page Editor
-          </Link>
-          .
-        </p>
       </Panel>
     )
   }

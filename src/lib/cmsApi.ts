@@ -180,6 +180,39 @@ export async function saveShop(products: unknown[]) {
   })
 }
 
+import type { KnowledgeArticle } from '@/data/knowledge'
+
+export type { KnowledgeArticle }
+
+export async function fetchKnowledge(publishedOnly = true): Promise<KnowledgeArticle[]> {
+  const data = await cmsFetch(
+    `resource=knowledge${publishedOnly ? '&published=1' : ''}`,
+    publishedOnly ? undefined : { headers: elevatedHeaders() },
+  )
+  return (data.articles || []) as KnowledgeArticle[]
+}
+
+export async function fetchKnowledgeArticle(slug: string): Promise<KnowledgeArticle> {
+  const data = await cmsFetch(`resource=knowledge&slug=${encodeURIComponent(slug)}`)
+  return data.article as KnowledgeArticle
+}
+
+export async function saveKnowledgeArticle(article: Partial<KnowledgeArticle>) {
+  return cmsFetch('resource=knowledge', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'save_knowledge_article', article }),
+  })
+}
+
+export async function deleteKnowledgeArticle(id: string, slug?: string) {
+  return cmsFetch('resource=knowledge', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'delete_knowledge_article', id, slug }),
+  })
+}
+
 export async function fetchReviews() {
   const data = await cmsFetch('resource=reviews')
   return data.reviews || []

@@ -1,7 +1,30 @@
+import { defaultKnowledge } from './knowledgeDefaults.js'
+
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key, X-User-Token',
+}
+
+/** Load Knowledge Hub articles — seed defaults when KV is empty; merge missing seed ids */
+async function loadKnowledgeArticles(env) {
+  let articles = await getJson(env, 'cms:knowledge', null)
+  const defaults = defaultKnowledge()
+  if (!articles || !Array.isArray(articles) || articles.length === 0) {
+    articles = defaults
+    await putJson(env, 'cms:knowledge', articles)
+    return articles
+  }
+  const ids = new Set(articles.map((a) => a.id))
+  let changed = false
+  for (const d of defaults) {
+    if (!ids.has(d.id)) {
+      articles.push(d)
+      changed = true
+    }
+  }
+  if (changed) await putJson(env, 'cms:knowledge', articles)
+  return articles
 }
 
 function json(data, status = 200) {
@@ -231,6 +254,27 @@ export async function onRequestGet(context) {
       if (changed) await putJson(env, 'cms:shop-products', products)
     }
     return json({ products })
+  }
+
+  if (resource === 'knowledge') {
+    const articles = await loadKnowledgeArticles(env)
+    if (slug) {
+      const article = articles.find((a) => a.slug === slug)
+      if (!article) return json({ error: 'not found' }, 404)
+      if (article.status !== 'published' && !(await staffOrGod(request, env))) {
+        return json({ error: 'not found' }, 404)
+      }
+      return json({ article })
+    }
+    const publishedOnly = url.searchParams.get('published') === '1'
+    const category = url.searchParams.get('category')
+    let list = articles
+    if (publishedOnly) list = list.filter((a) => a.status === 'published')
+    else if (!(await staffOrGod(request, env))) {
+      return json({ error: 'unauthorized' }, 401)
+    }
+    if (category) list = list.filter((a) => a.category === category)
+    return json({ articles: list })
   }
 
   if (resource === 'users') {
@@ -569,6 +613,58 @@ export async function onRequestPost(context) {
     return json({ ok: true })
   }
 
+  if (action === 'save_knowledge_article') {
+    const articles = await loadKnowledgeArticles(env)
+    const article = body.article
+    if (!article?.slug || !article?.title) {
+      return json({ error: 'slug and title required' }, 400)
+    }
+    const slug = String(article.slug)
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-')
+    const category = String(article.category || 'articles')
+    const existing = articles.findIndex((a) => a.id === article.id || a.slug === slug)
+    const record = {
+      id: article.id || id('kh'),
+      slug,
+      title: article.title,
+      excerpt: article.excerpt || '',
+      body: article.body || '',
+      category,
+      tags: Array.isArray(article.tags)
+        ? article.tags.map((t) => String(t).trim()).filter(Boolean)
+        : String(article.tags || '')
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean),
+      status: article.status === 'published' ? 'published' : 'draft',
+      seoTitle: article.seoTitle || article.title,
+      seoDescription: article.seoDescription || article.excerpt || '',
+      updatedAt: new Date().toISOString(),
+      createdAt: article.createdAt || new Date().toISOString(),
+    }
+    if (existing >= 0) articles[existing] = { ...articles[existing], ...record }
+    else articles.unshift(record)
+    await putJson(env, 'cms:knowledge', articles)
+    await logActivity(env, {
+      type: 'knowledge',
+      message: `Saved knowledge /resources/${record.slug} (${record.status})`,
+    })
+    return json({ ok: true, article: record })
+  }
+
+  if (action === 'delete_knowledge_article') {
+    const articles = await loadKnowledgeArticles(env)
+    const next = articles.filter((a) => a.id !== body.id && a.slug !== body.slug)
+    await putJson(env, 'cms:knowledge', next)
+    await logActivity(env, {
+      type: 'knowledge',
+      message: `Deleted knowledge ${body.slug || body.id}`,
+    })
+    return json({ ok: true })
+  }
+
   if (action === 'save_shop') {
     await putJson(env, 'cms:shop-products', body.products || [])
     await logActivity(env, { type: 'shop', message: 'Updated shop catalogue' })
@@ -668,6 +764,7 @@ export async function onRequestPost(context) {
       pages: await getJson(env, 'cms:pages', []),
       siteCopy: await getJson(env, 'cms:site-copy', {}),
       shop: await getJson(env, 'cms:shop-products', []),
+      knowledge: await getJson(env, 'cms:knowledge', []),
       reviews: await getJson(env, 'cms:reviews', []),
       newsletter: await getJson(env, 'cms:newsletter', []),
       leads: await getJson(env, 'cms:leads', []),
@@ -684,6 +781,7 @@ export async function onRequestPost(context) {
     if (backup.pages) await putJson(env, 'cms:pages', backup.pages)
     if (backup.siteCopy) await putJson(env, 'cms:site-copy', backup.siteCopy)
     if (backup.shop) await putJson(env, 'cms:shop-products', backup.shop)
+    if (backup.knowledge) await putJson(env, 'cms:knowledge', backup.knowledge)
     if (backup.reviews) await putJson(env, 'cms:reviews', backup.reviews)
     if (backup.newsletter) await putJson(env, 'cms:newsletter', backup.newsletter)
     if (backup.leads) await putJson(env, 'cms:leads', backup.leads)
