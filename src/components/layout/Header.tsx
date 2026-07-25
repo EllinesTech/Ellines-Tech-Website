@@ -150,6 +150,12 @@ export function Header() {
         </nav>
 
         <div className="hidden shrink-0 items-center gap-2 xl:flex">
+          <Link
+            to="/account"
+            className="rounded-lg px-2.5 py-2 text-sm font-medium text-slate-300 transition-colors hover:text-white"
+          >
+            Client login
+          </Link>
           <Button href="/request" size="sm" icon>
             Request a service
           </Button>

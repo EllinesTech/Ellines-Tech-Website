@@ -117,6 +117,16 @@ export function RequestServicePage() {
                 Back to pricing
               </Button>
             </div>
+            <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-left">
+              <p className="text-sm font-medium text-white">Create a client account to track this</p>
+              <p className="mt-1 text-xs text-slate-400">
+                Optional — register with the same email to see requests and invoices in your client
+                portal. Staff and Super Admin use separate logins.
+              </p>
+              <Button href="/account" size="sm" className="mt-4" variant="secondary">
+                Create client account
+              </Button>
+            </div>
           </div>
         </section>
       </>

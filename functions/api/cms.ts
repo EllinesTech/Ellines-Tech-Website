@@ -21,6 +21,62 @@ function adminOk(request, env) {
   return key === expected
 }
 
+/** Super Admin God Mode only (panel password / ADMIN_API_KEY). Staff never use this. */
+function isGodMode(request, env) {
+  return adminOk(request, env)
+}
+
+const STAFF_ROLES = new Set(['staff', 'admin', 'super_admin'])
+const CUSTOMER_ROLE = 'customer'
+
+async function resolveUserSession(request, env) {
+  const token = request.headers.get('X-User-Token') || ''
+  if (!token) return null
+  const session = await getJson(env, `cms:session:${token}`, null)
+  if (!session?.userId) return null
+  const users = await getJson(env, 'cms:users', [])
+  const user = users.find((u) => u.id === session.userId)
+  if (!user || user.active === false) return null
+  return user
+}
+
+async function staffOk(request, env) {
+  const user = await resolveUserSession(request, env)
+  if (!user || !STAFF_ROLES.has(user.role)) return null
+  return user
+}
+
+/** God Mode OR staff/admin user token — for day-to-day CMS modules */
+async function staffOrGod(request, env) {
+  if (isGodMode(request, env)) return { kind: 'god', user: null }
+  const user = await staffOk(request, env)
+  if (user) return { kind: 'staff', user }
+  return null
+}
+
+async function sendResendEmail(env, { to, subject, html }) {
+  const key = env.RESEND_API_KEY
+  if (!key || !to) return { sent: false, reason: 'no_key' }
+  try {
+    const from = env.RESEND_FROM || 'Ellines Tech <onboarding@resend.dev>'
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ from, to: [to], subject, html }),
+    })
+    if (!res.ok) {
+      const err = await res.text().catch(() => '')
+      return { sent: false, reason: err || 'send_failed' }
+    }
+    return { sent: true }
+  } catch (e) {
+    return { sent: false, reason: String(e) }
+  }
+}
+
 async function getJson(env, key, fallback) {
   const raw = await env.ET_STORE.get(key)
   if (!raw) return fallback
@@ -75,13 +131,13 @@ export async function onRequestGet(context) {
     if (slug) {
       const page = pages.find((p) => p.slug === slug)
       if (!page) return json({ error: 'not found' }, 404)
-      if (page.status !== 'published' && !adminOk(request, env)) {
+      if (page.status !== 'published' && !(await staffOrGod(request, env))) {
         return json({ error: 'not found' }, 404)
       }
       return json({ page })
     }
     const publishedOnly = url.searchParams.get('published') === '1'
-    if (!publishedOnly && !adminOk(request, env)) {
+    if (!publishedOnly && !(await staffOrGod(request, env))) {
       return json({ error: 'unauthorized' }, 401)
     }
     return json({
@@ -94,13 +150,46 @@ export async function onRequestGet(context) {
   }
 
   if (resource === 'activity') {
-    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
     return json({ activity: await getJson(env, 'cms:activity', []) })
   }
 
   if (resource === 'leads') {
-    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
     return json({ leads: await getJson(env, 'cms:leads', []) })
+  }
+
+  if (resource === 'me') {
+    const user = await resolveUserSession(request, env)
+    if (!user) return json({ error: 'unauthorized' }, 401)
+    const { passwordHash, salt, ...safe } = user
+    return json({ user: safe })
+  }
+
+  if (resource === 'my-leads') {
+    const user = await resolveUserSession(request, env)
+    if (!user || user.role !== CUSTOMER_ROLE) return json({ error: 'unauthorized' }, 401)
+    const leads = await getJson(env, 'cms:leads', [])
+    const email = String(user.email || '').toLowerCase()
+    const mine = leads.filter(
+      (l) =>
+        String(l.email || '').toLowerCase() === email ||
+        l.userId === user.id,
+    )
+    return json({ leads: mine })
+  }
+
+  if (resource === 'my-invoices') {
+    const user = await resolveUserSession(request, env)
+    if (!user || user.role !== CUSTOMER_ROLE) return json({ error: 'unauthorized' }, 401)
+    const invoices = await getJson(env, 'cms:invoices', [])
+    const email = String(user.email || '').toLowerCase()
+    const mine = invoices.filter(
+      (i) =>
+        String(i.clientEmail || '').toLowerCase() === email ||
+        i.userId === user.id,
+    )
+    return json({ invoices: mine })
   }
 
   if (resource === 'reviews') {
@@ -108,12 +197,12 @@ export async function onRequestGet(context) {
   }
 
   if (resource === 'newsletter') {
-    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
     return json({ subscribers: await getJson(env, 'cms:newsletter', []) })
   }
 
   if (resource === 'notifications') {
-    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
     return json({ notifications: await getJson(env, 'cms:notifications', []) })
   }
 
@@ -145,7 +234,8 @@ export async function onRequestGet(context) {
   }
 
   if (resource === 'users') {
-    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    // Users module: Super Admin God Mode only — staff never manage accounts here
+    if (!isGodMode(request, env)) return json({ error: 'unauthorized' }, 401)
     const users = await getJson(env, 'cms:users', [])
     return json({
       users: users.map(({ passwordHash, salt, ...safe }) => safe),
@@ -153,7 +243,7 @@ export async function onRequestGet(context) {
   }
 
   if (resource === 'analytics') {
-    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
     const visitors = await getJson(env, 'cms:visitors', { total: 0, today: 0, pages: {} })
     const sessions = await getJson(env, 'chat:index', [])
     return json({
@@ -174,12 +264,12 @@ export async function onRequestGet(context) {
       if (!inv) return json({ error: 'not found' }, 404)
       return json({ invoice: inv })
     }
-    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
     return json({ invoices })
   }
 
   if (resource === 'reports') {
-    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
     const leads = await getJson(env, 'cms:leads', [])
     const invoices = await getJson(env, 'cms:invoices', [])
     const visitors = await getJson(env, 'cms:visitors', { total: 0, today: 0, pages: {} })
@@ -219,6 +309,7 @@ export async function onRequestPost(context) {
 
   // Public lead capture / newsletter
   if (action === 'lead') {
+    const sessionUser = await resolveUserSession(request, env)
     const leads = await getJson(env, 'cms:leads', [])
     const lead = {
       id: id('lead'),
@@ -235,6 +326,7 @@ export async function onRequestPost(context) {
       packageName: body.packageName || '',
       packagePrice: body.packagePrice || '',
       service: body.service || '',
+      userId: sessionUser?.id || body.userId || '',
       status: body.intent === 'buy' ? 'purchase_request' : 'new',
       at: new Date().toISOString(),
     }
@@ -244,7 +336,75 @@ export async function onRequestPost(context) {
       type: 'lead',
       message: `${lead.intent || 'Lead'}: ${lead.packageName || lead.service || lead.name || lead.email}`,
     })
-    return json({ ok: true, lead })
+
+    // Auto-draft invoice on purchase intent — email if Resend configured (never block)
+    let invoice = null
+    let emailResult = { sent: false, reason: 'skipped' }
+    if (lead.intent === 'buy' && lead.email) {
+      const invoices = await getJson(env, 'cms:invoices', [])
+      const priceMatch = String(lead.packagePrice || '').replace(/[^\d.]/g, '')
+      const unitPrice = Number(priceMatch) || 0
+      invoice = {
+        id: id('inv'),
+        number: `ET-${new Date().getFullYear()}-${String(invoices.length + 1).padStart(4, '0')}`,
+        publicToken: id('tok').replace('tok_', ''),
+        clientName: lead.name || lead.email,
+        clientEmail: lead.email,
+        clientPhone: lead.phone || '',
+        clientCompany: lead.company || '',
+        userId: lead.userId || '',
+        items: [
+          {
+            description: lead.packageName || lead.service || 'Service request',
+            qty: 1,
+            unitPrice,
+          },
+        ],
+        currency: 'KES',
+        subtotal: unitPrice,
+        tax: 0,
+        total: unitPrice,
+        status: 'draft',
+        notes: 'Auto-created from purchase request. Confirm scope before sending.',
+        dueDate: '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        paidAt: null,
+        paymentMethod: '',
+        paymentRef: '',
+        receiptNumber: null,
+        leadId: lead.id,
+      }
+      invoices.unshift(invoice)
+      await putJson(env, 'cms:invoices', invoices)
+      const origin = new URL(request.url).origin
+      const link = `${origin}/invoice/${invoice.id}?token=${invoice.publicToken}`
+      emailResult = await sendResendEmail(env, {
+        to: lead.email,
+        subject: `Ellines Tech — draft invoice ${invoice.number}`,
+        html: `<p>Hi ${lead.name || 'there'},</p>
+<p>Thanks for your request for <strong>${lead.packageName || 'a package'}</strong>.</p>
+<p>We've prepared a draft invoice (${invoice.number}). Our team will confirm scope, then share payment details.</p>
+<p><a href="${link}">View draft invoice</a></p>
+<p>— Ellines Tech</p>`,
+      })
+      if (!emailResult.sent) {
+        const notes = await getJson(env, 'cms:notifications', [])
+        notes.unshift({
+          id: id('note'),
+          title: 'Invoice email queued',
+          body: `Draft ${invoice.number} for ${lead.email} — email not sent (${emailResult.reason || 'no_key'}). Resend when RESEND_API_KEY is set.`,
+          at: new Date().toISOString(),
+          read: false,
+          kind: 'email_queue',
+          invoiceId: invoice.id,
+          leadId: lead.id,
+        })
+        await putJson(env, 'cms:notifications', notes.slice(0, 100))
+      }
+    }
+
+    return json({ ok: true, lead, invoice, email: emailResult })
   }
 
   if (action === 'newsletter_subscribe') {
@@ -280,6 +440,7 @@ export async function onRequestPost(context) {
     if (!email.includes('@') || password.length < 6) {
       return json({ error: 'Valid email and password (6+ chars) required' }, 400)
     }
+    // Public signup is customers only — staff are created by Super Admin
     const users = await getJson(env, 'cms:users', [])
     if (users.some((u) => u.email === email)) return json({ error: 'Email already registered' }, 409)
     const { hash, salt } = await hashPassword(password)
@@ -288,6 +449,8 @@ export async function onRequestPost(context) {
       email,
       name: name || email.split('@')[0],
       role: 'customer',
+      jobTitle: '',
+      active: true,
       passwordHash: hash,
       salt,
       createdAt: new Date().toISOString(),
@@ -305,7 +468,13 @@ export async function onRequestPost(context) {
     return json({
       ok: true,
       token,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        jobTitle: user.jobTitle,
+      },
     })
   }
 
@@ -315,6 +484,7 @@ export async function onRequestPost(context) {
     const users = await getJson(env, 'cms:users', [])
     const user = users.find((u) => u.email === email)
     if (!user) return json({ error: 'Invalid credentials' }, 401)
+    if (user.active === false) return json({ error: 'Account deactivated' }, 403)
     const { hash } = await hashPassword(password, user.salt)
     if (hash !== user.passwordHash) return json({ error: 'Invalid credentials' }, 401)
     const token = id('tok')
@@ -327,12 +497,32 @@ export async function onRequestPost(context) {
     return json({
       ok: true,
       token,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        jobTitle: user.jobTitle || '',
+      },
     })
   }
 
-  // Admin-only below
-  if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+  if (action === 'update_profile') {
+    const user = await resolveUserSession(request, env)
+    if (!user) return json({ error: 'unauthorized' }, 401)
+    const users = await getJson(env, 'cms:users', [])
+    const idx = users.findIndex((u) => u.id === user.id)
+    if (idx < 0) return json({ error: 'user not found' }, 404)
+    if (body.name) users[idx].name = String(body.name).trim()
+    await putJson(env, 'cms:users', users)
+    const { passwordHash, salt, ...safe } = users[idx]
+    return json({ ok: true, user: safe })
+  }
+
+  // Elevated actions below — God Mode OR staff for operational modules
+  const actor = await staffOrGod(request, env)
+  if (!actor) return json({ error: 'unauthorized' }, 401)
+  const godOnly = actor.kind === 'god'
 
   if (action === 'save_page') {
     const pages = await getJson(env, 'cms:pages', [])
@@ -391,14 +581,16 @@ export async function onRequestPost(context) {
   }
 
   if (action === 'update_user_role') {
+    if (!godOnly) return json({ error: 'Super Admin only' }, 403)
     const users = await getJson(env, 'cms:users', [])
     const idx = users.findIndex((u) => u.id === body.userId)
     if (idx < 0) return json({ error: 'user not found' }, 404)
     const role = body.role
-    if (!['super_admin', 'admin', 'customer'].includes(role)) {
+    if (!['super_admin', 'admin', 'staff', 'customer'].includes(role)) {
       return json({ error: 'invalid role' }, 400)
     }
     users[idx].role = role
+    if (body.jobTitle !== undefined) users[idx].jobTitle = String(body.jobTitle || '')
     await putJson(env, 'cms:users', users)
     await logActivity(env, {
       type: 'user',
@@ -407,10 +599,27 @@ export async function onRequestPost(context) {
     return json({ ok: true })
   }
 
-  if (action === 'create_admin_user') {
+  if (action === 'set_user_active') {
+    if (!godOnly) return json({ error: 'Super Admin only' }, 403)
+    const users = await getJson(env, 'cms:users', [])
+    const idx = users.findIndex((u) => u.id === body.userId)
+    if (idx < 0) return json({ error: 'user not found' }, 404)
+    users[idx].active = body.active !== false
+    await putJson(env, 'cms:users', users)
+    await logActivity(env, {
+      type: 'user',
+      message: `${users[idx].active ? 'Activated' : 'Deactivated'}: ${users[idx].email}`,
+    })
+    return json({ ok: true })
+  }
+
+  if (action === 'create_admin_user' || action === 'create_staff_user') {
+    if (!godOnly) return json({ error: 'Super Admin only' }, 403)
     const email = String(body.email || '').toLowerCase().trim()
     const password = String(body.password || '')
-    const role = body.role === 'super_admin' ? 'super_admin' : 'admin'
+    // Employees are staff or admin — never create God Mode via this form as default
+    let role = body.role === 'admin' ? 'admin' : 'staff'
+    if (body.role === 'super_admin') role = 'super_admin'
     if (!email.includes('@') || password.length < 6) {
       return json({ error: 'Valid email and password required' }, 400)
     }
@@ -420,14 +629,24 @@ export async function onRequestPost(context) {
     users.unshift({
       id: id('user'),
       email,
-      name: body.name || 'Admin',
+      name: body.name || 'Staff',
       role,
+      jobTitle: body.jobTitle || '',
+      active: true,
       passwordHash: hash,
       salt,
       createdAt: new Date().toISOString(),
     })
     await putJson(env, 'cms:users', users)
+    await logActivity(env, {
+      type: 'user',
+      message: `Staff account created: ${email} (${role}${body.jobTitle ? ` · ${body.jobTitle}` : ''})`,
+    })
     return json({ ok: true })
+  }
+
+  if (action === 'backup' || action === 'restore_latest') {
+    if (!godOnly) return json({ error: 'Super Admin only' }, 403)
   }
 
   if (action === 'notify') {
@@ -543,7 +762,35 @@ export async function onRequestPost(context) {
       type: 'receipt',
       message: `Receipt ${receiptNumber} for invoice ${invoices[idx].number}`,
     })
-    return json({ ok: true, invoice: invoices[idx] })
+    const inv = invoices[idx]
+    let emailResult = { sent: false, reason: 'skipped' }
+    if (inv.clientEmail) {
+      const origin = new URL(request.url).origin
+      const link = `${origin}/invoice/${inv.id}?token=${inv.publicToken}`
+      emailResult = await sendResendEmail(env, {
+        to: inv.clientEmail,
+        subject: `Ellines Tech — receipt ${receiptNumber}`,
+        html: `<p>Hi ${inv.clientName || 'there'},</p>
+<p>Payment received. Your receipt <strong>${receiptNumber}</strong> for invoice ${inv.number} is ready.</p>
+<p>Total: ${inv.currency} ${Number(inv.total).toLocaleString()}</p>
+<p><a href="${link}">View receipt</a></p>
+<p>— Ellines Tech</p>`,
+      })
+      if (!emailResult.sent) {
+        const notes = await getJson(env, 'cms:notifications', [])
+        notes.unshift({
+          id: id('note'),
+          title: 'Receipt email queued',
+          body: `Receipt ${receiptNumber} for ${inv.clientEmail} — email not sent (${emailResult.reason || 'no_key'}).`,
+          at: new Date().toISOString(),
+          read: false,
+          kind: 'email_queue',
+          invoiceId: inv.id,
+        })
+        await putJson(env, 'cms:notifications', notes.slice(0, 100))
+      }
+    }
+    return json({ ok: true, invoice: inv, email: emailResult })
   }
 
   if (action === 'delete_invoice') {
@@ -568,11 +815,17 @@ function defaultSiteCopy() {
       storyTitle: 'We execute our ideas from start to finish',
       storyBody:
         'We bring ideas to life meticulously — quality, innovation, and results aligned with your vision.',
+      groupTitle: 'Ellines Group',
+      groupBody:
+        'Ellines Group is the parent company behind Ellines Tech, Ellines Haven, and Ellines Rattan — technology, publishing, and furniture under one vision.',
     },
     about: {
       title: 'Who We Are',
       lead:
         'With years of experience in IT services, Ellines Tech crafts cutting-edge software and mobile apps for clients around the globe.',
+      groupTitle: 'Ellines Group',
+      groupBody:
+        'Ellines Tech is the technology arm of Ellines Group — alongside Ellines Haven and Ellines Rattan (Furniture).',
     },
   }
 }
@@ -790,6 +1043,248 @@ function defaultShop() {
       category: 'Career',
       description: 'Resume build or revamp + cover letter + LinkedIn optimisation in one package.',
       status: 'published',
+      image: '',
+    },
+    {
+      id: 'tax_kenya_return',
+      name: 'Kenya Tax Return Filing',
+      price: 200,
+      currency: 'KES',
+      category: 'Tax & Compliance',
+      description: 'Individual Kenya tax return filing assistance — KRA iTax support at an accessible rate.',
+      status: 'published',
+      image: '/media/posters/poster-tax-returns.png',
+    },
+    {
+      id: 'tax_kenya_pin_assist',
+      name: 'KRA PIN / iTax Assist',
+      price: 500,
+      currency: 'KES',
+      category: 'Tax & Compliance',
+      description: 'Help creating or recovering KRA PIN and basic iTax account setup.',
+      status: 'published',
+      image: '/media/posters/poster-tax-returns.png',
+    },
+    {
+      id: 'tech_os_install',
+      name: 'OS Installation',
+      price: 2500,
+      currency: 'KES',
+      category: 'Tech Support',
+      description: 'Windows or Linux OS installation / reinstall with drivers and essential updates.',
+      status: 'published',
+      image: '/media/posters/poster-os-install.png',
+    },
+    {
+      id: 'tech_os_install_office',
+      name: 'OS Install + Office Setup',
+      price: 4500,
+      currency: 'KES',
+      category: 'Tech Support',
+      description: 'OS installation plus productivity suite setup and basic optimisation.',
+      status: 'published',
+      image: '/media/posters/poster-os-install.png',
+    },
+    {
+      id: 'tech_app_testing',
+      name: 'App Testing (starter)',
+      price: 15000,
+      currency: 'KES',
+      category: 'QA & Testing',
+      description: 'Manual functional testing for web or mobile apps with a clear bug report.',
+      status: 'published',
+      image: '/media/posters/poster-app-testing.png',
+    },
+    {
+      id: 'tech_app_testing_full',
+      name: 'App Testing (full cycle)',
+      price: 35000,
+      currency: 'KES',
+      category: 'QA & Testing',
+      description: 'Broader test plan — functional, UI, and regression checks with prioritised findings.',
+      status: 'published',
+      image: '/media/posters/poster-app-testing.png',
+    },
+    {
+      id: 'brand_identity_session',
+      name: 'Brand Identity Session',
+      price: 20000,
+      currency: 'KES',
+      category: 'Branding',
+      description: 'Brand discovery workshop — positioning, voice, and visual direction for your business.',
+      status: 'published',
+      image: '/media/posters/poster-branding.png',
+    },
+    {
+      id: 'brand_full_kit',
+      name: 'Full Branding Kit',
+      price: 55000,
+      currency: 'KES',
+      category: 'Branding',
+      description: 'Logo system, colours, typography, and brand board ready for print and digital.',
+      status: 'published',
+      image: '/media/posters/poster-branding.png',
+    },
+    {
+      id: 'brand_rebrand',
+      name: 'Business Rebrand Package',
+      price: 75000,
+      currency: 'KES',
+      category: 'Branding',
+      description: 'Full rebrand — refreshed identity, messaging, and rollout assets for an existing business.',
+      status: 'published',
+      image: '/media/posters/poster-rebrand-kit.png',
+    },
+    {
+      id: 'merch_tshirt',
+      name: 'Branded T-Shirt (per piece)',
+      price: 1200,
+      currency: 'KES',
+      category: 'Merchandise',
+      description: 'Company logo print on quality tee — artwork setup included. Bulk quotes available.',
+      status: 'published',
+      image: '/media/posters/poster-apparel.png',
+    },
+    {
+      id: 'merch_cap',
+      name: 'Branded Cap (per piece)',
+      price: 800,
+      currency: 'KES',
+      category: 'Merchandise',
+      description: 'Cap branding with your logo — embroidery or print options on request.',
+      status: 'published',
+      image: '/media/posters/poster-apparel.png',
+    },
+    {
+      id: 'merch_hoodie',
+      name: 'Branded Hoodie (per piece)',
+      price: 2500,
+      currency: 'KES',
+      category: 'Merchandise',
+      description: 'Hoodie with company logo branding for teams and events.',
+      status: 'published',
+      image: '/media/posters/poster-apparel.png',
+    },
+    {
+      id: 'merch_clothing_custom',
+      name: 'Custom Clothing Branding',
+      price: 1500,
+      currency: 'KES',
+      category: 'Merchandise',
+      description: 'Logo branding on client-supplied or sourced apparel — priced from per piece.',
+      status: 'published',
+      image: '/media/posters/poster-apparel.png',
+    },
+    {
+      id: 'merch_phone_case',
+      name: 'Phone Case Decoration',
+      price: 1000,
+      currency: 'KES',
+      category: 'Merchandise',
+      description: 'Custom phone case artwork / logo decoration — model-specific production.',
+      status: 'published',
+      image: '/media/posters/poster-phone-case.png',
+    },
+    {
+      id: 'design_graphics_pack',
+      name: 'Graphics Design Pack',
+      price: 8000,
+      currency: 'KES',
+      category: 'Graphics',
+      description: 'Social and marketing graphics pack — posts, story frames, and brand-aligned assets.',
+      status: 'published',
+      image: '/media/posters/poster-graphics.png',
+    },
+    {
+      id: 'design_campaign_poster',
+      name: 'Campaign Poster Design',
+      price: 5000,
+      currency: 'KES',
+      category: 'Graphics',
+      description: 'Original campaign poster design for print and digital — one concept + revisions.',
+      status: 'published',
+      image: '/media/posters/poster-campaign.png',
+    },
+    {
+      id: 'design_poster_set',
+      name: 'Campaign Poster Set (3)',
+      price: 12000,
+      currency: 'KES',
+      category: 'Graphics',
+      description: 'Set of three coordinated campaign posters for events, launches, or ads.',
+      status: 'published',
+      image: '/media/posters/poster-campaign.png',
+    },
+    {
+      id: 'design_flyer',
+      name: 'Flyer / Handbill Design',
+      price: 3500,
+      currency: 'KES',
+      category: 'Graphics',
+      description: 'Print-ready flyer design with your brand message and call to action.',
+      status: 'published',
+      image: '/media/posters/poster-graphics.png',
+    },
+    {
+      id: 'design_business_cards',
+      name: 'Business Cards Design',
+      price: 2500,
+      currency: 'KES',
+      category: 'Stationery',
+      description: 'Print-ready business card design — front/back, brand-aligned, and print-file delivery.',
+      status: 'published',
+      image: '/media/posters/poster-business-card.png',
+    },
+    {
+      id: 'stationery_letterhead',
+      name: 'Letterhead Design',
+      price: 3000,
+      currency: 'KES',
+      category: 'Stationery',
+      description: 'Branded letterhead template for Word/PDF — logo, contact block, and print margins.',
+      status: 'published',
+      image: '/media/posters/poster-letterhead.png',
+    },
+    {
+      id: 'stationery_envelopes',
+      name: 'Envelope Design',
+      price: 2500,
+      currency: 'KES',
+      category: 'Stationery',
+      description: 'Branded envelope artwork for DL / C5 — return address and logo placement.',
+      status: 'published',
+      image: '/media/posters/poster-letterhead.png',
+    },
+    {
+      id: 'stationery_comp_slips',
+      name: 'Complimentary Slips',
+      price: 2000,
+      currency: 'KES',
+      category: 'Stationery',
+      description: 'With-compliments slip design matching your letterhead and brand colours.',
+      status: 'published',
+      image: '/media/posters/poster-letterhead.png',
+    },
+    {
+      id: 'stationery_stamp_seal',
+      name: 'Stamp / Seal Design',
+      price: 1500,
+      currency: 'KES',
+      category: 'Stationery',
+      description: 'Company stamp or seal artwork for rubber stamp / digital seal use.',
+      status: 'published',
+      image: '/media/posters/poster-rebrand-kit.png',
+    },
+    {
+      id: 'stationery_full_pack',
+      name: 'Full Rebrand Stationery Pack',
+      price: 18000,
+      currency: 'KES',
+      category: 'Stationery',
+      description:
+        'Business cards, letterhead, envelopes, complimentary slips, and stamp design as one coordinated pack.',
+      status: 'published',
+      image: '/media/posters/poster-rebrand-kit.png',
     },
   ]
 }

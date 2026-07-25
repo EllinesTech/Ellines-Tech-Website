@@ -27,6 +27,14 @@ export const primaryNavigation: NavItem[] = [
       { label: 'Cloud Consulting', href: '/services/cloud-infrastructure-consulting', description: 'Cloud & infrastructure advisory' },
       { label: 'Digital Marketing', href: '/services/digital-marketing', description: 'Strategy & growth' },
       { label: 'Cyber Security', href: '/services/cyber-security', description: 'Protect apps & data' },
+      { label: 'Kenya Tax Returns', href: '/services/kenya-tax-return', description: 'From KES 200 via iTax' },
+      { label: 'OS Installation', href: '/services/os-installation', description: 'Windows & Linux setup' },
+      { label: 'App Testing', href: '/services/app-testing', description: 'Manual QA & bug reports' },
+      { label: 'Branding', href: '/services/branding-services', description: 'Identity & brand systems' },
+      { label: 'Apparel Branding', href: '/services/apparel-branding', description: 'Tees, caps & hoodies' },
+      { label: 'Business Cards', href: '/services/business-cards', description: 'Print-ready card design' },
+      { label: 'Stationery Rebrand', href: '/services/stationery-rebrand', description: 'Letterheads & envelopes' },
+      { label: 'Business Rebrand Kit', href: '/services/business-rebrand-kit', description: 'Full identity refresh' },
     ],
   },
   {
@@ -53,7 +61,8 @@ export const moreNavigation: NavItem[] = [
   { label: 'Careers', href: '/careers' },
   { label: 'Clients', href: '/clients' },
   { label: 'Success Stories', href: '/success-stories' },
-  { label: 'Account', href: '/account' },
+  { label: 'Client account', href: '/account' },
+  { label: 'Staff login', href: '/staff/login' },
   { label: 'Contact', href: '/contact' },
 ]
 
@@ -78,23 +87,33 @@ export const footerNavigation = {
   ],
   services: [
     { label: 'IT Consulting', href: '/services/it-consulting' },
-    { label: 'Resume / CV Revamp', href: '/services/resume-cv-design-revamping' },
-    { label: 'Resume Building', href: '/services/resume-building' },
-    { label: 'Software Development', href: '/services/software-development' },
-    { label: 'AI Development', href: '/services/ai-development-automation' },
+    { label: 'Kenya Tax Returns', href: '/services/kenya-tax-return' },
+    { label: 'Apparel Branding', href: '/services/apparel-branding' },
+    { label: 'Business Cards', href: '/services/business-cards' },
+    { label: 'Stationery Rebrand', href: '/services/stationery-rebrand' },
     { label: 'All Services', href: '/services' },
   ],
   group: [
     { label: 'Ellines Tech', href: 'https://tech.ellines.co.ke' },
     { label: 'Ellines Haven', href: 'https://haven.ellines.co.ke/' },
-    { label: 'Ellines Rattan', href: 'https://rattan.ellines.co.ke' },
+    { label: 'Ellines Rattan (Furniture)', href: 'https://rattan.ellines.co.ke' },
   ],
   resources: [
     { label: 'Articles', href: '/resources#articles' },
     { label: 'Case Studies', href: '/resources#case-studies' },
     { label: 'Product Pricing', href: '/pricing' },
+    { label: 'Client account', href: '/account' },
     { label: 'FAQ', href: '/faq' },
     { label: 'Privacy', href: '/privacy' },
     { label: 'Terms', href: '/terms' },
   ],
+}
+
+/** Human-readable footer column titles — never rely on raw object keys */
+export const footerSectionLabels: Record<keyof typeof footerNavigation, string> = {
+  company: 'Company',
+  products: 'Products',
+  services: 'Services',
+  group: 'Ellines Group',
+  resources: 'Resources',
 }

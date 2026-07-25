@@ -25,6 +25,15 @@ import { AdminLoginPage, AdminLayout } from '@/pages/admin/AdminShell'
 import { AdminOverviewPage } from '@/pages/admin/AdminOverviewPage'
 import { AdminLiveChatPage } from '@/pages/admin/AdminLiveChatPage'
 import { AdminModulePage } from '@/pages/admin/AdminModulePage'
+import { AdminInvoicesModule } from '@/pages/admin/AdminInvoicesModule'
+import {
+  StaffLoginPage,
+  StaffLayout,
+  StaffOverviewPage,
+  StaffLeadsPage,
+  StaffClientsPage,
+  StaffSimpleNote,
+} from '@/pages/staff/StaffShell'
 
 function Module({ name }: { name: string }) {
   return <AdminModulePage module={name} />
@@ -73,6 +82,32 @@ export default function App() {
           <Route path="backup" element={<Module name="backup" />} />
           <Route path="god-mode" element={<Module name="god-mode" />} />
           <Route path="profile" element={<Module name="profile" />} />
+        </Route>
+
+        <Route path="staff/login" element={<StaffLoginPage />} />
+        <Route path="staff" element={<StaffLayout />}>
+          <Route index element={<StaffOverviewPage />} />
+          <Route path="leads" element={<StaffLeadsPage />} />
+          <Route path="clients" element={<StaffClientsPage />} />
+          <Route path="invoices" element={<AdminInvoicesModule />} />
+          <Route
+            path="pricing"
+            element={
+              <StaffSimpleNote
+                title="Pricing packages"
+                body="Public catalogue lives on /pricing. Super Admin can edit packages under Product Pricing in God Mode. Marketing can share package links with clients."
+              />
+            }
+          />
+          <Route
+            path="content"
+            element={
+              <StaffSimpleNote
+                title="Content & marketing"
+                body="Page copy, posters, and design studio stay in Super Admin God Mode for now. Use leads and pricing links here for day-to-day client work."
+              />
+            }
+          />
         </Route>
 
         <Route element={<Layout />}>

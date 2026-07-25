@@ -121,7 +121,15 @@ export function AdminLoginPage() {
         </p>
         <h1 className="mt-2 font-display text-2xl font-bold text-white">God Mode access</h1>
         <p className="mt-3 text-sm text-slate-400">
-          Control the website, live chat, AI knowledge, and engagement systems.
+          Developer / platform owner only. Employees use{' '}
+          <a href="/staff/login" className="text-brand-300">
+            Staff login
+          </a>
+          . Clients use{' '}
+          <a href="/account" className="text-brand-300">
+            Client account
+          </a>
+          .
         </p>
         <input
           type="password"

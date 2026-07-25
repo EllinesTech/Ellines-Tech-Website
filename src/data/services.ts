@@ -6,6 +6,9 @@ export type ServiceCategory =
   | 'security'
   | 'career'
   | 'consulting'
+  | 'support'
+  | 'compliance'
+  | 'merch'
 
 export interface Service {
   slug: string
@@ -53,6 +56,21 @@ export const serviceCategories: Record<
     label: 'IT Consulting',
     description: 'Strategy, architecture, and technology advisory for ambitious teams.',
     icon: 'Briefcase',
+  },
+  support: {
+    label: 'Tech Support & QA',
+    description: 'OS setup, app testing, and hands-on technical support.',
+    icon: 'Wrench',
+  },
+  compliance: {
+    label: 'Tax & Compliance',
+    description: 'Kenya tax return filing and KRA iTax assistance.',
+    icon: 'FileCheck',
+  },
+  merch: {
+    label: 'Merchandise & Print',
+    description: 'Apparel branding, phone cases, and campaign print design.',
+    icon: 'Shirt',
   },
 }
 
@@ -277,6 +295,149 @@ export const services: Service[] = [
       'Migration planning',
       'Cost & performance tuning',
       'Reliability & backup strategy',
+    ],
+  },
+  {
+    slug: 'kenya-tax-return',
+    name: 'Kenya Tax Return Filing',
+    category: 'compliance',
+    description:
+      'Affordable Kenya tax return filing assistance via KRA iTax — from KES 200 for individual returns.',
+    offerings: [
+      'iTax filing support',
+      'Return review',
+      'Submission guidance',
+      'Confirmation follow-up',
+    ],
+  },
+  {
+    slug: 'os-installation',
+    name: 'OS Installation',
+    category: 'support',
+    description:
+      'Professional Windows or Linux installation and setup with drivers and essential updates.',
+    offerings: [
+      'Clean OS install',
+      'Drivers & updates',
+      'Basic optimisation',
+      'Data backup advice',
+    ],
+  },
+  {
+    slug: 'app-testing',
+    name: 'App Testing',
+    category: 'support',
+    description:
+      'Manual QA for web and mobile apps — structured test runs with clear, prioritised bug reports.',
+    offerings: [
+      'Test plan',
+      'Functional checks',
+      'UI review',
+      'Bug report delivery',
+    ],
+  },
+  {
+    slug: 'branding-services',
+    name: 'Branding Services',
+    category: 'design',
+    description:
+      'Brand identity work — discovery, visual systems, and assets ready for digital and print.',
+    offerings: [
+      'Brand discovery',
+      'Visual identity',
+      'Brand board',
+      'Asset handoff',
+    ],
+  },
+  {
+    slug: 'graphics-design',
+    name: 'Graphics Design',
+    category: 'design',
+    description:
+      'Social graphics, marketing creatives, and brand-aligned visual packs for campaigns.',
+    offerings: [
+      'Social post sets',
+      'Story frames',
+      'Ad creatives',
+      'Brand-consistent layouts',
+    ],
+  },
+  {
+    slug: 'campaign-posters',
+    name: 'Campaign Posters',
+    category: 'merch',
+    description:
+      'Original campaign poster design for events, launches, and ads — print and digital ready.',
+    offerings: [
+      'Poster concepts',
+      'Print-ready files',
+      'Digital variants',
+      'Revision rounds',
+    ],
+  },
+  {
+    slug: 'apparel-branding',
+    name: 'Apparel Branding',
+    category: 'merch',
+    description:
+      'Company logo branding on t-shirts, caps, hoodies, and other clothing for teams and events.',
+    offerings: [
+      'T-shirt branding',
+      'Caps & hoodies',
+      'Artwork setup',
+      'Bulk order quotes',
+    ],
+  },
+  {
+    slug: 'phone-case-decoration',
+    name: 'Phone Case Decoration',
+    category: 'merch',
+    description:
+      'Custom phone case artwork and logo decoration tailored to your device model.',
+    offerings: [
+      'Custom artwork',
+      'Logo placement',
+      'Model-specific fit',
+      'Production coordination',
+    ],
+  },
+  {
+    slug: 'business-cards',
+    name: 'Business Cards',
+    category: 'merch',
+    description:
+      'Print-ready business card design — front and back layouts aligned to your brand.',
+    offerings: [
+      'Front & back design',
+      'Print-ready files',
+      'Brand colour matching',
+      'Revision rounds',
+    ],
+  },
+  {
+    slug: 'stationery-rebrand',
+    name: 'Stationery Rebrand',
+    category: 'merch',
+    description:
+      'Letterheads, envelopes, complimentary slips, and stamp designs for a cohesive stationery system.',
+    offerings: [
+      'Letterhead templates',
+      'Envelope artwork',
+      'Complimentary slips',
+      'Stamp / seal design',
+    ],
+  },
+  {
+    slug: 'business-rebrand-kit',
+    name: 'Business Rebrand Kit',
+    category: 'design',
+    description:
+      'Full identity refresh — logo system, stationery pack, and rollout assets for existing businesses.',
+    offerings: [
+      'Identity refresh',
+      'Stationery pack',
+      'Brand board',
+      'Asset handoff',
     ],
   },
 ]

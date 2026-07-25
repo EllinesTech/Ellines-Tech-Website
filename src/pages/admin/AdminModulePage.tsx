@@ -30,6 +30,7 @@ import {
   saveReviews,
   saveShop,
   saveSiteCopy,
+  setUserActive,
   updateUserRole,
   type CmsUser,
 } from '@/lib/cmsApi'
@@ -180,7 +181,8 @@ function UsersModule() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
-  const [role, setRole] = useState<'admin' | 'super_admin'>('admin')
+  const [jobTitle, setJobTitle] = useState('Marketing Manager')
+  const [role, setRole] = useState<'admin' | 'staff'>('staff')
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
@@ -200,7 +202,7 @@ function UsersModule() {
   return (
     <Panel
       title="Users"
-      description="Admin and customer accounts. Customers can register on /account for the shop."
+      description="Create employee accounts (staff/admin) for the Staff workspace at /staff — never share Super Admin God Mode credentials. Clients self-register at /account for pricing & packages."
     >
       <Err message={error} />
       <Msg message={message} />
@@ -212,7 +214,7 @@ function UsersModule() {
           className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white"
         />
         <input
-          placeholder="Email"
+          placeholder="Work email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white"
@@ -225,19 +227,32 @@ function UsersModule() {
           className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white"
         />
         <select
-          value={role}
-          onChange={(e) => setRole(e.target.value as 'admin' | 'super_admin')}
+          value={jobTitle}
+          onChange={(e) => setJobTitle(e.target.value)}
           className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-sm text-white"
         >
-          <option value="admin">Admin</option>
-          <option value="super_admin">Super Admin</option>
+          <option value="Marketing Manager">Marketing Manager</option>
+          <option value="Sales">Sales</option>
+          <option value="Support">Support</option>
+          <option value="Finance">Finance</option>
+          <option value="Operations">Operations</option>
+          <option value="Content">Content</option>
+          <option value="Other">Other</option>
+        </select>
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value as 'admin' | 'staff')}
+          className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-sm text-white"
+        >
+          <option value="staff">Staff (employee)</option>
+          <option value="admin">Admin (elevated staff)</option>
         </select>
         <Button
           type="button"
           onClick={async () => {
             try {
-              await createAdminUser({ email, password, name, role })
-              setMessage('Admin user created')
+              await createAdminUser({ email, password, name, role, jobTitle })
+              setMessage(`Staff account created — they log in at /staff/login (not Super Admin)`)
               setEmail('')
               setPassword('')
               setName('')
@@ -247,7 +262,7 @@ function UsersModule() {
             }
           }}
         >
-          Create admin
+          Create staff account
         </Button>
       </div>
       <ul className="space-y-2">
@@ -260,20 +275,38 @@ function UsersModule() {
               <p className="text-white">
                 {u.name} · {u.email}
               </p>
-              <p className="text-xs text-slate-500">{u.role}</p>
+              <p className="text-xs text-slate-500">
+                {u.role}
+                {u.jobTitle ? ` · ${u.jobTitle}` : ''}
+                {u.active === false ? ' · deactivated' : ''}
+              </p>
             </div>
-            <select
-              value={u.role}
-              onChange={async (e) => {
-                await updateUserRole(u.id, e.target.value as CmsUser['role'])
-                await load()
-              }}
-              className="rounded-lg border border-white/10 bg-slate-900 px-2 py-1 text-xs text-white"
-            >
-              <option value="customer">customer</option>
-              <option value="admin">admin</option>
-              <option value="super_admin">super_admin</option>
-            </select>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={u.role}
+                onChange={async (e) => {
+                  await updateUserRole(u.id, e.target.value as CmsUser['role'])
+                  await load()
+                }}
+                className="rounded-lg border border-white/10 bg-slate-900 px-2 py-1 text-xs text-white"
+              >
+                <option value="customer">customer</option>
+                <option value="staff">staff</option>
+                <option value="admin">admin</option>
+                <option value="super_admin">super_admin</option>
+              </select>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={async () => {
+                  await setUserActive(u.id, u.active === false)
+                  await load()
+                }}
+              >
+                {u.active === false ? 'Activate' : 'Deactivate'}
+              </Button>
+            </div>
           </li>
         ))}
       </ul>
@@ -982,13 +1015,19 @@ export function AdminModulePage({ module }: { module: string }) {
 
   if (module === 'security') {
     return (
-      <Panel title="Security" description="Access control for Super Admin and customer accounts.">
+      <Panel title="Security" description="Three separate access lanes — do not mix them.">
         <ul className="list-disc space-y-2 pl-5 text-sm text-slate-300">
-          <li>Super Admin login uses ADMIN_API_KEY / panel password</li>
-          <li>Customer passwords are PBKDF2-hashed in KV</li>
-          <li>Roles: super_admin, admin, customer — managed under Users</li>
+          <li>
+            Super Admin (/admin) — developer God Mode password / ADMIN_API_KEY. Never share with staff.
+          </li>
+          <li>
+            Staff (/staff) — employee accounts created here under Users. Own login, not God Mode.
+          </li>
+          <li>
+            Clients (/account) — customers for pricing & packages. Public register/login.
+          </li>
+          <li>Roles: super_admin | admin | staff | customer · passwords PBKDF2-hashed in KV</li>
           <li>Rotate secrets in Cloudflare Pages environment variables</li>
-          <li>Purchase requests are not charged online until you confirm payment offline</li>
         </ul>
         <Link to="/admin/users" className="mt-4 inline-block text-sm text-brand-300">
           → Users & roles
@@ -999,10 +1038,11 @@ export function AdminModulePage({ module }: { module: string }) {
 
   if (module === 'profile') {
     return (
-      <Panel title="Profile" description="Signed-in Super Admin session.">
+      <Panel title="Profile" description="Signed-in Super Admin session (developer only).">
         <p className="text-sm text-slate-300">Role: Super Admin (God Mode)</p>
         <p className="mt-2 text-sm text-slate-400">
-          Day-to-day: Leads, Live Chat, Product Pricing, Page Editor. Customers use /account.
+          Staff employees use /staff with their own accounts. Clients use /account for pricing &
+          packages.
         </p>
         <div className="mt-4 flex flex-wrap gap-3 text-sm">
           <Link to="/admin/leads" className="text-brand-300">

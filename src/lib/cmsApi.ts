@@ -1,4 +1,5 @@
-import { getAdminApiKey } from '@/lib/engagementStore'
+import { getAdminApiKey, isAdminAuthed } from '@/lib/engagementStore'
+import { loadAuthToken } from '@/lib/auth'
 
 const ADMIN_KEY = () => getAdminApiKey()
 
@@ -6,6 +7,23 @@ function adminHeaders(json = false): HeadersInit {
   return json
     ? { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY() }
     : { 'X-Admin-Key': ADMIN_KEY() }
+}
+
+function userHeaders(json = false): HeadersInit {
+  const token = loadAuthToken() || ''
+  return json
+    ? { 'Content-Type': 'application/json', 'X-User-Token': token }
+    : { 'X-User-Token': token }
+}
+
+/** God Mode key only when Super Admin session is active; otherwise staff/customer token */
+function elevatedHeaders(json = false): HeadersInit {
+  const token = loadAuthToken() || ''
+  const base: Record<string, string> = {}
+  if (json) base['Content-Type'] = 'application/json'
+  if (isAdminAuthed()) base['X-Admin-Key'] = ADMIN_KEY()
+  if (token) base['X-User-Token'] = token
+  return base
 }
 
 async function cmsFetch(params: string, init?: RequestInit) {
@@ -32,7 +50,9 @@ export type CmsUser = {
   id: string
   email: string
   name: string
-  role: 'super_admin' | 'admin' | 'customer'
+  role: 'super_admin' | 'admin' | 'staff' | 'customer'
+  jobTitle?: string
+  active?: boolean
   createdAt: string
 }
 
@@ -79,13 +99,31 @@ export async function saveSiteCopy(siteCopy: unknown) {
 }
 
 export async function fetchActivity() {
-  const data = await cmsFetch('resource=activity', { headers: adminHeaders() })
+  const data = await cmsFetch('resource=activity', { headers: elevatedHeaders() })
   return data.activity || []
 }
 
 export async function fetchLeads() {
-  const data = await cmsFetch('resource=leads', { headers: adminHeaders() })
+  const data = await cmsFetch('resource=leads', { headers: elevatedHeaders() })
   return data.leads || []
+}
+
+export async function fetchMyLeads() {
+  const data = await cmsFetch('resource=my-leads', { headers: userHeaders() })
+  return data.leads || []
+}
+
+export async function fetchMyInvoices(): Promise<Invoice[]> {
+  const data = await cmsFetch('resource=my-invoices', { headers: userHeaders() })
+  return data.invoices || []
+}
+
+export async function updateProfile(name: string) {
+  return cmsFetch('resource=users', {
+    method: 'POST',
+    headers: userHeaders(true),
+    body: JSON.stringify({ action: 'update_profile', name }),
+  })
 }
 
 export async function fetchUsers(): Promise<CmsUser[]> {
@@ -95,11 +133,23 @@ export async function fetchUsers(): Promise<CmsUser[]> {
   return data.users || []
 }
 
-export async function updateUserRole(userId: string, role: CmsUser['role']) {
+export async function updateUserRole(
+  userId: string,
+  role: CmsUser['role'],
+  jobTitle?: string,
+) {
   return cmsFetch('resource=users', {
     method: 'POST',
     headers: adminHeaders(true),
-    body: JSON.stringify({ action: 'update_user_role', userId, role }),
+    body: JSON.stringify({ action: 'update_user_role', userId, role, jobTitle }),
+  })
+}
+
+export async function setUserActive(userId: string, active: boolean) {
+  return cmsFetch('resource=users', {
+    method: 'POST',
+    headers: adminHeaders(true),
+    body: JSON.stringify({ action: 'set_user_active', userId, active }),
   })
 }
 
@@ -107,12 +157,13 @@ export async function createAdminUser(input: {
   email: string
   password: string
   name?: string
-  role?: 'admin' | 'super_admin'
+  role?: 'admin' | 'staff' | 'super_admin'
+  jobTitle?: string
 }) {
   return cmsFetch('resource=users', {
     method: 'POST',
     headers: adminHeaders(true),
-    body: JSON.stringify({ action: 'create_admin_user', ...input }),
+    body: JSON.stringify({ action: 'create_staff_user', ...input }),
   })
 }
 
@@ -124,7 +175,7 @@ export async function fetchShop() {
 export async function saveShop(products: unknown[]) {
   return cmsFetch('resource=shop', {
     method: 'POST',
-    headers: adminHeaders(true),
+    headers: elevatedHeaders(true),
     body: JSON.stringify({ action: 'save_shop', products }),
   })
 }
@@ -143,17 +194,17 @@ export async function saveReviews(reviews: unknown[]) {
 }
 
 export async function fetchNewsletter() {
-  const data = await cmsFetch('resource=newsletter', { headers: adminHeaders() })
+  const data = await cmsFetch('resource=newsletter', { headers: elevatedHeaders() })
   return data.subscribers || []
 }
 
 export async function fetchNotifications() {
-  const data = await cmsFetch('resource=notifications', { headers: adminHeaders() })
+  const data = await cmsFetch('resource=notifications', { headers: elevatedHeaders() })
   return data.notifications || []
 }
 
 export async function fetchAnalytics() {
-  const data = await cmsFetch('resource=analytics', { headers: adminHeaders() })
+  const data = await cmsFetch('resource=analytics', { headers: elevatedHeaders() })
   return data.analytics
 }
 
@@ -220,9 +271,12 @@ export async function submitServiceRequest(input: {
   packagePrice?: string
   service?: string
 }) {
+  const token = loadAuthToken()
   return cmsFetch('resource=leads', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: token
+      ? { 'Content-Type': 'application/json', 'X-User-Token': token }
+      : { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'lead', ...input }),
   })
 }
@@ -266,7 +320,7 @@ export type Invoice = {
 }
 
 export async function fetchInvoices(): Promise<Invoice[]> {
-  const data = await cmsFetch('resource=invoices', { headers: adminHeaders() })
+  const data = await cmsFetch('resource=invoices', { headers: elevatedHeaders() })
   return data.invoices || []
 }
 
@@ -280,7 +334,7 @@ export async function fetchInvoicePublic(id: string, token: string): Promise<Inv
 export async function saveInvoice(invoice: Partial<Invoice>) {
   return cmsFetch('resource=invoices', {
     method: 'POST',
-    headers: adminHeaders(true),
+    headers: elevatedHeaders(true),
     body: JSON.stringify({ action: 'save_invoice', invoice }),
   })
 }
@@ -292,7 +346,7 @@ export async function markInvoicePaid(
 ) {
   return cmsFetch('resource=invoices', {
     method: 'POST',
-    headers: adminHeaders(true),
+    headers: elevatedHeaders(true),
     body: JSON.stringify({ action: 'mark_invoice_paid', id, paymentMethod, paymentRef }),
   })
 }
@@ -300,12 +354,12 @@ export async function markInvoicePaid(
 export async function deleteInvoice(id: string) {
   return cmsFetch('resource=invoices', {
     method: 'POST',
-    headers: adminHeaders(true),
+    headers: elevatedHeaders(true),
     body: JSON.stringify({ action: 'delete_invoice', id }),
   })
 }
 
 export async function fetchReports() {
-  const data = await cmsFetch('resource=reports', { headers: adminHeaders() })
+  const data = await cmsFetch('resource=reports', { headers: elevatedHeaders() })
   return data.report
 }
