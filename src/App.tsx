@@ -17,7 +17,7 @@ import { SolutionsPage } from '@/pages/SolutionsPage'
 import { FaqPage, PrivacyPage, TermsPage } from '@/pages/LegalPages'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { CmsPageView } from '@/pages/CmsPageView'
-import { ShopPage } from '@/pages/ShopPage'
+import { ShopPage as PricingPage } from '@/pages/ShopPage'
 import { AccountPage } from '@/pages/AccountPage'
 import { AdminLoginPage, AdminLayout } from '@/pages/admin/AdminShell'
 import { AdminOverviewPage } from '@/pages/admin/AdminOverviewPage'
@@ -79,7 +79,8 @@ export default function App() {
           <Route path="services/:slug" element={<ServiceDetailPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="products/:slug" element={<ProductDetailPage />} />
-          <Route path="shop" element={<ShopPage />} />
+          <Route path="pricing" element={<PricingPage />} />
+          <Route path="shop" element={<PricingPage />} />
           <Route path="account" element={<AccountPage />} />
           <Route path="p/:slug" element={<CmsPageView />} />
           <Route path="solutions" element={<SolutionsPage />} />

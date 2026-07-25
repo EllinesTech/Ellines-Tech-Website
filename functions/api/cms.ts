@@ -108,7 +108,23 @@ export async function onRequestGet(context) {
   }
 
   if (resource === 'shop') {
-    return json({ products: await getJson(env, 'cms:shop-products', defaultShop()) })
+    let products = await getJson(env, 'cms:shop-products', null)
+    const defaults = defaultShop()
+    if (!products || !Array.isArray(products) || products.length === 0) {
+      products = defaults
+      await putJson(env, 'cms:shop-products', products)
+    } else {
+      const ids = new Set(products.map((p) => p.id))
+      let changed = false
+      for (const d of defaults) {
+        if (!ids.has(d.id)) {
+          products.push(d)
+          changed = true
+        }
+      }
+      if (changed) await putJson(env, 'cms:shop-products', products)
+    }
+    return json({ products })
   }
 
   if (resource === 'users') {
@@ -410,7 +426,25 @@ function defaultShop() {
       price: 45000,
       currency: 'KES',
       category: 'Web',
-      description: 'One-page to multi-page business website package.',
+      description: 'One-page to multi-page business website — design, build, and launch.',
+      status: 'published',
+    },
+    {
+      id: 'shop_business_web',
+      name: 'Business Website Pro',
+      price: 85000,
+      currency: 'KES',
+      category: 'Web',
+      description: 'Multi-page site with CMS-ready structure, contact flows, and SEO basics.',
+      status: 'published',
+    },
+    {
+      id: 'shop_ecommerce',
+      name: 'E-commerce Starter',
+      price: 150000,
+      currency: 'KES',
+      category: 'Web',
+      description: 'Online storefront for products, carts, and order enquiries.',
       status: 'published',
     },
     {
@@ -419,7 +453,79 @@ function defaultShop() {
       price: 15000,
       currency: 'KES',
       category: 'Design',
-      description: 'Logo concepts, revisions, and delivery formats.',
+      description: 'Logo concepts, revisions, and delivery formats for brand launch.',
+      status: 'published',
+    },
+    {
+      id: 'shop_brand_kit',
+      name: 'Brand Identity Kit',
+      price: 35000,
+      currency: 'KES',
+      category: 'Design',
+      description: 'Logo, colour system, typography, and basic brand guidelines.',
+      status: 'published',
+    },
+    {
+      id: 'shop_uiux',
+      name: 'UI/UX Design Package',
+      price: 60000,
+      currency: 'KES',
+      category: 'Design',
+      description: 'Wireframes and high-fidelity screens for web or mobile products.',
+      status: 'published',
+    },
+    {
+      id: 'shop_mobile_app',
+      name: 'Mobile App MVP',
+      price: 250000,
+      currency: 'KES',
+      category: 'Software',
+      description: 'Cross-platform MVP app scope — core screens, auth, and API wiring.',
+      status: 'published',
+    },
+    {
+      id: 'shop_custom_software',
+      name: 'Custom Software Starter',
+      price: 180000,
+      currency: 'KES',
+      category: 'Software',
+      description: 'Scoped business system or internal tool with discovery and first release.',
+      status: 'published',
+    },
+    {
+      id: 'shop_ai_automation',
+      name: 'AI Automation Starter',
+      price: 120000,
+      currency: 'KES',
+      category: 'AI',
+      description: 'Chatbot or workflow automation tailored to your operations.',
+      status: 'published',
+    },
+    {
+      id: 'shop_digital_marketing',
+      name: 'Digital Marketing Starter',
+      price: 40000,
+      currency: 'KES',
+      category: 'Marketing',
+      description: 'Campaign setup, social assets, and performance tracking kickoff.',
+      status: 'published',
+    },
+    {
+      id: 'shop_cyber_audit',
+      name: 'Cyber Security Review',
+      price: 55000,
+      currency: 'KES',
+      category: 'Security',
+      description: 'Baseline security review for websites and apps with actionable fixes.',
+      status: 'published',
+    },
+    {
+      id: 'shop_hosting_care',
+      name: 'Hosting & Care Plan (monthly)',
+      price: 8000,
+      currency: 'KES',
+      category: 'Support',
+      description: 'Hosting support, updates, and monitoring for your live site.',
       status: 'published',
     },
   ]

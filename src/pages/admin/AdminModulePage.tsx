@@ -31,6 +31,7 @@ import {
   updateUserRole,
   type CmsUser,
 } from '@/lib/cmsApi'
+import { starterPricingPackages } from '@/data/pricingPackages'
 
 function Panel({
   title,
@@ -247,57 +248,102 @@ function ShopModule() {
       .catch((e) => setError(e instanceof Error ? e.message : 'Failed'))
   }, [])
 
+  async function persist(next: ShopProduct[], okMessage: string) {
+    try {
+      await saveShop(next)
+      setProducts(next)
+      setMessage(okMessage)
+      setError('')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed')
+    }
+  }
+
   return (
     <Panel
-      title="Shop catalogue"
-      description="IT packages and digital products for /shop. Keep draft until ready to sell."
+      title="Product Pricing"
+      description="Add, edit, publish, or remove packages shown on /pricing. Changes save to the live site."
     >
       <Err message={error} />
       <Msg message={message} />
       <ul className="space-y-3">
         {products.map((p, idx) => (
           <li key={p.id} className="space-y-2 rounded-xl border border-white/10 p-3">
-            <input
-              value={p.name}
-              onChange={(e) => {
-                const next = [...products]
-                next[idx] = { ...p, name: e.target.value }
-                setProducts(next)
-              }}
-              className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
-            />
-            <div className="grid gap-2 sm:grid-cols-3">
+            <div className="flex flex-wrap items-center gap-2">
               <input
-                type="number"
-                value={p.price}
+                value={p.name}
                 onChange={(e) => {
                   const next = [...products]
-                  next[idx] = { ...p, price: Number(e.target.value) }
+                  next[idx] = { ...p, name: e.target.value }
                   setProducts(next)
                 }}
-                className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                className="min-w-[12rem] flex-1 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                placeholder="Package name"
               />
-              <input
-                value={p.category}
-                onChange={(e) => {
-                  const next = [...products]
-                  next[idx] = { ...p, category: e.target.value }
+              <button
+                type="button"
+                className="text-xs text-rose-300"
+                onClick={() => {
+                  const next = products.filter((_, i) => i !== idx)
                   setProducts(next)
                 }}
-                className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
-              />
-              <select
-                value={p.status}
-                onChange={(e) => {
-                  const next = [...products]
-                  next[idx] = { ...p, status: e.target.value }
-                  setProducts(next)
-                }}
-                className="rounded-lg border border-white/10 bg-slate-900 px-2 py-1.5 text-sm text-white"
               >
-                <option value="draft">draft</option>
-                <option value="published">published</option>
-              </select>
+                Remove
+              </button>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-4">
+              <label className="text-[10px] uppercase tracking-wide text-slate-500">
+                Price
+                <input
+                  type="number"
+                  value={p.price}
+                  onChange={(e) => {
+                    const next = [...products]
+                    next[idx] = { ...p, price: Number(e.target.value) }
+                    setProducts(next)
+                  }}
+                  className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                />
+              </label>
+              <label className="text-[10px] uppercase tracking-wide text-slate-500">
+                Currency
+                <input
+                  value={p.currency || 'KES'}
+                  onChange={(e) => {
+                    const next = [...products]
+                    next[idx] = { ...p, currency: e.target.value }
+                    setProducts(next)
+                  }}
+                  className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                />
+              </label>
+              <label className="text-[10px] uppercase tracking-wide text-slate-500">
+                Category
+                <input
+                  value={p.category}
+                  onChange={(e) => {
+                    const next = [...products]
+                    next[idx] = { ...p, category: e.target.value }
+                    setProducts(next)
+                  }}
+                  className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                />
+              </label>
+              <label className="text-[10px] uppercase tracking-wide text-slate-500">
+                Status
+                <select
+                  value={p.status}
+                  onChange={(e) => {
+                    const next = [...products]
+                    next[idx] = { ...p, status: e.target.value }
+                    setProducts(next)
+                  }}
+                  className="mt-1 w-full rounded-lg border border-white/10 bg-slate-900 px-2 py-1.5 text-sm text-white"
+                >
+                  <option value="draft">draft</option>
+                  <option value="published">published</option>
+                </select>
+              </label>
             </div>
             <textarea
               value={p.description}
@@ -308,6 +354,7 @@ function ShopModule() {
               }}
               rows={2}
               className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+              placeholder="Short description"
             />
           </li>
         ))}
@@ -320,7 +367,7 @@ function ShopModule() {
             setProducts((list) => [
               ...list,
               {
-                id: `shop_${Date.now().toString(36)}`,
+                id: `price_${Date.now().toString(36)}`,
                 name: 'New package',
                 price: 0,
                 currency: 'KES',
@@ -331,23 +378,27 @@ function ShopModule() {
             ])
           }
         >
-          Add product
+          Add package
         </Button>
         <Button
           type="button"
           onClick={async () => {
-            try {
-              await saveShop(products)
-              setMessage('Shop catalogue saved')
-            } catch (e) {
-              setError(e instanceof Error ? e.message : 'Failed')
-            }
+            await persist(products, 'Product pricing saved — live on /pricing')
           }}
         >
-          Save shop
+          Save pricing
         </Button>
-        <Link to="/shop" className="self-center text-sm text-brand-300">
-          View /shop →
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={async () => {
+            await persist(starterPricingPackages, 'Starter catalogue loaded and saved')
+          }}
+        >
+          Load starter catalogue
+        </Button>
+        <Link to="/pricing" className="self-center text-sm text-brand-300">
+          View /pricing →
         </Link>
       </div>
     </Panel>

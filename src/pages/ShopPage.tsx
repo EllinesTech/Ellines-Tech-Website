@@ -5,45 +5,40 @@ import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Button } from '@/components/ui/Button'
 import { fetchShop } from '@/lib/cmsApi'
 import { loadAuthUser } from '@/lib/auth'
+import { starterPricingPackages, type PricingPackage } from '@/data/pricingPackages'
 
-type ShopProduct = {
-  id: string
-  name: string
-  price: number
-  currency: string
-  category: string
-  description: string
-  status: string
-}
-
-export function ShopPage() {
-  const [products, setProducts] = useState<ShopProduct[]>([])
+export function PricingPage() {
+  const [products, setProducts] = useState<PricingPackage[]>([])
   const [error, setError] = useState('')
   const user = loadAuthUser()
 
   useEffect(() => {
     fetchShop()
-      .then((list) =>
-        setProducts((list as ShopProduct[]).filter((p) => p.status === 'published')),
-      )
-      .catch((e) => setError(e instanceof Error ? e.message : 'Could not load shop'))
+      .then((list) => {
+        const published = (list as PricingPackage[]).filter((p) => p.status === 'published')
+        setProducts(published.length ? published : starterPricingPackages.filter((p) => p.status === 'published'))
+      })
+      .catch((e) => {
+        setError(e instanceof Error ? e.message : 'Could not load pricing')
+        setProducts(starterPricingPackages.filter((p) => p.status === 'published'))
+      })
   }, [])
 
-  const show = products
+  const categories = [...new Set(products.map((p) => p.category))]
 
   return (
     <>
       <SEO
-        title="Shop"
-        description="IT packages and digital products from Ellines Tech — websites, identity, and starter kits."
-        path="/shop"
+        title="Product Pricing"
+        description="Transparent product pricing for Ellines Tech packages — websites, design, software, AI, and support."
+        path="/pricing"
       />
       <section className="section-padding">
         <div className="section-container">
           <SectionHeader
-            eyebrow="Shop"
-            title="IT packages & digital kits"
-            description="Buy ready packages for websites, branding, and digital starter work. Full checkout expands next — create an account to get early access."
+            eyebrow="Product pricing"
+            title="Packages & starting prices"
+            description="Clear starting prices for common IT packages. Need something custom? Enquire and we’ll scope a fit."
             align="center"
             className="mb-12"
           />
@@ -51,34 +46,40 @@ export function ShopPage() {
           {!user && (
             <p className="mb-8 text-center text-sm text-slate-400">
               <Link to="/account" className="font-semibold text-brand-300">
-                Sign in or create an account
+                Create an account
               </Link>{' '}
-              to save purchases when checkout goes live.
+              to save packages when checkout goes live.
             </p>
           )}
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {show.map((p) => (
-              <article
-                key={p.id}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-6"
-              >
-                <p className="text-xs font-semibold uppercase tracking-wider text-brand-400">
-                  {p.category}
-                </p>
-                <h2 className="mt-2 font-display text-xl font-bold text-white">{p.name}</h2>
-                <p className="mt-3 text-sm text-slate-400">{p.description}</p>
-                <p className="mt-6 text-lg font-semibold text-white">
-                  {p.currency} {p.price.toLocaleString()}
-                </p>
-                <Button href="/contact" className="mt-4" variant="secondary">
-                  Enquire
-                </Button>
-              </article>
-            ))}
-          </div>
-          {show.length === 0 && (
+
+          {categories.map((category) => (
+            <div key={category} className="mb-12">
+              <h2 className="mb-5 font-display text-lg font-semibold text-brand-300">{category}</h2>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {products
+                  .filter((p) => p.category === category)
+                  .map((p) => (
+                    <article
+                      key={p.id}
+                      className="rounded-2xl border border-white/10 bg-white/[0.03] p-6"
+                    >
+                      <h3 className="font-display text-xl font-bold text-white">{p.name}</h3>
+                      <p className="mt-3 text-sm text-slate-400">{p.description}</p>
+                      <p className="mt-6 text-lg font-semibold text-white">
+                        From {p.currency} {Number(p.price).toLocaleString()}
+                      </p>
+                      <Button href="/contact#quote" className="mt-4" variant="secondary">
+                        Enquire
+                      </Button>
+                    </article>
+                  ))}
+              </div>
+            </div>
+          ))}
+
+          {products.length === 0 && (
             <p className="text-center text-slate-400">
-              Packages are being prepared. Contact us for a custom quote.
+              Pricing is being updated. Contact us for a custom quote.
             </p>
           )}
         </div>
@@ -86,3 +87,6 @@ export function ShopPage() {
     </>
   )
 }
+
+/** @deprecated use PricingPage — kept for route alias */
+export const ShopPage = PricingPage

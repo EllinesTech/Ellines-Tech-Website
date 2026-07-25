@@ -38,12 +38,12 @@ export function AccountPage() {
 
   return (
     <>
-      <SEO title="Account" description="Customer account for Ellines Tech shop and orders." path="/account" />
+      <SEO title="Account" description="Customer account for Ellines Tech packages and orders." path="/account" />
       <section className="section-padding">
         <div className="section-container max-w-md">
           <h1 className="font-display text-3xl font-bold text-white">Account</h1>
           <p className="mt-2 text-sm text-slate-400">
-            Customer accounts for the IT shop. Staff use{' '}
+            Customer accounts for product pricing and packages. Staff use{' '}
             <Link to="/admin/login" className="text-brand-300">
               Super Admin
             </Link>
@@ -59,7 +59,7 @@ export function AccountPage() {
                 {user.email} · {user.role}
               </p>
               <div className="mt-6 flex flex-wrap gap-2">
-                <Button href="/shop">Browse shop</Button>
+                <Button href="/pricing">Browse pricing</Button>
                 <Button
                   type="button"
                   variant="secondary"

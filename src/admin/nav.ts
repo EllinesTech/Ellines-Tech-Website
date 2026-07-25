@@ -17,7 +17,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { to: '/admin', label: 'Dashboard', icon: 'Home' },
       { to: '/admin/activity', label: 'Activity Feed', icon: 'Activity' },
       { to: '/admin/products', label: 'Products', icon: 'Package' },
-      { to: '/admin/shop', label: 'Shop', icon: 'ShoppingBag' },
+      { to: '/admin/shop', label: 'Product Pricing', icon: 'ShoppingBag' },
       { to: '/admin/services', label: 'Services', icon: 'Layers' },
       { to: '/admin/portfolio', label: 'Portfolio', icon: 'Briefcase' },
       { to: '/admin/media', label: 'Site Photos', icon: 'Image' },
