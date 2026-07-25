@@ -16,6 +16,7 @@ const categoryScenes: Record<string, string> = {
   ai: siteConfig.media.scenes.aiVisual,
   marketing: siteConfig.media.scenes.growth,
   security: siteConfig.media.scenes.uiDesign,
+  career: siteConfig.media.scenes.workspace,
 }
 
 export function ServiceDetailPage() {

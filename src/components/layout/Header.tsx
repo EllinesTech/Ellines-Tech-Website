@@ -19,6 +19,7 @@ function NavDropdown({
 }) {
   const location = useLocation()
   const active = location.pathname.startsWith(item.href)
+  const mega = (item.children?.length || 0) > 8
 
   return (
     <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
@@ -35,7 +36,12 @@ function NavDropdown({
       </Link>
       {open && item.children && (
         <div className="absolute left-0 top-full z-50 pt-2">
-          <div className="w-72 rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-black/50 backdrop-blur-xl">
+          <div
+            className={cn(
+              'rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-black/50 backdrop-blur-xl',
+              mega ? 'grid w-[34rem] grid-cols-2 gap-0.5' : 'w-72',
+            )}
+          >
             {item.children.map((child) => (
               <Link
                 key={child.href}
@@ -67,7 +73,8 @@ export function Header() {
   }, [location.pathname])
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.06] bg-slate-950/75 backdrop-blur-2xl">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.07] bg-slate-950/70 shadow-[0_1px_0_0_rgba(34,211,238,0.08)] backdrop-blur-2xl">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-brand-400/35 to-transparent" />
       <div className="section-container flex h-14 items-center gap-4 lg:h-16">
         <Logo onClick={() => setMobileOpen(false)} className="mr-auto lg:mr-0" />
 

@@ -24,7 +24,7 @@ export function HeroVisual() {
         transition={{ duration: 0.85, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
         className="animate-float relative"
       >
-        <div className="relative overflow-hidden rounded-[1.35rem] border border-white/12 bg-gradient-to-br from-slate-900/95 via-surface-elevated/90 to-slate-950/95 shadow-[0_40px_80px_-24px_rgba(0,0,0,0.75),0_0_0_1px_rgba(34,211,238,0.08)] backdrop-blur-xl">
+        <div className="shine-edge relative overflow-hidden rounded-[1.35rem] border border-white/12 bg-gradient-to-br from-slate-900/95 via-surface-elevated/90 to-slate-950/95 shadow-[0_40px_80px_-24px_rgba(0,0,0,0.75)] backdrop-blur-xl">
           <div className="hero-grid absolute inset-0 opacity-[0.35]" />
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-300/50 to-transparent" />
 

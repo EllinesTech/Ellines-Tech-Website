@@ -9,6 +9,7 @@ import {
   Palette,
   Megaphone,
   ArrowRight,
+  FileText,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
@@ -23,9 +24,10 @@ import { industries } from '@/data/industries'
 import { portfolioProjects } from '@/data/portfolio'
 import { clientBrands } from '@/data/clients'
 import { homeCopy, testimonials, valueProps as valuePropData } from '@/data/content'
-import { siteConfig, technologies } from '@/data/site'
+import { siteConfig } from '@/data/site'
 import { useSiteCopy } from '@/hooks/useSiteCopy'
 import { ProcessSection } from '@/components/home/ProcessSection'
+import { TechMarquee } from '@/components/home/TechMarquee'
 import { NewsletterSignup } from '@/components/NewsletterSignup'
 
 const iconMap: Record<string, React.ElementType> = {
@@ -34,6 +36,7 @@ const iconMap: Record<string, React.ElementType> = {
   Brain,
   Megaphone,
   Shield,
+  FileText,
 }
 
 const valueIconMap = {
@@ -103,12 +106,14 @@ export function HomePage() {
                 </Button>
               </div>
 
-              <p className="mt-8 text-sm text-slate-500">
-                Part of{' '}
-                <span className="text-slate-400">{siteConfig.group.name}</span>
-                {' · '}
-                {siteConfig.url.replace('https://', '')}
-              </p>
+              <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  24/7 support
+                </span>
+                <span>Kenya · Africa · Global</span>
+                <span>Resume · Software · AI</span>
+              </div>
             </motion.div>
 
             <HeroVisual />
@@ -116,21 +121,8 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Tech trust strip */}
-      <section className="overflow-hidden border-y border-white/5 bg-surface/50 py-5">
-        <div className="section-container">
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 sm:justify-between">
-            {technologies.slice(0, 8).map((tech) => (
-              <span
-                key={tech}
-                className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-slate-500"
-              >
-                {tech}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Tech trust marquee */}
+      <TechMarquee />
 
       {/* Stats */}
       <section className="border-b border-white/5 py-12 sm:py-14">
@@ -143,7 +135,7 @@ export function HomePage() {
           >
             {stats.map((stat) => (
               <div key={stat.label} className="text-center sm:text-left">
-                <p className="font-display text-4xl font-bold tracking-tight text-brand-300 sm:text-5xl">
+                <p className="font-display text-4xl font-bold tracking-tight text-gradient sm:text-5xl">
                   {stat.value}
                 </p>
                 <p className="mt-2 text-sm text-slate-500">{stat.label}</p>

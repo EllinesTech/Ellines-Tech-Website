@@ -9,6 +9,7 @@ import { HashScroll } from '@/components/HashScroll'
 export function Layout() {
   return (
     <div className="flex min-h-screen flex-col">
+      <div className="noise-overlay" aria-hidden />
       <VisitTracker />
       <HashScroll />
       <AnnouncementBar />

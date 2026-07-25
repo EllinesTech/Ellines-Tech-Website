@@ -4,6 +4,7 @@ export type ServiceCategory =
   | 'ai'
   | 'marketing'
   | 'security'
+  | 'career'
 
 export interface Service {
   slug: string
@@ -19,7 +20,7 @@ export const serviceCategories: Record<
 > = {
   design: {
     label: 'Design',
-    description: 'Logo, web, UI/UX, product, and resume design that builds brand identity.',
+    description: 'Logo, web, UI/UX, and product design that builds brand identity.',
     icon: 'Palette',
   },
   development: {
@@ -41,6 +42,11 @@ export const serviceCategories: Record<
     label: 'Cyber Security',
     description: 'Security services that protect applications, data, and infrastructure.',
     icon: 'Shield',
+  },
+  career: {
+    label: 'Career Documents',
+    description: 'Resume building, CV revamp, cover letters, and LinkedIn — priced for Kenya.',
+    icon: 'FileText',
   },
 }
 
@@ -100,15 +106,54 @@ export const services: Service[] = [
   },
   {
     slug: 'resume-cv-design-revamping',
-    name: 'Resume/CV Design & Revamping',
-    category: 'design',
+    name: 'Resume / CV Revamp',
+    category: 'career',
     description:
-      'A well-crafted resume or CV is essential for making a strong impression with recruiters and hiring managers.',
+      'Refresh your existing CV into a clean, ATS-friendly format that stands out to Kenyan and global recruiters.',
     offerings: [
-      'CV redesign',
+      'CV redesign & structure',
       'ATS-friendly layouts',
-      'Personal branding',
-      'Cover letter design',
+      'Achievement rewriting',
+      'Personal branding polish',
+    ],
+  },
+  {
+    slug: 'resume-building',
+    name: 'Resume Building',
+    category: 'career',
+    description:
+      'Full professional resume built from scratch — structure, keywords, and impact bullets for your target roles.',
+    offerings: [
+      'From-scratch ATS CV',
+      'Role-targeted keywords',
+      'Impact-focused bullets',
+      'Delivery in editable formats',
+    ],
+  },
+  {
+    slug: 'cover-letter-writing',
+    name: 'Cover Letter Writing',
+    category: 'career',
+    description:
+      'Tailored cover letters matched to your CV and the role you’re applying for.',
+    offerings: [
+      'Role-specific letter',
+      'Tone matched to industry',
+      'One revision round',
+      'PDF & Word delivery',
+    ],
+  },
+  {
+    slug: 'linkedin-optimisation',
+    name: 'LinkedIn Optimisation',
+    category: 'career',
+    description:
+      'Headline, About, and experience rewrite so recruiters find you faster on LinkedIn.',
+    offerings: [
+      'Headline & About rewrite',
+      'Experience optimisation',
+      'Keywords for search',
+      'Profile checklist',
     ],
   },
   {
