@@ -49,28 +49,28 @@ export const valueProps = [
     title: 'Perfect Business Solutions',
     description:
       'Tailored systems for your operations — built for efficiency, clarity, and lasting impact across every part of the business.',
-    image: '/media/scenes/service-full.jpg',
+    image: '/media/scenes/solutions.png',
   },
   {
     icon: 'Zap' as const,
     title: 'Business Growth Planning',
     description:
       'Strategy and technology planning that identifies opportunities and turns them into actionable roadmaps you can execute.',
-    image: '/media/scenes/hero-tech.jpg',
+    image: '/media/scenes/growth.png',
   },
   {
     icon: 'Shield' as const,
     title: 'Strategic Development',
     description:
       'End-to-end product and software development that positions you for long-term success in competitive markets.',
-    image: '/media/scenes/ui-design.jpg',
+    image: '/media/scenes/strategy.png',
   },
   {
     icon: 'Globe2' as const,
     title: 'Expert Tech Services',
     description:
       'Ongoing expertise across software, AI, cloud, and digital delivery — so your technology keeps performing as you scale.',
-    image: '/media/scenes/solutions-ai.jpg',
+    image: '/media/scenes/ai.png',
   },
 ] as const
 
