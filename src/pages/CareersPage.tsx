@@ -6,6 +6,7 @@ import { SEO } from '@/components/SEO'
 import { FeatureGate } from '@/components/FeatureGate'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Button } from '@/components/ui/Button'
+import { PrivacyConsentField } from '@/components/PrivacyConsentField'
 import { fetchJobs, submitJobApplication, type JobPosting } from '@/lib/cmsApi'
 import { cn } from '@/lib/utils'
 
@@ -245,6 +246,10 @@ function ApplyForm({
             {error}
           </p>
         )}
+
+        <div className="sm:col-span-2">
+          <PrivacyConsentField id="careersPrivacyConsent" />
+        </div>
 
         <div className="flex flex-wrap gap-3 sm:col-span-2">
           <Button type="submit" disabled={submitting} icon>

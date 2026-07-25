@@ -5,6 +5,7 @@ import { ChatWidget } from '@/components/engagement/ChatWidget'
 import { AnnouncementBar } from '@/components/engagement/AnnouncementBar'
 import { VisitTracker } from '@/components/VisitTracker'
 import { HashScroll } from '@/components/HashScroll'
+import { ConsentBanner } from '@/components/ConsentBanner'
 
 export function Layout() {
   return (
@@ -19,6 +20,7 @@ export function Layout() {
       </main>
       <Footer />
       <ChatWidget />
+      <ConsentBanner />
     </div>
   )
 }

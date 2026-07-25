@@ -42,6 +42,7 @@ export function RequestServicePage() {
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [privacyOk, setPrivacyOk] = useState(false)
 
   useEffect(() => {
     fetchShop()
@@ -65,6 +66,10 @@ export function RequestServicePage() {
 
   async function submit() {
     setError('')
+    if (!privacyOk) {
+      setError('Please accept the privacy notice to continue.')
+      return
+    }
     setSubmitting(true)
     try {
       await submitServiceRequest({
@@ -408,11 +413,31 @@ export function RequestServicePage() {
                   Payment instructions (M-Pesa / invoice) are shared after we confirm scope. No card
                   charge on this form.
                 </p>
+                <label className="flex items-start gap-3 text-sm leading-relaxed text-slate-400">
+                  <input
+                    type="checkbox"
+                    checked={privacyOk}
+                    onChange={(e) => setPrivacyOk(e.target.checked)}
+                    className="mt-1 accent-cyan-400"
+                    required
+                  />
+                  <span>
+                    I agree that Ellines Tech may collect and process this information under the{' '}
+                    <Link to="/privacy" className="text-brand-300 hover:text-brand-200">
+                      Privacy Policy
+                    </Link>{' '}
+                    and Kenya Data Protection Act, 2019. I can manage cookies in the{' '}
+                    <Link to="/cookies" className="text-brand-300 hover:text-brand-200">
+                      Cookie Policy
+                    </Link>
+                    .
+                  </span>
+                </label>
                 <div className="flex flex-wrap gap-2">
                   <Button type="button" variant="secondary" onClick={() => setStep(2)}>
                     Back
                   </Button>
-                  <Button type="button" onClick={submit} disabled={submitting} icon>
+                  <Button type="button" onClick={submit} disabled={submitting || !privacyOk} icon>
                     {submitting ? 'Sending…' : intent === 'buy' ? 'Submit purchase request' : 'Submit request'}
                   </Button>
                 </div>

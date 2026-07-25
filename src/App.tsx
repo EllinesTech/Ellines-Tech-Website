@@ -17,7 +17,7 @@ import { ResourceDetailPage } from '@/pages/ResourceDetailPage'
 import { ClientsPage } from '@/pages/ClientsPage'
 import { SuccessStoriesPage } from '@/pages/SuccessStoriesPage'
 import { SolutionsPage } from '@/pages/SolutionsPage'
-import { FaqPage, PrivacyPage, TermsPage } from '@/pages/LegalPages'
+import { CookiePolicyPage, FaqPage, PrivacyPage, TermsPage } from '@/pages/LegalPages'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { CmsPageView } from '@/pages/CmsPageView'
 import { ShopPage as PricingPage } from '@/pages/ShopPage'
@@ -218,6 +218,7 @@ export default function App() {
             />
             <Route path="faq" element={<FaqPage />} />
             <Route path="privacy" element={<PrivacyPage />} />
+            <Route path="cookies" element={<CookiePolicyPage />} />
             <Route path="terms" element={<TermsPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>

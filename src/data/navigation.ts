@@ -158,6 +158,7 @@ export const footerNavigation = {
     { label: 'Client account', href: '/account' },
     { label: 'FAQ', href: '/faq' },
     { label: 'Privacy', href: '/privacy' },
+    { label: 'Cookies', href: '/cookies' },
     { label: 'Terms', href: '/terms' },
   ],
 }
