@@ -11,6 +11,7 @@ import {
 import { SEO } from '@/components/SEO'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Card } from '@/components/ui/Card'
+import { CompanyMaterials } from '@/components/downloads/CompanyMaterials'
 import {
   defaultKnowledgeArticles,
   knowledgeCategories,
@@ -79,6 +80,10 @@ export function ResourcesPage() {
             align="center"
             className="mb-10"
           />
+
+          <div className="mb-14 rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8">
+            <CompanyMaterials />
+          </div>
 
           {error && (
             <p className="mb-8 text-center text-sm text-amber-200/90">

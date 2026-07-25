@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
+import { CompanyMaterials } from '@/components/downloads/CompanyMaterials'
 import {
   fetchMyInvoices,
   fetchMyLeads,
@@ -191,6 +192,21 @@ export function AccountPage() {
                 </div>
                 {message && <p className="mt-2 text-sm text-emerald-300">{message}</p>}
                 {error && <p className="mt-2 text-sm text-amber-200">{error}</p>}
+              </div>
+
+              <div className="rounded-2xl border border-white/10 p-5">
+                <CompanyMaterials
+                  compact
+                  title="Company materials"
+                  description=""
+                />
+                <p className="mt-3 text-xs text-slate-500">
+                  Need a custom pack for a tender?{' '}
+                  <Link to="/contact" className="text-brand-300">
+                    Contact us
+                  </Link>
+                  .
+                </p>
               </div>
             </div>
           ) : (

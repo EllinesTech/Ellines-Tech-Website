@@ -1,0 +1,38 @@
+[
+  {
+    "id": "dl_ellines_tech_company_profile",
+    "title": "Company Profile",
+    "description": "Ellines Tech · Technology arm of Ellines Group",
+    "fileUrl": "/downloads/ellines-tech-company-profile.pdf",
+    "htmlUrl": "/downloads/ellines-tech-company-profile.html",
+    "category": "company",
+    "status": "published"
+  },
+  {
+    "id": "dl_ellines_tech_pricing_rate_card",
+    "title": "Pricing & Rate Card",
+    "description": "Published starter packages · Custom quotes for enterprise",
+    "fileUrl": "/downloads/ellines-tech-pricing-rate-card.pdf",
+    "htmlUrl": "/downloads/ellines-tech-pricing-rate-card.html",
+    "category": "company",
+    "status": "published"
+  },
+  {
+    "id": "dl_ellines_tech_capabilities",
+    "title": "Capabilities One-Pager",
+    "description": "What Ellines Tech delivers",
+    "fileUrl": "/downloads/ellines-tech-capabilities.pdf",
+    "htmlUrl": "/downloads/ellines-tech-capabilities.html",
+    "category": "company",
+    "status": "published"
+  },
+  {
+    "id": "dl_ellines_tech_service_catalogue",
+    "title": "Service Catalogue Summary",
+    "description": "Services overview for stakeholders & tenders",
+    "fileUrl": "/downloads/ellines-tech-service-catalogue.pdf",
+    "htmlUrl": "/downloads/ellines-tech-service-catalogue.html",
+    "category": "company",
+    "status": "published"
+  }
+]

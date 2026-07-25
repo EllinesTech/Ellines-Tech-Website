@@ -242,29 +242,69 @@ export function defaultKnowledge() {
     "slug": "company-profile-pdf",
     "title": "Company Profile PDF",
     "excerpt": "Overview of Ellines Tech capabilities, products, and engagement models.",
-    "body": "Request our latest company profile for stakeholder sharing. It covers flagship products (MedFlow, RV22, AfyaVox, Juno4), services, and how we engage from discovery to launch.\n\nEmail or WhatsApp Ellines Tech with “Company Profile” in the subject, or use the Contact form — we will send the current PDF.\n\nLooking for a tailored one-pager for a tender? Tell us the sector and deadline.",
+    "body": "Download our company profile for stakeholder sharing. It covers Ellines Group context, flagship products (MedFlow, RV22, AfyaVox, Juno4), services, and how we engage from discovery to launch.\n\nUse the PDF or printable HTML below. Looking for a tailored one-pager for a tender? Tell us the sector and deadline via Contact.",
     "category": "downloads",
-    "tags": [
-      "download",
-      "company"
-    ],
+    "tags": ["download", "company"],
     "status": "published",
-    "updatedAt": "2026-01-15T10:00:00.000Z",
+    "downloadUrl": "/downloads/ellines-tech-company-profile.pdf",
+    "htmlUrl": "/downloads/ellines-tech-company-profile.html",
+    "updatedAt": "2026-07-25T10:00:00.000Z",
     "createdAt": "2026-01-15T10:00:00.000Z"
+  },
+  {
+    "id": "kh_pricing_rate_card",
+    "slug": "pricing-rate-card",
+    "title": "Pricing & Rate Card",
+    "excerpt": "Starter packages, engagement models, and how enterprise quotes work.",
+    "body": "Download the Ellines Tech pricing rate card for a clear overview of published starter packages and how custom enterprise work is quoted.\n\nLive catalogue prices may update on /pricing — this document is the stakeholder-ready summary.",
+    "category": "downloads",
+    "tags": ["download", "pricing"],
+    "status": "published",
+    "downloadUrl": "/downloads/ellines-tech-pricing-rate-card.pdf",
+    "htmlUrl": "/downloads/ellines-tech-pricing-rate-card.html",
+    "updatedAt": "2026-07-25T10:00:00.000Z",
+    "createdAt": "2026-07-25T10:00:00.000Z"
+  },
+  {
+    "id": "kh_capabilities",
+    "slug": "capabilities-one-pager",
+    "title": "Capabilities One-Pager",
+    "excerpt": "Engineering, AI, healthcare tech, design, and digital ops at a glance.",
+    "body": "A concise one-pager of Ellines Tech capabilities for introductions, partnerships, and internal stakeholder packs.\n\nDownload the PDF or open the printable HTML version.",
+    "category": "downloads",
+    "tags": ["download", "capabilities"],
+    "status": "published",
+    "downloadUrl": "/downloads/ellines-tech-capabilities.pdf",
+    "htmlUrl": "/downloads/ellines-tech-capabilities.html",
+    "updatedAt": "2026-07-25T10:00:00.000Z",
+    "createdAt": "2026-07-25T10:00:00.000Z"
+  },
+  {
+    "id": "kh_service_catalogue",
+    "slug": "service-catalogue-summary",
+    "title": "Service Catalogue Summary",
+    "excerpt": "Stakeholder-ready summary of software, cloud, design, and enablement services.",
+    "body": "Use this catalogue summary with tenders and RFPs alongside the Company Profile. For current package prices, also download the Pricing Rate Card or visit /pricing.",
+    "category": "downloads",
+    "tags": ["download", "services"],
+    "status": "published",
+    "downloadUrl": "/downloads/ellines-tech-service-catalogue.pdf",
+    "htmlUrl": "/downloads/ellines-tech-service-catalogue.html",
+    "updatedAt": "2026-07-25T10:00:00.000Z",
+    "createdAt": "2026-07-25T10:00:00.000Z"
   },
   {
     "id": "kh_medflow_sheet",
     "slug": "medflow-product-sheet",
     "title": "MedFlow Product Sheet",
     "excerpt": "Module list and outcomes summary for hospital decision-makers.",
-    "body": "The MedFlow product sheet summarizes clinical, billing, pharmacy, and reporting modules with typical deployment timelines.\n\nAsk via Contact for the latest PDF, or book a live demo to see your workflows mapped on screen.\n\nWe can also prepare a comparison sheet against your current paper or legacy process.",
+    "body": "The MedFlow product sheet summarizes clinical, billing, pharmacy, and reporting modules with typical deployment timelines.\n\nFor the full company pack, download the Company Profile and Capabilities one-pager. Book a live demo to see your workflows mapped on screen.",
     "category": "downloads",
-    "tags": [
-      "medflow",
-      "download"
-    ],
+    "tags": ["medflow", "download"],
     "status": "published",
-    "updatedAt": "2026-01-15T10:00:00.000Z",
+    "downloadUrl": "/downloads/ellines-tech-capabilities.pdf",
+    "htmlUrl": "/downloads/ellines-tech-capabilities.html",
+    "updatedAt": "2026-07-25T10:00:00.000Z",
     "createdAt": "2026-01-15T10:00:00.000Z"
   },
   {
@@ -272,14 +312,13 @@ export function defaultKnowledge() {
     "slug": "brand-assets",
     "title": "Brand Assets",
     "excerpt": "Logo usage and press assets for partners covering Ellines Tech.",
-    "body": "Partners and press can request official logo files and brand usage notes. Do not stretch or recolor the mark outside approved guidelines.\n\nSubmit a short note on intended use via Contact. We will share a pack suitable for web and print.\n\nFor client brand work we delivered (logos and identities), rights remain with those brands unless otherwise agreed.",
+    "body": "Partners and press can use materials from our Company Profile pack. Official logo files remain available on request for approved press use.\n\nDo not stretch or recolor the mark outside approved guidelines. Submit intended use via Contact for a full brand pack.",
     "category": "downloads",
-    "tags": [
-      "brand",
-      "download"
-    ],
+    "tags": ["brand", "download"],
     "status": "published",
-    "updatedAt": "2026-01-15T10:00:00.000Z",
+    "downloadUrl": "/downloads/ellines-tech-company-profile.pdf",
+    "htmlUrl": "/downloads/ellines-tech-company-profile.html",
+    "updatedAt": "2026-07-25T10:00:00.000Z",
     "createdAt": "2026-01-15T10:00:00.000Z"
   },
   {

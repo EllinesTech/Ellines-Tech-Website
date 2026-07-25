@@ -111,6 +111,31 @@ export function ResourceDetailPage() {
             ))}
           </div>
 
+          {(article.downloadUrl || article.htmlUrl) && (
+            <div className="mt-8 flex flex-wrap gap-3 rounded-2xl border border-brand-400/20 bg-brand-500/10 p-5">
+              <p className="w-full text-sm font-medium text-brand-100">Download this material</p>
+              {article.downloadUrl && (
+                <a
+                  href={article.downloadUrl}
+                  download
+                  className="inline-flex items-center rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-brand-400"
+                >
+                  Download PDF
+                </a>
+              )}
+              {article.htmlUrl && (
+                <a
+                  href={article.htmlUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center rounded-xl border border-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/5"
+                >
+                  View printable HTML
+                </a>
+              )}
+            </div>
+          )}
+
           <div className="mt-12 flex flex-wrap gap-4 border-t border-white/10 pt-8">
             <Button href="/contact" icon>
               Talk to Ellines Tech

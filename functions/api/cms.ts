@@ -1,4 +1,5 @@
 import { defaultKnowledge } from './knowledgeDefaults.js'
+import { defaultDownloads } from './downloadsDefaults.js'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -6,7 +7,7 @@ const cors = {
   'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key, X-User-Token',
 }
 
-/** Load Knowledge Hub articles — seed defaults when KV is empty; merge missing seed ids */
+/** Load Knowledge Hub articles — seed defaults when KV is empty; merge missing seed ids / downloadUrl */
 async function loadKnowledgeArticles(env) {
   let articles = await getJson(env, 'cms:knowledge', null)
   const defaults = defaultKnowledge()
@@ -15,16 +16,163 @@ async function loadKnowledgeArticles(env) {
     await putJson(env, 'cms:knowledge', articles)
     return articles
   }
-  const ids = new Set(articles.map((a) => a.id))
+  const byId = new Map(articles.map((a) => [a.id, a]))
   let changed = false
   for (const d of defaults) {
-    if (!ids.has(d.id)) {
+    const existing = byId.get(d.id)
+    if (!existing) {
       articles.push(d)
+      changed = true
+      continue
+    }
+    if (d.downloadUrl && !existing.downloadUrl) {
+      existing.downloadUrl = d.downloadUrl
+      if (d.htmlUrl && !existing.htmlUrl) existing.htmlUrl = d.htmlUrl
       changed = true
     }
   }
   if (changed) await putJson(env, 'cms:knowledge', articles)
   return articles
+}
+
+async function loadDownloads(env) {
+  let list = await getJson(env, 'cms:downloads', null)
+  const defaults = defaultDownloads()
+  if (!list || !Array.isArray(list) || list.length === 0) {
+    list = defaults
+    await putJson(env, 'cms:downloads', list)
+    return list
+  }
+  const ids = new Set(list.map((d) => d.id))
+  let changed = false
+  for (const d of defaults) {
+    if (!ids.has(d.id)) {
+      list.push(d)
+      changed = true
+    }
+  }
+  if (changed) await putJson(env, 'cms:downloads', list)
+  return list
+}
+
+function defaultSiteSettings() {
+  return {
+    careersEnabled: true,
+    requestEnabled: true,
+    chatEnabled: true,
+    pricingEnabled: true,
+    resourcesEnabled: true,
+    downloadsEnabled: true,
+    newsletterEnabled: true,
+    contactEnabled: true,
+    announcement: '',
+    alwaysOpen: true,
+  }
+}
+
+async function loadSiteSettings(env) {
+  const stored = await getJson(env, 'cms:settings', null)
+  return { ...defaultSiteSettings(), ...(stored && typeof stored === 'object' ? stored : {}) }
+}
+
+function defaultJobs() {
+  const now = new Date().toISOString()
+  return [
+    {
+      id: 'job_fullstack',
+      title: 'Senior Full-Stack Developer',
+      department: 'Engineering',
+      type: 'Full-time',
+      location: 'Nairobi / Remote',
+      description:
+        'Own end-to-end product delivery across React, APIs, and cloud infrastructure for Ellines platforms.',
+      status: 'published',
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'job_flutter',
+      title: 'Flutter Mobile Developer',
+      department: 'Engineering',
+      type: 'Full-time',
+      location: 'Nairobi',
+      description:
+        'Ship polished mobile experiences for healthcare and business products used across East Africa.',
+      status: 'published',
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'job_ai',
+      title: 'AI/ML Engineer',
+      department: 'AI Lab',
+      type: 'Full-time',
+      location: 'Remote',
+      description:
+        'Build and productionize ML systems for voice, automation, and decision-support products.',
+      status: 'published',
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'job_design',
+      title: 'UI/UX Designer',
+      department: 'Design',
+      type: 'Full-time',
+      location: 'Nairobi',
+      description:
+        'Design product interfaces and brand systems that feel premium, clear, and African-market ready.',
+      status: 'published',
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'job_devops',
+      title: 'DevOps Engineer',
+      department: 'Infrastructure',
+      type: 'Full-time',
+      location: 'Remote',
+      description:
+        'Harden deployment pipelines, observability, and secure cloud operations for our product suite.',
+      status: 'published',
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'job_bd',
+      title: 'Business Development Manager',
+      department: 'Sales',
+      type: 'Full-time',
+      location: 'Nairobi',
+      description:
+        'Grow enterprise and SME relationships across Kenya and the region with consultative selling.',
+      status: 'published',
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'job_internship',
+      title: 'Internship / Graduate Program',
+      department: 'Talent',
+      type: 'Internship',
+      location: 'Nairobi / Hybrid',
+      description:
+        'Open call for interns and recent graduates passionate about technology in Africa.',
+      status: 'published',
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]
+}
+
+async function loadJobs(env) {
+  let list = await getJson(env, 'cms:jobs', null)
+  if (!list || !Array.isArray(list) || list.length === 0) {
+    list = defaultJobs()
+    await putJson(env, 'cms:jobs', list)
+    return list
+  }
+  return list
 }
 
 function json(data, status = 200) {
@@ -342,6 +490,43 @@ export async function onRequestGet(context) {
     })
   }
 
+  if (resource === 'downloads') {
+    const list = await loadDownloads(env)
+    const publishedOnly = url.searchParams.get('published') === '1'
+    if (!publishedOnly && !(await staffOrGod(request, env))) {
+      return json({ error: 'unauthorized' }, 401)
+    }
+    return json({
+      downloads: publishedOnly ? list.filter((d) => d.status === 'published') : list,
+    })
+  }
+
+  if (resource === 'settings') {
+    const settings = await loadSiteSettings(env)
+    return json({ settings })
+  }
+
+  if (resource === 'jobs') {
+    const settings = await loadSiteSettings(env)
+    const list = await loadJobs(env)
+    const publishedOnly = url.searchParams.get('published') === '1'
+    if (publishedOnly) {
+      if (!settings.careersEnabled) return json({ jobs: [], careersEnabled: false })
+      return json({
+        jobs: list.filter((j) => j.status === 'published'),
+        careersEnabled: true,
+      })
+    }
+    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
+    return json({ jobs: list, careersEnabled: settings.careersEnabled })
+  }
+
+  if (resource === 'applications') {
+    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
+    const applications = await getJson(env, 'cms:applications', [])
+    return json({ applications })
+  }
+
   return json({ error: 'unknown resource' }, 400)
 }
 
@@ -353,6 +538,17 @@ export async function onRequestPost(context) {
 
   // Public lead capture / newsletter
   if (action === 'lead') {
+    const settings = await loadSiteSettings(env)
+    const source = String(body.source || 'website')
+    if (
+      !settings.requestEnabled &&
+      (source === 'request-flow' || body.intent === 'buy' || body.intent === 'quote')
+    ) {
+      return json({ error: 'Service requests are currently unavailable' }, 403)
+    }
+    if (!settings.contactEnabled && source === 'contact') {
+      return json({ error: 'Contact form is currently unavailable' }, 403)
+    }
     const sessionUser = await resolveUserSession(request, env)
     const leads = await getJson(env, 'cms:leads', [])
     const lead = {
@@ -452,6 +648,10 @@ export async function onRequestPost(context) {
   }
 
   if (action === 'newsletter_subscribe') {
+    const settings = await loadSiteSettings(env)
+    if (!settings.newsletterEnabled) {
+      return json({ error: 'Newsletter signup is currently unavailable' }, 403)
+    }
     const list = await getJson(env, 'cms:newsletter', [])
     const email = String(body.email || '').toLowerCase().trim()
     if (!email.includes('@')) return json({ error: 'invalid email' }, 400)
@@ -460,6 +660,75 @@ export async function onRequestPost(context) {
       await putJson(env, 'cms:newsletter', list.slice(0, 2000))
     }
     return json({ ok: true })
+  }
+
+  if (action === 'job_apply') {
+    const settings = await loadSiteSettings(env)
+    if (!settings.careersEnabled) {
+      return json({ error: 'Careers applications are currently closed' }, 403)
+    }
+    const name = String(body.name || '').trim()
+    const email = String(body.email || '').toLowerCase().trim()
+    if (!name || !email.includes('@')) {
+      return json({ error: 'name and valid email required' }, 400)
+    }
+    const jobs = await loadJobs(env)
+    const jobId = String(body.jobId || '').trim()
+    const job = jobs.find((j) => j.id === jobId && j.status === 'published')
+    if (!job && jobId !== 'general') {
+      return json({ error: 'Role not found or no longer open' }, 404)
+    }
+    // Resume payloads live in KV — keep under ~1.2MB base64 (~900KB file)
+    const resumeData = typeof body.resumeData === 'string' ? body.resumeData : ''
+    if (resumeData.length > 1_200_000) {
+      return json({ error: 'Resume file too large (max ~900KB)' }, 400)
+    }
+    const application = {
+      id: id('app'),
+      jobId: job?.id || jobId || 'general',
+      jobTitle: job?.title || body.jobTitle || 'General application',
+      name,
+      email,
+      phone: String(body.phone || '').trim(),
+      coverLetter: String(body.coverLetter || '').trim().slice(0, 8000),
+      portfolioUrl: String(body.portfolioUrl || '').trim().slice(0, 500),
+      linkedinUrl: String(body.linkedinUrl || '').trim().slice(0, 500),
+      resumeFileName: String(body.resumeFileName || '').trim().slice(0, 200),
+      resumeMime: String(body.resumeMime || '').trim().slice(0, 100),
+      resumeData,
+      status: 'new',
+      at: new Date().toISOString(),
+      notes: '',
+    }
+    const applications = await getJson(env, 'cms:applications', [])
+    applications.unshift(application)
+    await putJson(env, 'cms:applications', applications.slice(0, 500))
+    await logActivity(env, {
+      type: 'application',
+      message: `Application: ${application.name} → ${application.jobTitle}`,
+    })
+    const notes = await getJson(env, 'cms:notifications', [])
+    notes.unshift({
+      id: id('note'),
+      title: 'New job application',
+      body: `${application.name} applied for ${application.jobTitle} (${application.email})`,
+      at: new Date().toISOString(),
+      read: false,
+      kind: 'application',
+      applicationId: application.id,
+    })
+    await putJson(env, 'cms:notifications', notes.slice(0, 100))
+    const emailResult = await sendResendEmail(env, {
+      to: env.CAREERS_NOTIFY_EMAIL || 'careers@ellinestech.co.ke',
+      subject: `Application: ${application.jobTitle} — ${application.name}`,
+      html: `<p><strong>${application.name}</strong> applied for <strong>${application.jobTitle}</strong>.</p>
+<p>Email: ${application.email}<br/>Phone: ${application.phone || '—'}<br/>
+LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portfolioUrl || '—'}</p>
+<p>${(application.coverLetter || '').replace(/</g, '&lt;').slice(0, 2000)}</p>
+<p>View in Admin → Careers.</p>`,
+    })
+    const { resumeData: _omit, ...safe } = application
+    return json({ ok: true, application: safe, email: emailResult })
   }
 
   if (action === 'track_visit') {
@@ -641,6 +910,8 @@ export async function onRequestPost(context) {
       status: article.status === 'published' ? 'published' : 'draft',
       seoTitle: article.seoTitle || article.title,
       seoDescription: article.seoDescription || article.excerpt || '',
+      downloadUrl: article.downloadUrl || '',
+      htmlUrl: article.htmlUrl || '',
       updatedAt: new Date().toISOString(),
       createdAt: article.createdAt || new Date().toISOString(),
     }
@@ -662,6 +933,144 @@ export async function onRequestPost(context) {
       type: 'knowledge',
       message: `Deleted knowledge ${body.slug || body.id}`,
     })
+    return json({ ok: true })
+  }
+
+  if (action === 'update_lead_status') {
+    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
+    const leadId = body.id || body.leadId
+    const status = String(body.status || '').trim()
+    if (!leadId || !status) return json({ error: 'id and status required' }, 400)
+    const leads = await getJson(env, 'cms:leads', [])
+    const idx = leads.findIndex((l) => l.id === leadId)
+    if (idx < 0) return json({ error: 'not found' }, 404)
+    leads[idx] = {
+      ...leads[idx],
+      status,
+      statusUpdatedAt: new Date().toISOString(),
+      notes: body.notes !== undefined ? String(body.notes) : leads[idx].notes || '',
+    }
+    await putJson(env, 'cms:leads', leads)
+    await logActivity(env, {
+      type: 'lead',
+      message: `Lead ${leads[idx].email || leadId} → ${status}`,
+    })
+    return json({ ok: true, lead: leads[idx] })
+  }
+
+  if (action === 'save_settings') {
+    if (!godOnly) return json({ error: 'Not authorized' }, 403)
+    const incoming = body.settings || {}
+    const next = {
+      ...defaultSiteSettings(),
+      ...incoming,
+      careersEnabled: Boolean(incoming.careersEnabled),
+      requestEnabled: Boolean(incoming.requestEnabled),
+      chatEnabled: Boolean(incoming.chatEnabled),
+      pricingEnabled: Boolean(incoming.pricingEnabled),
+      resourcesEnabled: Boolean(incoming.resourcesEnabled),
+      downloadsEnabled: Boolean(incoming.downloadsEnabled),
+      newsletterEnabled: Boolean(incoming.newsletterEnabled),
+      contactEnabled: Boolean(incoming.contactEnabled),
+      announcement: String(incoming.announcement || '').slice(0, 500),
+      alwaysOpen: Boolean(incoming.alwaysOpen),
+    }
+    await putJson(env, 'cms:settings', next)
+    await logActivity(env, { type: 'settings', message: 'Updated site feature settings' })
+    return json({ ok: true, settings: next })
+  }
+
+  if (action === 'save_job') {
+    const item = body.job || body.item
+    if (!item?.title) return json({ error: 'title required' }, 400)
+    const list = await loadJobs(env)
+    const record = {
+      id: item.id || id('job'),
+      title: String(item.title).trim(),
+      department: String(item.department || '').trim(),
+      type: String(item.type || 'Full-time').trim(),
+      location: String(item.location || '').trim(),
+      description: String(item.description || '').trim().slice(0, 4000),
+      status: item.status === 'published' ? 'published' : 'draft',
+      updatedAt: new Date().toISOString(),
+      createdAt: item.createdAt || new Date().toISOString(),
+    }
+    const existing = list.findIndex((j) => j.id === record.id)
+    if (existing >= 0) list[existing] = { ...list[existing], ...record }
+    else list.unshift(record)
+    await putJson(env, 'cms:jobs', list)
+    await logActivity(env, {
+      type: 'jobs',
+      message: `Saved job ${record.title} (${record.status})`,
+    })
+    return json({ ok: true, job: record })
+  }
+
+  if (action === 'delete_job') {
+    const list = await loadJobs(env)
+    const next = list.filter((j) => j.id !== body.id)
+    await putJson(env, 'cms:jobs', next)
+    await logActivity(env, { type: 'jobs', message: `Deleted job ${body.id}` })
+    return json({ ok: true })
+  }
+
+  if (action === 'update_application_status') {
+    const appId = body.id || body.applicationId
+    const status = String(body.status || '').trim()
+    if (!appId || !status) return json({ error: 'id and status required' }, 400)
+    const applications = await getJson(env, 'cms:applications', [])
+    const idx = applications.findIndex((a) => a.id === appId)
+    if (idx < 0) return json({ error: 'not found' }, 404)
+    applications[idx] = {
+      ...applications[idx],
+      status,
+      statusUpdatedAt: new Date().toISOString(),
+      notes: body.notes !== undefined ? String(body.notes) : applications[idx].notes || '',
+    }
+    await putJson(env, 'cms:applications', applications)
+    await logActivity(env, {
+      type: 'application',
+      message: `Application ${applications[idx].email || appId} → ${status}`,
+    })
+    const { resumeData: _omit, ...safe } = applications[idx]
+    return json({ ok: true, application: safe })
+  }
+
+  if (action === 'save_download') {
+    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
+    const item = body.download || body.item
+    if (!item?.title || !item?.fileUrl) {
+      return json({ error: 'title and fileUrl required' }, 400)
+    }
+    const list = await loadDownloads(env)
+    const record = {
+      id: item.id || id('dl'),
+      title: String(item.title),
+      description: String(item.description || ''),
+      fileUrl: String(item.fileUrl),
+      htmlUrl: String(item.htmlUrl || ''),
+      category: String(item.category || 'company'),
+      status: item.status === 'published' ? 'published' : 'draft',
+      updatedAt: new Date().toISOString(),
+      createdAt: item.createdAt || new Date().toISOString(),
+    }
+    const existing = list.findIndex((d) => d.id === record.id)
+    if (existing >= 0) list[existing] = { ...list[existing], ...record }
+    else list.unshift(record)
+    await putJson(env, 'cms:downloads', list)
+    await logActivity(env, {
+      type: 'downloads',
+      message: `Saved download ${record.title} (${record.status})`,
+    })
+    return json({ ok: true, download: record })
+  }
+
+  if (action === 'delete_download') {
+    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
+    const list = await loadDownloads(env)
+    const next = list.filter((d) => d.id !== body.id)
+    await putJson(env, 'cms:downloads', next)
+    await logActivity(env, { type: 'downloads', message: `Deleted download ${body.id}` })
     return json({ ok: true })
   }
 
@@ -765,10 +1174,14 @@ export async function onRequestPost(context) {
       siteCopy: await getJson(env, 'cms:site-copy', {}),
       shop: await getJson(env, 'cms:shop-products', []),
       knowledge: await getJson(env, 'cms:knowledge', []),
+      downloads: await getJson(env, 'cms:downloads', []),
       reviews: await getJson(env, 'cms:reviews', []),
       newsletter: await getJson(env, 'cms:newsletter', []),
       leads: await getJson(env, 'cms:leads', []),
       invoices: await getJson(env, 'cms:invoices', []),
+      settings: await getJson(env, 'cms:settings', defaultSiteSettings()),
+      jobs: await getJson(env, 'cms:jobs', []),
+      applications: await getJson(env, 'cms:applications', []),
     }
     await putJson(env, `cms:backup:${Date.now()}`, backup)
     await putJson(env, 'cms:backup:latest', backup)
@@ -782,10 +1195,14 @@ export async function onRequestPost(context) {
     if (backup.siteCopy) await putJson(env, 'cms:site-copy', backup.siteCopy)
     if (backup.shop) await putJson(env, 'cms:shop-products', backup.shop)
     if (backup.knowledge) await putJson(env, 'cms:knowledge', backup.knowledge)
+    if (backup.downloads) await putJson(env, 'cms:downloads', backup.downloads)
     if (backup.reviews) await putJson(env, 'cms:reviews', backup.reviews)
     if (backup.newsletter) await putJson(env, 'cms:newsletter', backup.newsletter)
     if (backup.leads) await putJson(env, 'cms:leads', backup.leads)
     if (backup.invoices) await putJson(env, 'cms:invoices', backup.invoices)
+    if (backup.settings) await putJson(env, 'cms:settings', backup.settings)
+    if (backup.jobs) await putJson(env, 'cms:jobs', backup.jobs)
+    if (backup.applications) await putJson(env, 'cms:applications', backup.applications)
     await logActivity(env, { type: 'system', message: 'Restored latest backup' })
     return json({ ok: true })
   }

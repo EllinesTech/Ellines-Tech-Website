@@ -396,3 +396,39 @@ export async function fetchReports() {
   const data = await cmsFetch('resource=reports', { headers: elevatedHeaders() })
   return data.report
 }
+
+import type { DownloadResource } from '@/data/downloads'
+
+export type { DownloadResource }
+
+export async function fetchDownloads(publishedOnly = true): Promise<DownloadResource[]> {
+  const data = await cmsFetch(
+    `resource=downloads${publishedOnly ? '&published=1' : ''}`,
+    publishedOnly ? undefined : { headers: elevatedHeaders() },
+  )
+  return (data.downloads || []) as DownloadResource[]
+}
+
+export async function saveDownload(download: Partial<DownloadResource>) {
+  return cmsFetch('resource=downloads', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'save_download', download }),
+  })
+}
+
+export async function deleteDownload(id: string) {
+  return cmsFetch('resource=downloads', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'delete_download', id }),
+  })
+}
+
+export async function updateLeadStatus(id: string, status: string, notes?: string) {
+  return cmsFetch('resource=leads', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'update_lead_status', id, status, notes }),
+  })
+}

@@ -13,6 +13,7 @@ import { AdminChatPage } from '@/pages/admin/AdminChatPage'
 import { AdminSettingsPage } from '@/pages/admin/AdminSettingsPage'
 import { AdminPagesEditor } from '@/pages/admin/AdminPagesEditor'
 import { AdminResourcesEditor } from '@/pages/admin/AdminResourcesEditor'
+import { AdminDownloadsEditor } from '@/pages/admin/AdminDownloadsEditor'
 import { AdminInvoicesModule } from '@/pages/admin/AdminInvoicesModule'
 import { AdminReportsModule } from '@/pages/admin/AdminReportsModule'
 import {
@@ -32,10 +33,12 @@ import {
   saveShop,
   saveSiteCopy,
   setUserActive,
+  updateLeadStatus,
   updateUserRole,
   type CmsUser,
 } from '@/lib/cmsApi'
 import { starterPricingPackages } from '@/data/pricingPackages'
+import { leadStatusOptions } from '@/data/downloads'
 
 function Panel({
   title,
@@ -125,15 +128,37 @@ function LeadsModule() {
     }[]
   >([])
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState('')
+
+  async function load() {
+    try {
+      setLeads(await fetchLeads())
+      setError('')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed')
+    }
+  }
+
   useEffect(() => {
-    fetchLeads()
-      .then(setLeads)
-      .catch((e) => setError(e instanceof Error ? e.message : 'Failed'))
+    load()
   }, [])
+
+  async function onStatus(id: string, status: string) {
+    setSaving(id)
+    try {
+      await updateLeadStatus(id, status)
+      setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Status update failed')
+    } finally {
+      setSaving('')
+    }
+  }
+
   return (
     <Panel
       title="Leads & purchase requests"
-      description="Quotes, service requests, and package buy requests from /request and contact."
+      description="Quotes, service requests, and package buy requests from /request and contact. Update status as you work them."
     >
       <Err message={error} />
       <ul className="space-y-3">
@@ -147,11 +172,6 @@ function LeadsModule() {
               {l.intent && (
                 <span className="rounded-full bg-brand-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand-200">
                   {l.intent}
-                </span>
-              )}
-              {l.status && (
-                <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] uppercase text-slate-400">
-                  {l.status}
                 </span>
               )}
             </div>
@@ -169,7 +189,29 @@ function LeadsModule() {
               </p>
             )}
             {l.message && <p className="mt-1 text-slate-300">{l.message}</p>}
-            <p className="mt-1 text-xs text-slate-500">{new Date(l.at).toLocaleString()}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <label className="text-xs text-slate-500">
+                Status
+                <select
+                  value={l.status || 'new'}
+                  disabled={saving === l.id}
+                  onChange={(e) => onStatus(l.id, e.target.value)}
+                  className="ml-2 rounded-lg border border-white/10 bg-slate-900 px-2 py-1 text-xs text-white"
+                >
+                  {!leadStatusOptions.includes(
+                    (l.status || 'new') as (typeof leadStatusOptions)[number],
+                  ) && (
+                    <option value={l.status || 'new'}>{l.status || 'new'}</option>
+                  )}
+                  {leadStatusOptions.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <span className="text-xs text-slate-600">{new Date(l.at).toLocaleString()}</span>
+            </div>
           </li>
         ))}
       </ul>
@@ -783,11 +825,85 @@ function FaqModule() {
   )
 }
 
+function ClientsCrmModule() {
+  const [contacts, setContacts] = useState<
+    { email: string; name: string; company?: string; phone?: string; leads: number }[]
+  >([])
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetchLeads()
+      .then((list) => {
+        const map = new Map<
+          string,
+          { email: string; name: string; company?: string; phone?: string; leads: number }
+        >()
+        for (const l of list) {
+          const email = String(l.email || '').toLowerCase()
+          if (!email) continue
+          const prev = map.get(email)
+          if (prev) {
+            prev.leads += 1
+            if (!prev.company && l.company) prev.company = l.company
+            if (!prev.phone && l.phone) prev.phone = l.phone
+          } else {
+            map.set(email, {
+              email,
+              name: l.name || email,
+              company: l.company,
+              phone: l.phone,
+              leads: 1,
+            })
+          }
+        }
+        setContacts([...map.values()].sort((a, b) => b.leads - a.leads))
+      })
+      .catch((e) => setError(e instanceof Error ? e.message : 'Failed'))
+  }, [])
+
+  return (
+    <div className="space-y-6">
+      <Panel
+        title="Client contacts"
+        description="Unique emails from leads and purchase requests — live CRM view from cms:leads."
+      >
+        <Err message={error} />
+        <ul className="space-y-2">
+          {contacts.length === 0 && !error && (
+            <li className="text-sm text-slate-500">No client contacts yet.</li>
+          )}
+          {contacts.map((c) => (
+            <li key={c.email} className="rounded-xl border border-white/10 px-4 py-3 text-sm">
+              <p className="font-medium text-white">{c.name}</p>
+              <p className="text-slate-400">
+                {c.email}
+                {c.company ? ` · ${c.company}` : ''}
+                {c.phone ? ` · ${c.phone}` : ''}
+              </p>
+              <p className="text-xs text-slate-600">{c.leads} lead(s)</p>
+            </li>
+          ))}
+        </ul>
+      </Panel>
+      <Panel title="Featured brand marks" description="Logos shown on the public Clients page.">
+        <ul className="grid gap-3 sm:grid-cols-2">
+          {clientBrands.map((c) => (
+            <li key={c.id} className="rounded-xl border border-white/10 p-3 text-sm text-white">
+              {c.name}
+            </li>
+          ))}
+        </ul>
+      </Panel>
+    </div>
+  )
+}
+
 export function AdminModulePage({ module }: { module: string }) {
   if (module === 'chat-settings') return <AdminChatPage />
   if (module === 'settings' || module === 'site-controls') return <AdminSettingsPage />
   if (module === 'pages') return <AdminPagesEditor />
   if (module === 'resources') return <AdminResourcesEditor />
+  if (module === 'downloads') return <AdminDownloadsEditor />
   if (module === 'invoices') return <AdminInvoicesModule />
   if (module === 'reports') return <AdminReportsModule />
   if (module === 'activity' || module === 'logs') return <ActivityModule />
@@ -885,17 +1001,7 @@ export function AdminModulePage({ module }: { module: string }) {
   }
 
   if (module === 'clients') {
-    return (
-      <Panel title="Clients" description="Brand marks featured on the site.">
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {clientBrands.map((c) => (
-            <li key={c.id} className="rounded-xl border border-white/10 p-3 text-sm text-white">
-              {c.name}
-            </li>
-          ))}
-        </ul>
-      </Panel>
-    )
+    return <ClientsCrmModule />
   }
 
   if (module === 'media') {

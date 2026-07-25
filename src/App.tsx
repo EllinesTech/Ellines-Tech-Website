@@ -33,7 +33,9 @@ import {
   StaffOverviewPage,
   StaffLeadsPage,
   StaffClientsPage,
-  StaffSimpleNote,
+  StaffPricingPage,
+  StaffMaterialsPage,
+  StaffProfilePage,
 } from '@/pages/staff/StaffShell'
 
 function Module({ name }: { name: string }) {
@@ -75,6 +77,7 @@ export default function App() {
           <Route path="pages" element={<Module name="pages" />} />
           <Route path="faq" element={<Module name="faq" />} />
           <Route path="resources" element={<Module name="resources" />} />
+          <Route path="downloads" element={<Module name="downloads" />} />
           <Route path="testimonials" element={<Module name="testimonials" />} />
           <Route path="design" element={<Module name="design" />} />
           <Route path="security" element={<Module name="security" />} />
@@ -91,24 +94,9 @@ export default function App() {
           <Route path="leads" element={<StaffLeadsPage />} />
           <Route path="clients" element={<StaffClientsPage />} />
           <Route path="invoices" element={<AdminInvoicesModule />} />
-          <Route
-            path="pricing"
-            element={
-              <StaffSimpleNote
-                title="Pricing packages"
-                body="Public catalogue lives on /pricing. Share package links with clients from there; package edits are handled by platform ops."
-              />
-            }
-          />
-          <Route
-            path="content"
-            element={
-              <StaffSimpleNote
-                title="Content & marketing"
-                body="Page copy, posters, and design studio are managed separately. Use leads and pricing links here for day-to-day client work."
-              />
-            }
-          />
+          <Route path="pricing" element={<StaffPricingPage />} />
+          <Route path="materials" element={<StaffMaterialsPage />} />
+          <Route path="profile" element={<StaffProfilePage />} />
         </Route>
 
         <Route element={<Layout />}>

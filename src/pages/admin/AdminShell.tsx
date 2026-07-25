@@ -40,9 +40,11 @@ import {
   Zap,
   LogOut,
   ArrowLeft,
+  Download,
 } from 'lucide-react'
 import { adminNavGroups } from '@/admin/nav'
 import { Button } from '@/components/ui/Button'
+import { Logo } from '@/components/ui/Logo'
 import {
   isAdminAuthed,
   setAdminAuthed,
@@ -90,6 +92,7 @@ const iconMap: Record<string, React.ElementType> = {
   Zap,
   User,
   ShoppingBag,
+  Download,
 }
 
 export function AdminLoginPage() {
@@ -177,8 +180,8 @@ export function AdminLayout() {
           )}
         >
           <div className="mb-5 px-2">
-            <p className="font-display text-lg font-bold text-white">Ellines Tech</p>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-400">
+            <Logo variant="nav" link={false} />
+            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-400">
               Admin Panel
             </p>
             <span className="mt-3 inline-flex rounded-full bg-brand-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-300">

@@ -3,6 +3,7 @@ import { SEO } from '@/components/SEO'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Button } from '@/components/ui/Button'
 import { GroupEcosystem } from '@/components/home/GroupEcosystem'
+import { CompanyMaterials } from '@/components/downloads/CompanyMaterials'
 import { aboutStory } from '@/data/content'
 import { siteConfig } from '@/data/site'
 import { useSiteCopy } from '@/hooks/useSiteCopy'
@@ -268,6 +269,12 @@ export function AboutPage() {
       </section>
 
       <GroupEcosystem />
+
+      <section className="section-padding border-t border-white/5 bg-surface/30">
+        <div className="section-container">
+          <CompanyMaterials />
+        </div>
+      </section>
 
       <section className="section-padding border-t border-white/5">
         <div className="section-container text-center">

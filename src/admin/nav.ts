@@ -48,6 +48,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { to: '/admin/pages', label: 'Page Editor', icon: 'FilePen' },
       { to: '/admin/faq', label: 'FAQ Manager', icon: 'CircleHelp' },
       { to: '/admin/resources', label: 'Resources', icon: 'BookOpen' },
+      { to: '/admin/downloads', label: 'Downloads', icon: 'Download' },
       { to: '/admin/testimonials', label: 'Testimonials', icon: 'Quote' },
     ],
   },

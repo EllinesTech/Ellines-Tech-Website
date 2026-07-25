@@ -19,6 +19,8 @@ const emptyArticle = (): Partial<KnowledgeArticle> => ({
   status: 'draft',
   seoTitle: '',
   seoDescription: '',
+  downloadUrl: '',
+  htmlUrl: '',
 })
 
 export function AdminResourcesEditor() {
@@ -146,6 +148,24 @@ export function AdminResourcesEditor() {
               onChange={(e) => setTagsInput(e.target.value)}
               className="mt-1 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none focus:border-brand-400/40"
               placeholder="ai, healthcare, tutorial"
+            />
+          </label>
+          <label className="block text-xs text-slate-400">
+            Download PDF URL (optional — for downloads category)
+            <input
+              value={draft.downloadUrl || ''}
+              onChange={(e) => setDraft((d) => ({ ...d, downloadUrl: e.target.value }))}
+              className="mt-1 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none focus:border-brand-400/40"
+              placeholder="/downloads/ellines-tech-company-profile.pdf"
+            />
+          </label>
+          <label className="block text-xs text-slate-400">
+            HTML view URL (optional)
+            <input
+              value={draft.htmlUrl || ''}
+              onChange={(e) => setDraft((d) => ({ ...d, htmlUrl: e.target.value }))}
+              className="mt-1 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none focus:border-brand-400/40"
+              placeholder="/downloads/ellines-tech-company-profile.html"
             />
           </label>
           <label className="block text-xs text-slate-400">
