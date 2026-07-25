@@ -397,7 +397,7 @@ For the full company pack, download the Company Profile and Capabilities one-pag
     excerpt: 'Logo usage and press assets for partners covering Ellines Tech.',
     body: `Partners and press can use materials from our Company Profile pack. Official logo files remain available on request for approved press use.
 
-Primary digital assets: /logos/mark.svg (icon), /logos/lockup.svg (horizontal), /logos/mark-framed.svg (app tile). Prefer SVG over legacy PNG files.
+Primary digital assets: /logos/logo-mark-nav.png (nav icon), /logos/logo-full.png (horizontal lockup), /logos/logo-square.png (app tile), /logos/logo-hero.png (hero).
 
 Do not stretch or recolor the mark outside approved guidelines. Submit intended use via Contact for a full brand pack.`,
     category: 'downloads',

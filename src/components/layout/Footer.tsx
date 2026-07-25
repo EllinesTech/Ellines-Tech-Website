@@ -1,10 +1,12 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, Phone, MapPin, MessageCircle, Clock3 } from 'lucide-react'
-import { footerNavigation, footerSectionLabels } from '@/data/navigation'
+import { filterFooterNavigation, footerSectionLabels } from '@/data/navigation'
 import { siteConfig, technologies } from '@/data/site'
 import { Logo } from '@/components/ui/Logo'
 import { SocialLinks } from '@/components/engagement/SocialLinks'
 import { NewsletterSignup } from '@/components/NewsletterSignup'
+import { useSiteFeatures } from '@/context/SiteFeaturesContext'
 
 function FooterLink({ href, label }: { href: string; label: string }) {
   const external = href.startsWith('http')
@@ -29,6 +31,8 @@ function FooterLink({ href, label }: { href: string; label: string }) {
 
 export function Footer() {
   const waHref = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
+  const { settings } = useSiteFeatures()
+  const footerNav = useMemo(() => filterFooterNavigation(settings), [settings])
 
   return (
     <footer className="border-t border-white/5 bg-surface/80">
@@ -78,29 +82,33 @@ export function Footer() {
               </p>
             </div>
             <SocialLinks className="mt-6" size="sm" />
-            <div className="mt-8">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                Newsletter
-              </p>
-              <NewsletterSignup />
-            </div>
+            {settings.newsletterEnabled && (
+              <div className="mt-8">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Newsletter
+                </p>
+                <NewsletterSignup />
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-8 lg:grid-cols-5">
-            {(Object.keys(footerNavigation) as (keyof typeof footerNavigation)[]).map((key) => (
-              <div key={key}>
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-white">
-                  {footerSectionLabels[key]}
-                </h3>
-                <ul className="mt-4 space-y-2.5">
-                  {footerNavigation[key].map((link) => (
-                    <li key={`${link.href}-${link.label}`}>
-                      <FooterLink href={link.href} label={link.label} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            {(Object.keys(footerNav) as (keyof typeof footerNav)[]).map((key) =>
+              footerNav[key].length === 0 ? null : (
+                <div key={key}>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-white">
+                    {footerSectionLabels[key]}
+                  </h3>
+                  <ul className="mt-4 space-y-2.5">
+                    {footerNav[key].map((link) => (
+                      <li key={`${link.href}-${link.label}`}>
+                        <FooterLink href={link.href} label={link.label} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ),
+            )}
           </div>
         </div>
 

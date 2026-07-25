@@ -3,6 +3,7 @@ import { Download, FileText, ExternalLink } from 'lucide-react'
 import { defaultDownloads, type DownloadResource } from '@/data/downloads'
 import { fetchDownloads } from '@/lib/cmsApi'
 import { cn } from '@/lib/utils'
+import { useSiteFeatures } from '@/context/SiteFeaturesContext'
 
 type Props = {
   className?: string
@@ -17,18 +18,22 @@ export function CompanyMaterials({
   description = 'Download our company profile, pricing rate card, capabilities one-pager, and service catalogue.',
   compact = false,
 }: Props) {
+  const { settings } = useSiteFeatures()
   const [items, setItems] = useState<DownloadResource[]>(
     defaultDownloads.filter((d) => d.status === 'published'),
   )
 
   useEffect(() => {
+    if (!settings.downloadsEnabled) return
     fetchDownloads(true)
       .then((list) => {
         const published = list.filter((d) => d.status === 'published')
         if (published.length) setItems(published)
       })
       .catch(() => undefined)
-  }, [])
+  }, [settings.downloadsEnabled])
+
+  if (!settings.downloadsEnabled) return null
 
   return (
     <div className={cn(className)}>

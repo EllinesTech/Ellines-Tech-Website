@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500" role="img" aria-label="IT Half Day">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="55%" stop-color="#070f1c"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#67e8f9" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="70%" cy="20%" r="50%">
+      <stop offset="0%" stop-color="#67e8f9" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#67e8f9" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <rect width="800" height="500" fill="url(#glow)"/>
+  <circle cx="80" cy="420" r="120" fill="#67e8f9" fill-opacity="0.06"/>
+  <circle cx="720" cy="60" r="90" fill="#67e8f9" fill-opacity="0.08"/>
+  
+      <rect x="240" y="180" width="320" height="180" rx="20" fill="#0b1526" stroke="#67e8f9" stroke-opacity="0.5" stroke-width="3"/>
+      <rect x="340" y="140" width="120" height="50" rx="12" fill="#111c30" stroke="#67e8f9" stroke-opacity="0.4" stroke-width="2"/>
+      <rect x="360" y="250" width="80" height="16" rx="6" fill="#67e8f9" fill-opacity="0.7"/>
+      <line x1="240" y1="230" x2="560" y2="230" stroke="#67e8f9" stroke-opacity="0.3" stroke-width="2"/>
+    
+  <rect x="0" y="420" width="800" height="80" fill="#030712" fill-opacity="0.55"/>
+  <text x="40" y="468" fill="#67e8f9" font-family="Outfit, DM Sans, system-ui, sans-serif" font-size="22" font-weight="700" letter-spacing="0.04em">IT Half Day</text>
+  <text x="760" y="468" text-anchor="end" fill="#94a3b8" font-family="Outfit, system-ui, sans-serif" font-size="13" font-weight="500">Ellines Tech</text>
+</svg>

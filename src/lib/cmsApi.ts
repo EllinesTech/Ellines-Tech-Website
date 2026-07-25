@@ -1,5 +1,8 @@
 import { getAdminApiKey, isAdminAuthed } from '@/lib/engagementStore'
 import { loadAuthToken } from '@/lib/auth'
+import type { DownloadResource } from '@/data/downloads'
+import type { SiteFeatureSettings } from '@/lib/siteFeatures'
+import { defaultFeatureSettings } from '@/lib/siteFeatures'
 
 const ADMIN_KEY = () => getAdminApiKey()
 
@@ -397,8 +400,6 @@ export async function fetchReports() {
   return data.report
 }
 
-import type { DownloadResource } from '@/data/downloads'
-
 export type { DownloadResource }
 
 export async function fetchDownloads(publishedOnly = true): Promise<DownloadResource[]> {
@@ -430,5 +431,107 @@ export async function updateLeadStatus(id: string, status: string, notes?: strin
     method: 'POST',
     headers: elevatedHeaders(true),
     body: JSON.stringify({ action: 'update_lead_status', id, status, notes }),
+  })
+}
+
+export type { SiteFeatureSettings }
+
+export type JobPosting = {
+  id: string
+  title: string
+  department: string
+  type: string
+  location: string
+  description?: string
+  status: 'draft' | 'published'
+  createdAt: string
+  updatedAt: string
+}
+
+export type JobApplication = {
+  id: string
+  jobId: string
+  jobTitle: string
+  name: string
+  email: string
+  phone?: string
+  coverLetter?: string
+  portfolioUrl?: string
+  linkedinUrl?: string
+  resumeFileName?: string
+  resumeMime?: string
+  resumeData?: string
+  status: string
+  at: string
+  notes?: string
+}
+
+export async function fetchSiteSettings(): Promise<SiteFeatureSettings> {
+  const data = await cmsFetch('resource=settings')
+  return { ...defaultFeatureSettings, ...(data.settings || {}) }
+}
+
+export async function saveSiteSettings(settings: SiteFeatureSettings) {
+  return cmsFetch('resource=settings', {
+    method: 'POST',
+    headers: adminHeaders(true),
+    body: JSON.stringify({ action: 'save_settings', settings }),
+  })
+}
+
+export async function fetchJobs(publishedOnly = true): Promise<JobPosting[]> {
+  const data = await cmsFetch(
+    `resource=jobs${publishedOnly ? '&published=1' : ''}`,
+    publishedOnly ? undefined : { headers: elevatedHeaders() },
+  )
+  return (data.jobs || []) as JobPosting[]
+}
+
+export async function saveJob(job: Partial<JobPosting>) {
+  return cmsFetch('resource=jobs', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'save_job', job }),
+  })
+}
+
+export async function deleteJob(id: string) {
+  return cmsFetch('resource=jobs', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'delete_job', id }),
+  })
+}
+
+export async function fetchApplications(): Promise<JobApplication[]> {
+  const data = await cmsFetch('resource=applications', { headers: elevatedHeaders() })
+  return (data.applications || []) as JobApplication[]
+}
+
+export async function updateApplicationStatus(id: string, status: string, notes?: string) {
+  return cmsFetch('resource=applications', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'update_application_status', id, status, notes }),
+  })
+}
+
+export async function submitJobApplication(input: {
+  jobId: string
+  jobTitle?: string
+  name: string
+  email: string
+  phone?: string
+  coverLetter?: string
+  portfolioUrl?: string
+  linkedinUrl?: string
+  resumeFileName?: string
+  resumeMime?: string
+  resumeData?: string
+}) {
+  return cmsFetch('resource=jobs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'job_apply', ...input }),
   })
 }

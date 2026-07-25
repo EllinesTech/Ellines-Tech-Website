@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500" role="img" aria-label="Full QA Cycle">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#9a3412"/>
+      <stop offset="55%" stop-color="#070f1c"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fdba74" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="70%" cy="20%" r="50%">
+      <stop offset="0%" stop-color="#fdba74" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#fdba74" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <rect width="800" height="500" fill="url(#glow)"/>
+  <circle cx="80" cy="420" r="120" fill="#fdba74" fill-opacity="0.06"/>
+  <circle cx="720" cy="60" r="90" fill="#fdba74" fill-opacity="0.08"/>
+  
+      <circle cx="400" cy="240" r="100" fill="none" stroke="#fdba74" stroke-width="6" stroke-dasharray="28 14"/>
+      <path d="M400 140 L420 165 L380 165 Z" fill="#fdba74"/>
+      <rect x="340" y="210" width="120" height="60" rx="10" fill="#fdba74" fill-opacity="0.2" stroke="#fdba74" stroke-opacity="0.5"/>
+      <text x="400" y="247" text-anchor="middle" fill="#fdba74" font-family="Outfit, system-ui, sans-serif" font-size="16" font-weight="700">QA</text>
+    
+  <rect x="0" y="420" width="800" height="80" fill="#030712" fill-opacity="0.55"/>
+  <text x="40" y="468" fill="#fdba74" font-family="Outfit, DM Sans, system-ui, sans-serif" font-size="22" font-weight="700" letter-spacing="0.04em">Full QA Cycle</text>
+  <text x="760" y="468" text-anchor="end" fill="#94a3b8" font-family="Outfit, system-ui, sans-serif" font-size="13" font-weight="500">Ellines Tech</text>
+</svg>

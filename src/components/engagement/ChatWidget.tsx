@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   MessageCircle,
@@ -11,7 +11,8 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { siteConfig } from '@/data/site'
-import { answerQuestion, loadFaqs, loadSettings } from '@/lib/engagementStore'
+import { answerQuestion, loadFaqs } from '@/lib/engagementStore'
+import { useSiteFeatures } from '@/context/SiteFeaturesContext'
 import {
   askAi,
   createLiveSession,
@@ -37,7 +38,7 @@ function uid() {
 const SESSION_KEY = 'et_live_session_id'
 
 export function ChatWidget() {
-  const settings = useMemo(() => loadSettings(), [])
+  const { settings } = useSiteFeatures()
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<Mode>('ai')
   const [input, setInput] = useState('')

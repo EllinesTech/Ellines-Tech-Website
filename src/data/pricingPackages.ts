@@ -1,4 +1,6 @@
-/** Starter product pricing — Super Admin edits via Product Pricing; clients browse on /pricing */
+import { packagePosterMap } from './posterMap'
+
+/** Starter product pricing — editable via Product Pricing in /admin; clients browse on /pricing */
 export type PricingPackage = {
   id: string
   name: string
@@ -13,35 +15,10 @@ export type PricingPackage = {
 /** IDs retired from the catalogue (e.g. services we no longer offer) */
 export const retiredPricingIds = ['shop_hosting_care'] as const
 
-const posterMap: Record<string, string> = {
-  tax_kenya_return: '/media/posters/poster-tax-returns.png',
-  tax_kenya_pin_assist: '/media/posters/poster-tax-returns.png',
-  tech_os_install: '/media/posters/poster-os-install.png',
-  tech_os_install_office: '/media/posters/poster-os-install.png',
-  tech_app_testing: '/media/posters/poster-app-testing.png',
-  tech_app_testing_full: '/media/posters/poster-app-testing.png',
-  brand_identity_session: '/media/posters/poster-branding.png',
-  brand_full_kit: '/media/posters/poster-branding.png',
-  brand_rebrand: '/media/posters/poster-rebrand-kit.png',
-  merch_tshirt: '/media/posters/poster-apparel.png',
-  merch_cap: '/media/posters/poster-apparel.png',
-  merch_hoodie: '/media/posters/poster-apparel.png',
-  merch_clothing_custom: '/media/posters/poster-apparel.png',
-  merch_phone_case: '/media/posters/poster-phone-case.png',
-  design_graphics_pack: '/media/posters/poster-graphics.png',
-  design_campaign_poster: '/media/posters/poster-campaign.png',
-  design_poster_set: '/media/posters/poster-campaign.png',
-  design_flyer: '/media/posters/poster-graphics.png',
-  design_business_cards: '/media/posters/poster-business-card.png',
-  stationery_letterhead: '/media/posters/poster-letterhead.png',
-  stationery_envelopes: '/media/posters/poster-letterhead.png',
-  stationery_comp_slips: '/media/posters/poster-letterhead.png',
-  stationery_stamp_seal: '/media/posters/poster-rebrand-kit.png',
-  stationery_full_pack: '/media/posters/poster-rebrand-kit.png',
-}
+export { packagePosterMap }
 
 export function packagePoster(id: string): string | undefined {
-  return posterMap[id]
+  return packagePosterMap[id]
 }
 
 export const starterPricingPackages: PricingPackage[] = [
@@ -53,6 +30,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Web',
     description: 'One-page to multi-page business website — design, build, and launch.',
     status: 'published',
+    image: '/media/posters/packages/shop_starter_web.svg',
   },
   {
     id: 'shop_business_web',
@@ -62,6 +40,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Web',
     description: 'Multi-page site with CMS-ready structure, contact flows, and SEO basics.',
     status: 'published',
+    image: '/media/posters/packages/shop_business_web.svg',
   },
   {
     id: 'shop_ecommerce',
@@ -71,6 +50,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Web',
     description: 'Online storefront for products, carts, and order enquiries.',
     status: 'published',
+    image: '/media/posters/packages/shop_ecommerce.svg',
   },
   {
     id: 'shop_logo_pack',
@@ -80,6 +60,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Design',
     description: 'Logo concepts, revisions, and delivery formats for brand launch.',
     status: 'published',
+    image: '/media/posters/packages/shop_logo_pack.svg',
   },
   {
     id: 'shop_brand_kit',
@@ -89,6 +70,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Design',
     description: 'Logo, colour system, typography, and basic brand guidelines.',
     status: 'published',
+    image: '/media/posters/packages/shop_brand_kit.svg',
   },
   {
     id: 'shop_uiux',
@@ -98,6 +80,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Design',
     description: 'Wireframes and high-fidelity screens for web or mobile products.',
     status: 'published',
+    image: '/media/posters/packages/shop_uiux.svg',
   },
   {
     id: 'shop_mobile_app',
@@ -107,6 +90,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Software',
     description: 'Cross-platform MVP app scope — core screens, auth, and API wiring.',
     status: 'published',
+    image: '/media/posters/packages/shop_mobile_app.svg',
   },
   {
     id: 'shop_custom_software',
@@ -116,6 +100,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Software',
     description: 'Scoped business system or internal tool with discovery and first release.',
     status: 'published',
+    image: '/media/posters/packages/shop_custom_software.svg',
   },
   {
     id: 'shop_ai_automation',
@@ -125,6 +110,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'AI',
     description: 'Chatbot or workflow automation tailored to your operations.',
     status: 'published',
+    image: '/media/posters/packages/shop_ai_automation.svg',
   },
   {
     id: 'shop_digital_marketing',
@@ -134,6 +120,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Marketing',
     description: 'Campaign setup, social assets, and performance tracking kickoff.',
     status: 'published',
+    image: '/media/posters/packages/shop_digital_marketing.svg',
   },
   {
     id: 'shop_cyber_audit',
@@ -143,6 +130,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Security',
     description: 'Baseline security review for websites and apps with actionable fixes.',
     status: 'published',
+    image: '/media/posters/packages/shop_cyber_audit.svg',
   },
   {
     id: 'consult_it_halfday',
@@ -152,6 +140,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Consulting',
     description: 'Focused advisory session — systems review, decisions, and next steps.',
     status: 'published',
+    image: '/media/posters/packages/consult_it_halfday.svg',
   },
   {
     id: 'consult_it_fullday',
@@ -161,6 +150,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Consulting',
     description: 'Deep-dive workshop with stakeholders — architecture, priorities, and roadmap sketch.',
     status: 'published',
+    image: '/media/posters/packages/consult_it_fullday.svg',
   },
   {
     id: 'consult_tech_roadmap',
@@ -170,6 +160,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Consulting',
     description: 'Multi-week advisory: assessment, target architecture, and prioritised delivery plan.',
     status: 'published',
+    image: '/media/posters/packages/consult_tech_roadmap.svg',
   },
   {
     id: 'consult_digital_transform',
@@ -179,6 +170,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Consulting',
     description: 'Current-state audit, initiative backlog, and change-ready transformation plan.',
     status: 'published',
+    image: '/media/posters/packages/consult_digital_transform.svg',
   },
   {
     id: 'career_resume_revamp',
@@ -189,6 +181,7 @@ export const starterPricingPackages: PricingPackage[] = [
     description:
       'Refresh your existing CV into a clean, ATS-friendly format — Kenya market rates for graduates and early professionals.',
     status: 'published',
+    image: '/media/posters/packages/career_resume_revamp.svg',
   },
   {
     id: 'career_resume_build',
@@ -199,6 +192,7 @@ export const starterPricingPackages: PricingPackage[] = [
     description:
       'Full professional resume built from scratch — structure, achievements, and keywords for Kenyan and remote roles.',
     status: 'published',
+    image: '/media/posters/packages/career_resume_build.svg',
   },
   {
     id: 'career_resume_mid',
@@ -209,6 +203,7 @@ export const starterPricingPackages: PricingPackage[] = [
     description:
       'Role-targeted CV for 3–9 years’ experience — impact bullets, skills mapping, and role keywords.',
     status: 'published',
+    image: '/media/posters/packages/career_resume_mid.svg',
   },
   {
     id: 'career_resume_senior',
@@ -219,6 +214,7 @@ export const starterPricingPackages: PricingPackage[] = [
     description:
       'Leadership-focused CV for managers and senior specialists — aligned with Kenya mid-to-senior market pricing.',
     status: 'published',
+    image: '/media/posters/packages/career_resume_senior.svg',
   },
   {
     id: 'career_resume_executive',
@@ -229,6 +225,7 @@ export const starterPricingPackages: PricingPackage[] = [
     description:
       'Executive / C-suite CV with career narrative and achievement framing — Kenya executive writing range.',
     status: 'published',
+    image: '/media/posters/packages/career_resume_executive.svg',
   },
   {
     id: 'career_cover_letter',
@@ -238,6 +235,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Career',
     description: 'Tailored cover letter matched to your CV and target role.',
     status: 'published',
+    image: '/media/posters/packages/career_cover_letter.svg',
   },
   {
     id: 'career_linkedin',
@@ -247,6 +245,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Career',
     description: 'Headline, about, and experience rewrite so recruiters find you faster.',
     status: 'published',
+    image: '/media/posters/packages/career_linkedin.svg',
   },
   {
     id: 'career_docs_bundle',
@@ -256,6 +255,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Career',
     description: 'Resume build or revamp + cover letter + LinkedIn optimisation in one package.',
     status: 'published',
+    image: '/media/posters/packages/career_docs_bundle.svg',
   },
   {
     id: 'tax_kenya_return',
@@ -265,7 +265,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Tax & Compliance',
     description: 'Individual Kenya tax return filing assistance — KRA iTax support at an accessible rate.',
     status: 'published',
-    image: '/media/posters/poster-tax-returns.png',
+    image: '/media/posters/packages/tax_kenya_return.svg',
   },
   {
     id: 'tax_kenya_pin_assist',
@@ -275,7 +275,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Tax & Compliance',
     description: 'Help creating or recovering KRA PIN and basic iTax account setup.',
     status: 'published',
-    image: '/media/posters/poster-tax-returns.png',
+    image: '/media/posters/packages/tax_kenya_pin_assist.svg',
   },
   {
     id: 'tech_os_install',
@@ -285,7 +285,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Tech Support',
     description: 'Windows or Linux OS installation / reinstall with drivers and essential updates.',
     status: 'published',
-    image: '/media/posters/poster-os-install.png',
+    image: '/media/posters/packages/tech_os_install.svg',
   },
   {
     id: 'tech_os_install_office',
@@ -295,7 +295,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Tech Support',
     description: 'OS installation plus productivity suite setup and basic optimisation.',
     status: 'published',
-    image: '/media/posters/poster-os-install.png',
+    image: '/media/posters/packages/tech_os_install_office.svg',
   },
   {
     id: 'tech_app_testing',
@@ -305,7 +305,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'QA & Testing',
     description: 'Manual functional testing for web or mobile apps with a clear bug report.',
     status: 'published',
-    image: '/media/posters/poster-app-testing.png',
+    image: '/media/posters/packages/tech_app_testing.svg',
   },
   {
     id: 'tech_app_testing_full',
@@ -315,7 +315,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'QA & Testing',
     description: 'Broader test plan — functional, UI, and regression checks with prioritised findings.',
     status: 'published',
-    image: '/media/posters/poster-app-testing.png',
+    image: '/media/posters/packages/tech_app_testing_full.svg',
   },
   {
     id: 'brand_identity_session',
@@ -325,7 +325,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Branding',
     description: 'Brand discovery workshop — positioning, voice, and visual direction for your business.',
     status: 'published',
-    image: '/media/posters/poster-branding.png',
+    image: '/media/posters/packages/brand_identity_session.svg',
   },
   {
     id: 'brand_full_kit',
@@ -335,7 +335,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Branding',
     description: 'Logo system, colours, typography, and brand board ready for print and digital.',
     status: 'published',
-    image: '/media/posters/poster-branding.png',
+    image: '/media/posters/packages/brand_full_kit.svg',
   },
   {
     id: 'brand_rebrand',
@@ -346,7 +346,7 @@ export const starterPricingPackages: PricingPackage[] = [
     description:
       'Full rebrand — refreshed identity, messaging, and rollout assets for an existing business.',
     status: 'published',
-    image: '/media/posters/poster-rebrand-kit.png',
+    image: '/media/posters/packages/brand_rebrand.svg',
   },
   {
     id: 'merch_tshirt',
@@ -356,6 +356,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Merchandise',
     description: 'Company logo print on quality tee — artwork setup included. Bulk quotes available.',
     status: 'published',
+    image: '/media/posters/packages/merch_tshirt.svg',
   },
   {
     id: 'merch_cap',
@@ -365,6 +366,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Merchandise',
     description: 'Cap branding with your logo — embroidery or print options on request.',
     status: 'published',
+    image: '/media/posters/packages/merch_cap.svg',
   },
   {
     id: 'merch_hoodie',
@@ -374,6 +376,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Merchandise',
     description: 'Hoodie with company logo branding for teams and events.',
     status: 'published',
+    image: '/media/posters/packages/merch_hoodie.svg',
   },
   {
     id: 'merch_clothing_custom',
@@ -383,6 +386,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Merchandise',
     description: 'Logo branding on client-supplied or sourced apparel — priced from per piece.',
     status: 'published',
+    image: '/media/posters/packages/merch_clothing_custom.svg',
   },
   {
     id: 'merch_phone_case',
@@ -392,6 +396,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Merchandise',
     description: 'Custom phone case artwork / logo decoration — model-specific production.',
     status: 'published',
+    image: '/media/posters/packages/merch_phone_case.svg',
   },
   {
     id: 'design_graphics_pack',
@@ -401,6 +406,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Graphics',
     description: 'Social and marketing graphics pack — posts, story frames, and brand-aligned assets.',
     status: 'published',
+    image: '/media/posters/packages/design_graphics_pack.svg',
   },
   {
     id: 'design_campaign_poster',
@@ -410,6 +416,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Graphics',
     description: 'Original campaign poster design for print and digital — one concept + revisions.',
     status: 'published',
+    image: '/media/posters/packages/design_campaign_poster.svg',
   },
   {
     id: 'design_poster_set',
@@ -419,6 +426,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Graphics',
     description: 'Set of three coordinated campaign posters for events, launches, or ads.',
     status: 'published',
+    image: '/media/posters/packages/design_poster_set.svg',
   },
   {
     id: 'design_flyer',
@@ -428,7 +436,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Graphics',
     description: 'Print-ready flyer design with your brand message and call to action.',
     status: 'published',
-    image: '/media/posters/poster-graphics.png',
+    image: '/media/posters/packages/design_flyer.svg',
   },
   {
     id: 'design_business_cards',
@@ -439,7 +447,7 @@ export const starterPricingPackages: PricingPackage[] = [
     description:
       'Print-ready business card design — front/back, brand-aligned, and print-file delivery.',
     status: 'published',
-    image: '/media/posters/poster-business-card.png',
+    image: '/media/posters/packages/design_business_cards.svg',
   },
   {
     id: 'stationery_letterhead',
@@ -449,7 +457,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Stationery',
     description: 'Branded letterhead template for Word/PDF — logo, contact block, and print margins.',
     status: 'published',
-    image: '/media/posters/poster-letterhead.png',
+    image: '/media/posters/packages/stationery_letterhead.svg',
   },
   {
     id: 'stationery_envelopes',
@@ -459,7 +467,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Stationery',
     description: 'Branded envelope artwork for DL / C5 — return address and logo placement.',
     status: 'published',
-    image: '/media/posters/poster-letterhead.png',
+    image: '/media/posters/packages/stationery_envelopes.svg',
   },
   {
     id: 'stationery_comp_slips',
@@ -469,7 +477,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Stationery',
     description: 'With-compliments slip design matching your letterhead and brand colours.',
     status: 'published',
-    image: '/media/posters/poster-letterhead.png',
+    image: '/media/posters/packages/stationery_comp_slips.svg',
   },
   {
     id: 'stationery_stamp_seal',
@@ -479,7 +487,7 @@ export const starterPricingPackages: PricingPackage[] = [
     category: 'Stationery',
     description: 'Company stamp or seal artwork for rubber stamp / digital seal use.',
     status: 'published',
-    image: '/media/posters/poster-rebrand-kit.png',
+    image: '/media/posters/packages/stationery_stamp_seal.svg',
   },
   {
     id: 'stationery_full_pack',
@@ -490,7 +498,7 @@ export const starterPricingPackages: PricingPackage[] = [
     description:
       'Business cards, letterhead, envelopes, complimentary slips, and stamp design as one coordinated pack.',
     status: 'published',
-    image: '/media/posters/poster-rebrand-kit.png',
+    image: '/media/posters/packages/stationery_full_pack.svg',
   },
 ]
 

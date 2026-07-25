@@ -69,33 +69,49 @@ const docs = [
       {
         h: 'How pricing works',
         p: [
-          'Most delivery is project-based (fixed or milestone). Starter packages below are published starting points on tech.ellines.co.ke/pricing — live catalogue may update.',
+          'Most delivery is project-based (fixed or milestone). Starter packages below are published starting points on tech.ellines.co.ke/pricing — the live catalogue may update.',
           'Enterprise products (hospital systems, AI assistants, multi-branch platforms) are quoted after discovery because modules and integrations vary.',
           'Currency: Kenyan Shillings (KES) unless otherwise agreed. Taxes may apply per Kenyan law.',
         ],
       },
       {
-        h: 'Web & digital',
+        h: 'Web & software',
         p: [
-          'Business Website Starter — from KES 45,000 — one-page to multi-page launch site.',
-          'Business Website Pro — from KES 85,000 — multi-page, CMS-ready, contact flows, SEO basics.',
-          'E-commerce Starter — from KES 150,000 — storefront, cart, order enquiries.',
+          'Business Website Starter — KES 45,000',
+          'Business Website Pro — KES 85,000',
+          'E-commerce Starter — KES 150,000',
+          'Mobile App MVP — KES 250,000',
+          'Custom Software Starter — KES 180,000',
+          'AI Automation Starter — KES 120,000',
         ],
       },
       {
-        h: 'Design & brand',
+        h: 'Design, brand & marketing',
         p: [
-          'Logo Identity Pack — from KES 15,000.',
-          'Full brand kits, rebrand packages, campaign posters, flyers, business cards, and stationery packs — see live Pricing page for current rates.',
-          'Merch & apparel design (t-shirts, caps, hoodies, phone cases) available as listed packages.',
+          'Logo Identity Pack — KES 15,000',
+          'Brand Identity Kit — KES 35,000',
+          'UI/UX Design Package — KES 60,000',
+          'Digital Marketing Starter — KES 40,000',
+          'Campaign posters, flyers, stationery, and merch design — see live /pricing for current rates.',
         ],
       },
       {
-        h: 'Tech support & services',
+        h: 'Consulting & security',
         p: [
-          'OS install & setup packages, application testing, Kenya tax return / PIN assist packages — listed on /pricing.',
-          'Custom software, MedFlow deployments, and RV22 integrations: request a written estimate via /request or info@tech.ellines.co.ke.',
-          'Support & maintenance retainers cover updates, monitoring, and priority fixes after go-live.',
+          'IT Consulting (half day) — KES 25,000',
+          'IT Consulting (full day) — KES 45,000',
+          'Technology Roadmap Package — KES 120,000',
+          'Digital Transformation Starter — KES 150,000',
+          'Cyber Security Review — KES 55,000',
+        ],
+      },
+      {
+        h: 'Career, tax & tech support',
+        p: [
+          'Resume / CV packages from KES 3,500 (revamp) to KES 14,000 (executive); cover letter KES 1,500; LinkedIn optimisation KES 3,500; Career Docs Bundle KES 8,500.',
+          'Kenya Tax Return Filing — KES 200; KRA PIN / iTax Assist — KES 500.',
+          'OS Installation and application testing packages listed on /pricing.',
+          'MedFlow / RV22 / custom enterprise: request a written estimate via /request.',
         ],
       },
       {

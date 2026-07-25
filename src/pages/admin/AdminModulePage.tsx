@@ -14,6 +14,7 @@ import { AdminSettingsPage } from '@/pages/admin/AdminSettingsPage'
 import { AdminPagesEditor } from '@/pages/admin/AdminPagesEditor'
 import { AdminResourcesEditor } from '@/pages/admin/AdminResourcesEditor'
 import { AdminDownloadsEditor } from '@/pages/admin/AdminDownloadsEditor'
+import { AdminCareersModule } from '@/pages/admin/AdminCareersModule'
 import { AdminInvoicesModule } from '@/pages/admin/AdminInvoicesModule'
 import { AdminReportsModule } from '@/pages/admin/AdminReportsModule'
 import {
@@ -904,6 +905,7 @@ export function AdminModulePage({ module }: { module: string }) {
   if (module === 'pages') return <AdminPagesEditor />
   if (module === 'resources') return <AdminResourcesEditor />
   if (module === 'downloads') return <AdminDownloadsEditor />
+  if (module === 'careers') return <AdminCareersModule />
   if (module === 'invoices') return <AdminInvoicesModule />
   if (module === 'reports') return <AdminReportsModule />
   if (module === 'activity' || module === 'logs') return <ActivityModule />

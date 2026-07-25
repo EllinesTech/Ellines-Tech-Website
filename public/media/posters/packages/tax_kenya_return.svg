@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500" role="img" aria-label="Tax Return">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#14532d"/>
+      <stop offset="55%" stop-color="#070f1c"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4ade80" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="70%" cy="20%" r="50%">
+      <stop offset="0%" stop-color="#4ade80" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <rect width="800" height="500" fill="url(#glow)"/>
+  <circle cx="80" cy="420" r="120" fill="#4ade80" fill-opacity="0.06"/>
+  <circle cx="720" cy="60" r="90" fill="#4ade80" fill-opacity="0.08"/>
+  
+      <rect x="220" y="110" width="360" height="280" rx="14" fill="#0b1526" stroke="#4ade80" stroke-opacity="0.5" stroke-width="2"/>
+      <rect x="250" y="140" width="120" height="16" rx="4" fill="#4ade80" fill-opacity="0.75"/>
+      <rect x="250" y="180" width="300" height="36" rx="8" fill="#111c30" stroke="#4ade80" stroke-opacity="0.25"/>
+      <rect x="250" y="235" width="300" height="36" rx="8" fill="#111c30" stroke="#4ade80" stroke-opacity="0.25"/>
+      <rect x="250" y="290" width="180" height="36" rx="8" fill="#4ade80" fill-opacity="0.2" stroke="#4ade80" stroke-opacity="0.4"/>
+      <text x="520" y="165" fill="#4ade80" font-family="Outfit, system-ui, sans-serif" font-size="28" font-weight="700">KRA</text>
+    
+  <rect x="0" y="420" width="800" height="80" fill="#030712" fill-opacity="0.55"/>
+  <text x="40" y="468" fill="#4ade80" font-family="Outfit, DM Sans, system-ui, sans-serif" font-size="22" font-weight="700" letter-spacing="0.04em">Tax Return</text>
+  <text x="760" y="468" text-anchor="end" fill="#94a3b8" font-family="Outfit, system-ui, sans-serif" font-size="13" font-weight="500">Ellines Tech</text>
+</svg>

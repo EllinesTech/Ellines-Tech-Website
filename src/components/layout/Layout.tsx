@@ -14,7 +14,7 @@ export function Layout() {
       <HashScroll />
       <AnnouncementBar />
       <Header />
-      <main className="flex-1 pt-14 lg:pt-16">
+      <main className="flex-1 pt-16 lg:pt-[4.25rem]">
         <Outlet />
       </main>
       <Footer />

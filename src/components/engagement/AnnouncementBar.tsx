@@ -1,10 +1,9 @@
-import { useMemo } from 'react'
-import { loadSettings } from '@/lib/engagementStore'
-import { X } from 'lucide-react'
 import { useState } from 'react'
+import { X } from 'lucide-react'
+import { useSiteFeatures } from '@/context/SiteFeaturesContext'
 
 export function AnnouncementBar() {
-  const settings = useMemo(() => loadSettings(), [])
+  const { settings } = useSiteFeatures()
   const [dismissed, setDismissed] = useState(false)
   if (!settings.announcement.trim() || dismissed) return null
 

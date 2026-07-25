@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
+import { Logo } from '@/components/ui/Logo'
 import { fetchInvoicePublic, type Invoice } from '@/lib/cmsApi'
 import { siteConfig } from '@/data/site'
 
@@ -51,10 +52,8 @@ export function InvoicePublicPage() {
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 sm:p-8 print:border-0 print:bg-white print:text-black">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-400 print:text-slate-600">
-                  {siteConfig.name}
-                </p>
-                <h1 className="mt-2 font-display text-2xl font-bold text-white print:text-slate-900">
+                <Logo variant="nav" link={false} className="print:[&_span]:!text-slate-900" />
+                <h1 className="mt-4 font-display text-2xl font-bold text-white print:text-slate-900">
                   {isPaid ? 'Receipt' : 'Invoice'} {isPaid ? invoice.receiptNumber : invoice.number}
                 </h1>
                 <p className="mt-1 text-sm text-slate-400 print:text-slate-600">

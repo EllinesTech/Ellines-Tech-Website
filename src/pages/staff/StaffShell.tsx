@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   Building2,
+  Briefcase,
   Home,
   Inbox,
   LogOut,
@@ -36,6 +37,7 @@ import { cn } from '@/lib/utils'
 const staffNav = [
   { to: '/staff', label: 'Overview', icon: Home, end: true },
   { to: '/staff/leads', label: 'Leads', icon: Inbox },
+  { to: '/staff/careers', label: 'Careers', icon: Briefcase },
   { to: '/staff/clients', label: 'Clients', icon: Building2 },
   { to: '/staff/invoices', label: 'Invoices', icon: Receipt },
   { to: '/staff/pricing', label: 'Pricing packages', icon: ShoppingBag },
@@ -421,7 +423,7 @@ export function StaffClientsPage() {
   return (
     <div className="space-y-4">
       <h2 className="font-display text-2xl font-bold text-white">Clients</h2>
-      <p className="text-sm text-slate-400">Unique contacts from live leads — not demo data.</p>
+      <p className="text-sm text-slate-400">Unique contacts from live leads and purchase requests.</p>
       <ul className="space-y-2">
         {leads.map((c) => (
           <li key={c.email} className="rounded-xl border border-white/10 px-4 py-3 text-sm">

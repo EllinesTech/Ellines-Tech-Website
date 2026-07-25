@@ -5,7 +5,7 @@ export interface ChatFaq {
   links?: { label: string; href: string }[]
 }
 
-/** Default engagement knowledge — editable from Admin God Mode */
+/** Default engagement knowledge — editable from Admin chat settings */
 export const defaultChatFaqs: ChatFaq[] = [
   {
     id: 'hello',

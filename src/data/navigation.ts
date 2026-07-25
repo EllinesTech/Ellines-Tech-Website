@@ -1,3 +1,6 @@
+import type { SiteFeatureSettings } from '@/lib/siteFeatures'
+import { isPathEnabled } from '@/lib/siteFeatures'
+
 export interface NavLink {
   label: string
   href: string
@@ -166,4 +169,44 @@ export const footerSectionLabels: Record<keyof typeof footerNavigation, string> 
   services: 'Services',
   group: 'Ellines Group',
   resources: 'Resources',
+}
+
+function linkAllowed(href: string, settings: SiteFeatureSettings) {
+  if (href.startsWith('http')) return true
+  return isPathEnabled(href.split('#')[0] || href, settings)
+}
+
+export function filterNavItems(items: NavItem[], settings: SiteFeatureSettings): NavItem[] {
+  return items
+    .filter((item) => linkAllowed(item.href, settings))
+    .map((item) => {
+      if (item.groups) {
+        return {
+          ...item,
+          groups: item.groups
+            .map((g) => ({
+              ...g,
+              items: g.items.filter((l) => linkAllowed(l.href, settings)),
+            }))
+            .filter((g) => g.items.length > 0),
+        }
+      }
+      if (item.children) {
+        return {
+          ...item,
+          children: item.children.filter((l) => linkAllowed(l.href, settings)),
+        }
+      }
+      return item
+    })
+}
+
+export function filterFooterNavigation(
+  settings: SiteFeatureSettings,
+): typeof footerNavigation {
+  const next = { ...footerNavigation }
+  ;(Object.keys(next) as (keyof typeof footerNavigation)[]).forEach((key) => {
+    next[key] = footerNavigation[key].filter((l) => linkAllowed(l.href, settings))
+  })
+  return next
 }
