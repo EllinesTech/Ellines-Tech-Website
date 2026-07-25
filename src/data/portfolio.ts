@@ -44,11 +44,11 @@ export const portfolioProjects: PortfolioProject[] = [
   {
     slug: 'juno4-platform',
     name: 'Juno4',
-    category: 'business',
+    category: 'ai',
     description:
-      'Product platform brand and digital experience built for modern African businesses.',
-    technologies: ['React', 'Brand Design', 'Product UX'],
-    results: ['Distinct product identity', 'Launch-ready brand system'],
+      'AI platform for modern African businesses — intelligent automation, workflows, and decision support.',
+    technologies: ['Python', 'AI / ML', 'React', 'APIs'],
+    results: ['AI-powered operations', 'Intelligent automation at scale'],
     logo: '/project-logos/juno4.png',
   },
   {

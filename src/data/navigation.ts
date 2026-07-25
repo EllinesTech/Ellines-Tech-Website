@@ -27,7 +27,7 @@ export const primaryNavigation: NavItem[] = [
     href: '/products',
     children: [
       { label: 'Healthcare', href: '/products#healthcare', description: 'MedFlow, AfyaVox & more' },
-      { label: 'Artificial Intelligence', href: '/products#ai', description: 'RV22, chatbots & voice AI' },
+      { label: 'Artificial Intelligence', href: '/products#ai', description: 'RV22, Juno4, AfyaVox & more' },
       { label: 'Business Solutions', href: '/products#business', description: 'ERP, POS & SACCO' },
       { label: 'Digital Products', href: '/products#digital', description: 'Websites, apps & e-commerce' },
     ],

@@ -120,12 +120,12 @@ export const products: Product[] = [
   {
     slug: 'juno4',
     name: 'Juno4',
-    category: 'business',
-    tagline: 'Modern Business Platform',
+    category: 'ai',
+    tagline: 'Intelligent AI Platform',
     description:
-      'Juno4 is an Ellines Tech product platform for modern African businesses — identity, experience, and digital operations in one brand.',
-    features: ['Product brand system', 'Business workflows', 'Modern UX', 'Scalable architecture'],
-    highlights: ['Product Brand'],
+      'Juno4 is Ellines Tech’s AI platform for modern African businesses — intelligent automation, decision support, and digital operations powered by AI.',
+    features: ['AI-powered workflows', 'Intelligent automation', 'Modern UX', 'Scalable AI architecture'],
+    highlights: ['AI Product'],
     image: '/project-logos/juno4.png',
     imageFit: 'contain',
   },

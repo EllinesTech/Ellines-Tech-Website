@@ -4,7 +4,7 @@ const stack = ['React', 'Python', 'AI / ML', 'Cloud', 'Flutter', 'APIs']
 const products = [
   { name: 'AfyaVox', role: 'Clinical AI' },
   { name: 'RV22', role: 'AI Assistant' },
-  { name: 'Juno4', role: 'Business OS' },
+  { name: 'Juno4', role: 'AI Platform' },
 ]
 
 /**
