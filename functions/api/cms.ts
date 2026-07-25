@@ -381,6 +381,7 @@ export async function onRequestGet(context) {
     let products = await getJson(env, 'cms:shop-products', null)
     const defaults = defaultShop()
     const retired = new Set(['shop_hosting_care'])
+    const defaultById = new Map(defaults.map((d) => [d.id, d]))
     if (!products || !Array.isArray(products) || products.length === 0) {
       products = defaults
       await putJson(env, 'cms:shop-products', products)
@@ -399,6 +400,35 @@ export async function onRequestGet(context) {
           changed = true
         }
       }
+      // Repair stale SVG / shared posters so pricing cards show catalog photos
+      products = products.map((p) => {
+        const d = defaultById.get(p.id)
+        if (!d) return p
+        const image = String(p.image || '')
+        const wrongGraphics =
+          (image.includes('poster-graphics') || image === '/media/posters/poster-graphics.png') &&
+          d.category !== 'Graphics'
+        const staleIllustration =
+          !image ||
+          image.endsWith('.svg') ||
+          image.includes('logo-hero') ||
+          image.includes('ellines-rebranding') ||
+          image === '/media/posters/poster-campaign.png' ||
+          image === '/media/posters/poster-business-card.png' ||
+          image === '/media/posters/poster-graphics.png'
+        const needsImage = (wrongGraphics || staleIllustration) && Boolean(d.image)
+        const needsPrice =
+          ['shop_starter_web', 'shop_business_web', 'shop_ecommerce', 'shop_logo_pack'].includes(
+            p.id,
+          ) && Number(p.price) !== Number(d.price)
+        if (!needsImage && !needsPrice) return p
+        changed = true
+        return {
+          ...p,
+          ...(needsImage ? { image: d.image } : {}),
+          ...(needsPrice ? { price: d.price, currency: d.currency || 'KES' } : {}),
+        }
+      })
       if (changed) await putJson(env, 'cms:shop-products', products)
     }
     return json({ products })
@@ -1350,47 +1380,47 @@ function defaultShop() {
     {
       id: 'shop_starter_web',
       name: 'Business Website Starter',
-      price: 45000,
+      price: 25000,
       currency: 'KES',
       category: 'Web',
       description: 'One-page to multi-page business website — design, build, and launch.',
       status: 'published',
-      image: '/media/scenes/web.png',
+      image: '/media/posters/packages/shop_starter_web.svg',
     },
     {
       id: 'shop_business_web',
       name: 'Business Website Pro',
-      price: 85000,
+      price: 55000,
       currency: 'KES',
       category: 'Web',
       description: 'Multi-page site with CMS-ready structure, contact flows, and SEO basics.',
       status: 'published',
-      image: '/media/banners/about-hero.png',
+      image: '/media/posters/packages/shop_business_web.svg',
     },
     {
       id: 'shop_ecommerce',
       name: 'E-commerce Starter',
-      price: 150000,
+      price: 90000,
       currency: 'KES',
       category: 'Web',
       description: 'Online storefront for products, carts, and order enquiries.',
       status: 'published',
-      image: '/media/scenes/growth.png',
+      image: '/media/posters/packages/shop_ecommerce.svg',
     },
     {
       id: 'shop_logo_pack',
       name: 'Logo Identity Pack',
-      price: 15000,
+      price: 8000,
       currency: 'KES',
       category: 'Design',
       description: 'Logo concepts, revisions, and delivery formats for brand launch.',
       status: 'published',
-      image: '/media/posters/poster-branding.png',
+      image: '/logos/logo-hero.png',
     },
     {
       id: 'shop_brand_kit',
       name: 'Brand Identity Kit',
-      price: 35000,
+      price: 22000,
       currency: 'KES',
       category: 'Design',
       description: 'Logo, colour system, typography, and basic brand guidelines.',
@@ -1400,7 +1430,7 @@ function defaultShop() {
     {
       id: 'shop_uiux',
       name: 'UI/UX Design Package',
-      price: 60000,
+      price: 35000,
       currency: 'KES',
       category: 'Design',
       description: 'Wireframes and high-fidelity screens for web or mobile products.',
@@ -1410,7 +1440,7 @@ function defaultShop() {
     {
       id: 'shop_mobile_app',
       name: 'Mobile App MVP',
-      price: 250000,
+      price: 150000,
       currency: 'KES',
       category: 'Software',
       description: 'Cross-platform MVP app scope — core screens, auth, and API wiring.',
@@ -1420,7 +1450,7 @@ function defaultShop() {
     {
       id: 'shop_custom_software',
       name: 'Custom Software Starter',
-      price: 180000,
+      price: 95000,
       currency: 'KES',
       category: 'Software',
       description: 'Scoped business system or internal tool with discovery and first release.',
@@ -1430,7 +1460,7 @@ function defaultShop() {
     {
       id: 'shop_ai_automation',
       name: 'AI Automation Starter',
-      price: 120000,
+      price: 65000,
       currency: 'KES',
       category: 'AI',
       description: 'Chatbot or workflow automation tailored to your operations.',
@@ -1440,7 +1470,7 @@ function defaultShop() {
     {
       id: 'shop_digital_marketing',
       name: 'Digital Marketing Starter',
-      price: 40000,
+      price: 25000,
       currency: 'KES',
       category: 'Marketing',
       description: 'Campaign setup, social assets, and performance tracking kickoff.',
@@ -1450,7 +1480,7 @@ function defaultShop() {
     {
       id: 'shop_cyber_audit',
       name: 'Cyber Security Review',
-      price: 55000,
+      price: 35000,
       currency: 'KES',
       category: 'Security',
       description: 'Baseline security review for websites and apps with actionable fixes.',

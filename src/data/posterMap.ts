@@ -5,9 +5,9 @@ export const categoryPosterMap: Record<string, string> = {
   Software: '/media/scenes/hero-tech.png',
   AI: '/media/scenes/ai.png',
   Marketing: '/media/posters/poster-campaign.png',
-  Security: '/media/posters/packages/shop_cyber_audit.svg',
+  Security: '/media/posters/packages/shop_cyber_audit.jpg',
   Consulting: '/media/scenes/strategy.png',
-  Career: '/media/posters/packages/career_resume_build.svg',
+  Career: '/media/posters/packages/career_resume_build.jpg',
   'Tax & Compliance': '/media/posters/poster-tax-returns.png',
   'Tech Support': '/media/posters/poster-os-install.png',
   'QA & Testing': '/media/posters/poster-app-testing.png',
@@ -22,20 +22,20 @@ export const servicePosterMap: Record<string, string> = {
   'logo-design': '/media/posters/ellines-rebranding.png',
   'web-design': '/media/scenes/web.png',
   'ui-ux-designing': '/media/scenes/solutions.png',
-  'product-design': '/media/posters/packages/shop_uiux.svg',
-  'resume-cv-design-revamping': '/media/posters/packages/career_resume_revamp.svg',
-  'resume-building': '/media/posters/packages/career_resume_build.svg',
-  'cover-letter-writing': '/media/posters/packages/career_cover_letter.svg',
-  'linkedin-optimisation': '/media/posters/packages/career_linkedin.svg',
+  'product-design': '/media/posters/packages/shop_uiux.jpg',
+  'resume-cv-design-revamping': '/media/posters/packages/career_resume_revamp.jpg',
+  'resume-building': '/media/posters/packages/career_resume_build.jpg',
+  'cover-letter-writing': '/media/posters/packages/career_cover_letter.jpg',
+  'linkedin-optimisation': '/media/posters/packages/career_linkedin.jpg',
   'software-development': '/media/scenes/hero-tech.png',
   'web-development': '/media/banners/about-hero.png',
   'ai-development-automation': '/media/scenes/ai.png',
   'marketing-strategy': '/media/scenes/strategy.png',
   'digital-marketing': '/media/scenes/growth.png',
-  'cyber-security': '/media/posters/packages/shop_cyber_audit.svg',
+  'cyber-security': '/media/posters/packages/shop_cyber_audit.jpg',
   'it-consulting': '/media/scenes/workspace.png',
   'digital-transformation-consulting': '/media/scenes/about.png',
-  'cloud-infrastructure-consulting': '/media/posters/packages/consult_tech_roadmap.svg',
+  'cloud-infrastructure-consulting': '/media/posters/packages/consult_tech_roadmap.jpg',
   'kenya-tax-return': '/media/posters/poster-tax-returns.png',
   'os-installation': '/media/posters/poster-os-install.png',
   'app-testing': '/media/posters/poster-app-testing.png',
@@ -50,67 +50,80 @@ export const servicePosterMap: Record<string, string> = {
 }
 
 /**
- * Unique image per pricing package id — dedicated SVG art for every card.
+ * Unique photo per pricing package id — real product/context imagery for every card.
  */
 export const packagePosterMap: Record<string, string> = {
-  shop_starter_web: '/media/posters/packages/shop_starter_web.svg',
-  shop_business_web: '/media/posters/packages/shop_business_web.svg',
-  shop_ecommerce: '/media/posters/packages/shop_ecommerce.svg',
-  shop_logo_pack: '/media/posters/packages/shop_logo_pack.svg',
-  shop_brand_kit: '/media/posters/packages/shop_brand_kit.svg',
-  shop_uiux: '/media/posters/packages/shop_uiux.svg',
-  shop_mobile_app: '/media/posters/packages/shop_mobile_app.svg',
-  shop_custom_software: '/media/posters/packages/shop_custom_software.svg',
-  shop_ai_automation: '/media/posters/packages/shop_ai_automation.svg',
-  shop_digital_marketing: '/media/posters/packages/shop_digital_marketing.svg',
-  shop_cyber_audit: '/media/posters/packages/shop_cyber_audit.svg',
-  consult_it_halfday: '/media/posters/packages/consult_it_halfday.svg',
-  consult_it_fullday: '/media/posters/packages/consult_it_fullday.svg',
-  consult_tech_roadmap: '/media/posters/packages/consult_tech_roadmap.svg',
-  consult_digital_transform: '/media/posters/packages/consult_digital_transform.svg',
-  career_resume_revamp: '/media/posters/packages/career_resume_revamp.svg',
-  career_resume_build: '/media/posters/packages/career_resume_build.svg',
-  career_resume_mid: '/media/posters/packages/career_resume_mid.svg',
-  career_resume_senior: '/media/posters/packages/career_resume_senior.svg',
-  career_resume_executive: '/media/posters/packages/career_resume_executive.svg',
-  career_cover_letter: '/media/posters/packages/career_cover_letter.svg',
-  career_linkedin: '/media/posters/packages/career_linkedin.svg',
-  career_docs_bundle: '/media/posters/packages/career_docs_bundle.svg',
-  tax_kenya_return: '/media/posters/packages/tax_kenya_return.svg',
-  tax_kenya_pin_assist: '/media/posters/packages/tax_kenya_pin_assist.svg',
-  tech_os_install: '/media/posters/packages/tech_os_install.svg',
-  tech_os_install_office: '/media/posters/packages/tech_os_install_office.svg',
-  tech_app_testing: '/media/posters/packages/tech_app_testing.svg',
-  tech_app_testing_full: '/media/posters/packages/tech_app_testing_full.svg',
-  brand_identity_session: '/media/posters/packages/brand_identity_session.svg',
-  brand_full_kit: '/media/posters/packages/brand_full_kit.svg',
-  brand_rebrand: '/media/posters/packages/brand_rebrand.svg',
-  merch_tshirt: '/media/posters/packages/merch_tshirt.svg',
-  merch_cap: '/media/posters/packages/merch_cap.svg',
-  merch_hoodie: '/media/posters/packages/merch_hoodie.svg',
-  merch_clothing_custom: '/media/posters/packages/merch_clothing_custom.svg',
-  merch_phone_case: '/media/posters/packages/merch_phone_case.svg',
-  design_graphics_pack: '/media/posters/packages/design_graphics_pack.svg',
-  design_campaign_poster: '/media/posters/packages/design_campaign_poster.svg',
-  design_poster_set: '/media/posters/packages/design_poster_set.svg',
-  design_flyer: '/media/posters/packages/design_flyer.svg',
-  design_business_cards: '/media/posters/packages/design_business_cards.svg',
-  stationery_letterhead: '/media/posters/packages/stationery_letterhead.svg',
-  stationery_envelopes: '/media/posters/packages/stationery_envelopes.svg',
-  stationery_comp_slips: '/media/posters/packages/stationery_comp_slips.svg',
-  stationery_stamp_seal: '/media/posters/packages/stationery_stamp_seal.svg',
-  stationery_full_pack: '/media/posters/packages/stationery_full_pack.svg',
+  shop_starter_web: '/media/posters/packages/shop_starter_web.jpg',
+  shop_business_web: '/media/posters/packages/shop_business_web.jpg',
+  shop_ecommerce: '/media/posters/packages/shop_ecommerce.jpg',
+  shop_logo_pack: '/media/posters/packages/shop_logo_pack.jpg',
+  shop_brand_kit: '/media/posters/packages/shop_brand_kit.jpg',
+  shop_uiux: '/media/posters/packages/shop_uiux.jpg',
+  shop_mobile_app: '/media/posters/packages/shop_mobile_app.jpg',
+  shop_custom_software: '/media/posters/packages/shop_custom_software.jpg',
+  shop_ai_automation: '/media/posters/packages/shop_ai_automation.jpg',
+  shop_digital_marketing: '/media/posters/packages/shop_digital_marketing.jpg',
+  shop_cyber_audit: '/media/posters/packages/shop_cyber_audit.jpg',
+  consult_it_halfday: '/media/posters/packages/consult_it_halfday.jpg',
+  consult_it_fullday: '/media/posters/packages/consult_it_fullday.jpg',
+  consult_tech_roadmap: '/media/posters/packages/consult_tech_roadmap.jpg',
+  consult_digital_transform: '/media/posters/packages/consult_digital_transform.jpg',
+  career_resume_revamp: '/media/posters/packages/career_resume_revamp.jpg',
+  career_resume_build: '/media/posters/packages/career_resume_build.jpg',
+  career_resume_mid: '/media/posters/packages/career_resume_mid.jpg',
+  career_resume_senior: '/media/posters/packages/career_resume_senior.jpg',
+  career_resume_executive: '/media/posters/packages/career_resume_executive.jpg',
+  career_cover_letter: '/media/posters/packages/career_cover_letter.jpg',
+  career_linkedin: '/media/posters/packages/career_linkedin.jpg',
+  career_docs_bundle: '/media/posters/packages/career_docs_bundle.jpg',
+  tax_kenya_return: '/media/posters/packages/tax_kenya_return.jpg',
+  tax_kenya_pin_assist: '/media/posters/packages/tax_kenya_pin_assist.jpg',
+  tech_os_install: '/media/posters/packages/tech_os_install.jpg',
+  tech_os_install_office: '/media/posters/packages/tech_os_install_office.jpg',
+  tech_app_testing: '/media/posters/packages/tech_app_testing.jpg',
+  tech_app_testing_full: '/media/posters/packages/tech_app_testing_full.jpg',
+  brand_identity_session: '/media/posters/packages/brand_identity_session.jpg',
+  brand_full_kit: '/media/posters/packages/brand_full_kit.jpg',
+  brand_rebrand: '/media/posters/packages/brand_rebrand.jpg',
+  merch_tshirt: '/media/posters/packages/merch_tshirt.jpg',
+  merch_cap: '/media/posters/packages/merch_cap.jpg',
+  merch_hoodie: '/media/posters/packages/merch_hoodie.jpg',
+  merch_clothing_custom: '/media/posters/packages/merch_clothing_custom.jpg',
+  merch_phone_case: '/media/posters/packages/merch_phone_case.jpg',
+  design_graphics_pack: '/media/posters/packages/design_graphics_pack.jpg',
+  design_campaign_poster: '/media/posters/packages/design_campaign_poster.jpg',
+  design_poster_set: '/media/posters/packages/design_poster_set.jpg',
+  design_flyer: '/media/posters/packages/design_flyer.jpg',
+  design_business_cards: '/media/posters/packages/design_business_cards.jpg',
+  stationery_letterhead: '/media/posters/packages/stationery_letterhead.jpg',
+  stationery_envelopes: '/media/posters/packages/stationery_envelopes.jpg',
+  stationery_comp_slips: '/media/posters/packages/stationery_comp_slips.jpg',
+  stationery_stamp_seal: '/media/posters/packages/stationery_stamp_seal.jpg',
+  stationery_full_pack: '/media/posters/packages/stationery_full_pack.jpg',
 }
 export function posterForCategory(category: string): string {
   return categoryPosterMap[category] || '/media/posters/poster-campaign.png'
 }
 
+/** Shared marketing poster — only valid for Graphics packages */
+const GRAPHICS_POSTER = '/media/posters/poster-graphics.png'
+
 export function posterForPackage(pkg: {
   id?: string
+  name?: string
   category?: string
   image?: string
 }): string {
   if (pkg.id && packagePosterMap[pkg.id]) return packagePosterMap[pkg.id]
-  if (pkg.image) return pkg.image
-  return posterForCategory(pkg.category || '')
+
+  const image = pkg.image || ''
+  const isGraphicsPoster = image === GRAPHICS_POSTER || image.includes('poster-graphics')
+  const category = pkg.category || ''
+
+  // Never reuse the Graphics Design poster on Web / other categories
+  if (image && !(isGraphicsPoster && category !== 'Graphics')) {
+    return image
+  }
+
+  return posterForCategory(category)
 }

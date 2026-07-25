@@ -13,6 +13,7 @@ import {
   User,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { Logo } from '@/components/ui/Logo'
 import { CompanyMaterials } from '@/components/downloads/CompanyMaterials'
 import {
   loginCustomer,
@@ -147,8 +148,8 @@ export function StaffLayout() {
           )}
         >
           <div className="mb-5 px-2">
-            <p className="font-display text-lg font-bold text-white">Ellines Tech</p>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-400">
+            <Logo variant="nav" link={false} />
+            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-400">
               Staff workspace
             </p>
             <p className="mt-2 truncate text-xs text-slate-400">

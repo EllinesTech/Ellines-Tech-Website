@@ -92,11 +92,18 @@ export function PricingPage() {
                         <div className="relative aspect-[16/10] overflow-hidden bg-slate-950">
                           <img
                             src={poster}
-                            alt=""
+                            alt={`${p.name} — package preview`}
                             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                             loading="lazy"
                           />
                           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-slate-950/75 via-slate-950/25 to-transparent" />
+                          <img
+                            src="/logos/logo-mark-nav.png"
+                            alt=""
+                            width={36}
+                            height={36}
+                            className="absolute right-3 top-3 h-9 w-9 rounded-lg border border-white/15 bg-slate-950/75 object-contain p-1 shadow-lg backdrop-blur-md sm:right-4 sm:top-4"
+                          />
                           <span className="absolute bottom-3 left-3 rounded-md border border-white/15 bg-slate-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-200 backdrop-blur-md sm:left-4">
                             {p.category}
                           </span>
