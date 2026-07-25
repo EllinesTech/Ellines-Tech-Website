@@ -137,7 +137,7 @@ export function AdminLiveChatPage() {
                   <Button
                     type="button"
                     onClick={async () => {
-                      const s = await claimLiveSession(session.id, 'Super Admin')
+                      const s = await claimLiveSession(session.id, 'Admin')
                       setSession(s)
                       refreshList()
                     }}

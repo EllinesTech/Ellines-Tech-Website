@@ -121,7 +121,7 @@ export function RequestServicePage() {
               <p className="text-sm font-medium text-white">Create a client account to track this</p>
               <p className="mt-1 text-xs text-slate-400">
                 Optional — register with the same email to see requests and invoices in your client
-                portal. Staff and Super Admin use separate logins.
+                portal.
               </p>
               <Button href="/account" size="sm" className="mt-4" variant="secondary">
                 Create client account

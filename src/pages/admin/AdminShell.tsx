@@ -117,11 +117,11 @@ export function AdminLoginPage() {
         className="w-full max-w-md rounded-[1.5rem] border border-white/10 bg-surface-elevated/70 p-8 shadow-2xl"
       >
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-400">
-          Ellines Tech · Super Admin
+          Ellines Tech · Admin
         </p>
-        <h1 className="mt-2 font-display text-2xl font-bold text-white">God Mode access</h1>
+        <h1 className="mt-2 font-display text-2xl font-bold text-white">Admin access</h1>
         <p className="mt-3 text-sm text-slate-400">
-          Developer / platform owner only. Employees use{' '}
+          Platform owner login. Employees use{' '}
           <a href="/staff/login" className="text-brand-300">
             Staff login
           </a>
@@ -135,13 +135,13 @@ export function AdminLoginPage() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Super admin password"
+          placeholder="Admin password"
           className="mt-6 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
           autoFocus
         />
         {error && <p className="mt-2 text-sm text-rose-300">{error}</p>}
         <Button type="submit" className="mt-5 w-full" icon>
-          Enter Super Admin Panel
+          Enter Admin Panel
         </Button>
       </form>
     </div>
@@ -179,10 +179,10 @@ export function AdminLayout() {
           <div className="mb-5 px-2">
             <p className="font-display text-lg font-bold text-white">Ellines Tech</p>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-400">
-              Super Admin Panel
+              Admin Panel
             </p>
             <span className="mt-3 inline-flex rounded-full bg-brand-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-300">
-              Super Admin
+              Admin
             </span>
           </div>
 
@@ -250,7 +250,7 @@ export function AdminLayout() {
             </div>
             <div className="flex items-center gap-2">
               <span className="hidden rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 sm:inline">
-                ⚡ Super Admin
+                ⚡ Admin
               </span>
               <Link
                 to="/"

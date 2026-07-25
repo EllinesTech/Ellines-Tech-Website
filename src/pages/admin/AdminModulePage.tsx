@@ -203,7 +203,7 @@ function UsersModule() {
   return (
     <Panel
       title="Users"
-      description="Create employee accounts (staff/admin) for the Staff workspace at /staff — never share Super Admin God Mode credentials. Clients self-register at /account for pricing & packages."
+      description="Create employee accounts (staff/admin) for the Staff workspace at /staff. Clients self-register at /account for pricing & packages."
     >
       <Err message={error} />
       <Msg message={message} />
@@ -253,7 +253,7 @@ function UsersModule() {
           onClick={async () => {
             try {
               await createAdminUser({ email, password, name, role, jobTitle })
-              setMessage(`Staff account created — they log in at /staff/login (not Super Admin)`)
+              setMessage(`Staff account created — they log in at /staff/login`)
               setEmail('')
               setPassword('')
               setName('')
@@ -639,7 +639,7 @@ function NotificationsModule() {
     fetchNotifications().then(setItems).catch(() => undefined)
   }, [])
   return (
-    <Panel title="Notifications" description="System notices for Super Admin.">
+    <Panel title="Notifications" description="System notices for the admin panel.">
       <ul className="space-y-2">
         {items.length === 0 && <li className="text-sm text-slate-500">No notifications.</li>}
         {items.map((n) => (
@@ -1003,10 +1003,10 @@ export function AdminModulePage({ module }: { module: string }) {
       <Panel title="Security" description="Three separate access lanes — do not mix them.">
         <ul className="list-disc space-y-2 pl-5 text-sm text-slate-300">
           <li>
-            Super Admin (/admin) — developer God Mode password / ADMIN_API_KEY. Never share with staff.
+            Admin panel — owner password / ADMIN_API_KEY. Keep private.
           </li>
           <li>
-            Staff (/staff) — employee accounts created here under Users. Own login, not God Mode.
+            Staff (/staff) — employee accounts created here under Users. Own login.
           </li>
           <li>
             Clients (/account) — customers for pricing & packages. Public register/login.
@@ -1023,8 +1023,8 @@ export function AdminModulePage({ module }: { module: string }) {
 
   if (module === 'profile') {
     return (
-      <Panel title="Profile" description="Signed-in Super Admin session (developer only).">
-        <p className="text-sm text-slate-300">Role: Super Admin (God Mode)</p>
+      <Panel title="Profile" description="Signed-in admin session.">
+        <p className="text-sm text-slate-300">Role: Admin</p>
         <p className="mt-2 text-sm text-slate-400">
           Staff employees use /staff with their own accounts. Clients use /account for pricing &
           packages.
@@ -1044,8 +1044,8 @@ export function AdminModulePage({ module }: { module: string }) {
   if (module === 'god-mode') {
     return (
       <Panel
-        title="God Mode"
-        description="Full Super Admin toolkit — pages, chat, users, shop, analytics, backup."
+        title="Control Center"
+        description="Full admin toolkit — pages, chat, users, shop, analytics, backup."
       >
         <div className="grid gap-2 sm:grid-cols-2">
           {adminNavGroups.flatMap((g) => g.items).map((item) => (

@@ -9,7 +9,7 @@ export type AdminNavGroup = {
   items: AdminNavItem[]
 }
 
-/** Haven-style Super Admin navigation — adapted for Ellines Tech */
+/** Haven-style admin navigation — adapted for Ellines Tech */
 export const adminNavGroups: AdminNavGroup[] = [
   {
     title: 'Manage',
@@ -62,9 +62,9 @@ export const adminNavGroups: AdminNavGroup[] = [
     ],
   },
   {
-    title: 'Super Admin',
+    title: 'Owner',
     items: [
-      { to: '/admin/god-mode', label: 'God Mode', icon: 'Zap' },
+      { to: '/admin/god-mode', label: 'Control Center', icon: 'Zap' },
       { to: '/admin/profile', label: 'Profile', icon: 'User' },
     ],
   },

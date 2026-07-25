@@ -677,7 +677,7 @@ export async function onRequestPost(context) {
   }
 
   if (action === 'update_user_role') {
-    if (!godOnly) return json({ error: 'Super Admin only' }, 403)
+    if (!godOnly) return json({ error: 'Not authorized' }, 403)
     const users = await getJson(env, 'cms:users', [])
     const idx = users.findIndex((u) => u.id === body.userId)
     if (idx < 0) return json({ error: 'user not found' }, 404)
@@ -696,7 +696,7 @@ export async function onRequestPost(context) {
   }
 
   if (action === 'set_user_active') {
-    if (!godOnly) return json({ error: 'Super Admin only' }, 403)
+    if (!godOnly) return json({ error: 'Not authorized' }, 403)
     const users = await getJson(env, 'cms:users', [])
     const idx = users.findIndex((u) => u.id === body.userId)
     if (idx < 0) return json({ error: 'user not found' }, 404)
@@ -710,7 +710,7 @@ export async function onRequestPost(context) {
   }
 
   if (action === 'create_admin_user' || action === 'create_staff_user') {
-    if (!godOnly) return json({ error: 'Super Admin only' }, 403)
+    if (!godOnly) return json({ error: 'Not authorized' }, 403)
     const email = String(body.email || '').toLowerCase().trim()
     const password = String(body.password || '')
     // Employees are staff or admin — never create God Mode via this form as default
@@ -742,7 +742,7 @@ export async function onRequestPost(context) {
   }
 
   if (action === 'backup' || action === 'restore_latest') {
-    if (!godOnly) return json({ error: 'Super Admin only' }, 403)
+    if (!godOnly) return json({ error: 'Not authorized' }, 403)
   }
 
   if (action === 'notify') {

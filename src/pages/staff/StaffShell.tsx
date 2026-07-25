@@ -7,7 +7,6 @@ import {
   LogOut,
   ArrowLeft,
   Receipt,
-  MessageCircle,
   ShoppingBag,
   FilePen,
 } from 'lucide-react'
@@ -69,12 +68,7 @@ export function StaffLoginPage() {
         </p>
         <h1 className="mt-2 font-display text-2xl font-bold text-white">Staff login</h1>
         <p className="mt-3 text-sm text-slate-400">
-          Employee workspace for Marketing, Sales, Support, and Finance. This is not Super Admin /
-          God Mode — that stays at{' '}
-          <Link to="/admin/login" className="text-brand-300">
-            /admin
-          </Link>{' '}
-          for the developer only.
+          Employee workspace for Marketing, Sales, Support, and Finance.
         </p>
         <input
           type="email"
@@ -171,15 +165,6 @@ export function StaffLayout() {
               )
             })}
           </div>
-          <a
-            href="/admin/live-chat"
-            className="mt-4 flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-slate-400 hover:bg-white/5 hover:text-white"
-          >
-            <MessageCircle className="h-4 w-4" /> Live chat (God Mode)
-          </a>
-          <p className="mt-2 px-2 text-[10px] leading-relaxed text-slate-600">
-            Live chat still uses Super Admin credentials — ask the developer if you need access.
-          </p>
         </aside>
 
         {mobileOpen && (
@@ -257,7 +242,7 @@ export function StaffOverviewPage() {
           Welcome, {user.name.split(' ')[0]}
         </h2>
         <p className="mt-1 text-sm text-slate-400">
-          {user.jobTitle || user.role} · Staff workspace (not Super Admin)
+          {user.jobTitle || user.role} · Staff workspace
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
@@ -276,9 +261,6 @@ export function StaffOverviewPage() {
           </Link>
         ))}
       </div>
-      <p className="text-sm text-slate-500">
-        Need God Mode tools (users, backups, security)? Only the developer Super Admin at /admin.
-      </p>
     </div>
   )
 }

@@ -92,10 +92,6 @@ export function AccountPage() {
             <Link to="/staff/login" className="text-brand-300">
               Staff login
             </Link>
-            . Super Admin (developer only) is at{' '}
-            <Link to="/admin/login" className="text-brand-300">
-              /admin
-            </Link>
             .
           </p>
 

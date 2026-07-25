@@ -61,7 +61,7 @@ export function AdminOverviewPage() {
             })}
           </h2>
           <p className="mt-1 text-sm text-slate-400">
-            Super Admin control center for {siteConfig.url.replace('https://', '')}
+            Admin control center for {siteConfig.url.replace('https://', '')}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

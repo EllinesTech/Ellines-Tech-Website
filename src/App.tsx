@@ -96,7 +96,7 @@ export default function App() {
             element={
               <StaffSimpleNote
                 title="Pricing packages"
-                body="Public catalogue lives on /pricing. Super Admin can edit packages under Product Pricing in God Mode. Marketing can share package links with clients."
+                body="Public catalogue lives on /pricing. Share package links with clients from there; package edits are handled by platform ops."
               />
             }
           />
@@ -105,7 +105,7 @@ export default function App() {
             element={
               <StaffSimpleNote
                 title="Content & marketing"
-                body="Page copy, posters, and design studio stay in Super Admin God Mode for now. Use leads and pricing links here for day-to-day client work."
+                body="Page copy, posters, and design studio are managed separately. Use leads and pricing links here for day-to-day client work."
               />
             }
           />
