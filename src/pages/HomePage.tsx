@@ -52,15 +52,8 @@ const valueProps = valuePropData.map((item) => ({
   icon: valueIconMap[item.icon],
 }))
 
-const productVisuals = [
-  siteConfig.media.scenes.solutionsAi,
-  siteConfig.media.rv22,
-  siteConfig.media.juno4,
-  siteConfig.media.afyavox,
-]
-
 export function HomePage() {
-  const featuredProducts = products.filter((p) => p.highlights).slice(0, 4)
+  const featuredProducts = products.filter((p) => p.highlights && p.image).slice(0, 4)
   const featuredServices = Object.entries(serviceCategories)
   const featuredPortfolio = portfolioProjects.slice(0, 6)
   const waHref = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
@@ -294,14 +287,15 @@ export function HomePage() {
             </Button>
           </div>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProducts.map((product, i) => (
+            {featuredProducts.map((product) => (
               <Card
                 key={product.slug}
                 title={product.name}
                 description={product.tagline}
                 href={`/products/${product.slug}`}
                 tag={product.highlights?.[0]}
-                image={productVisuals[i % productVisuals.length]}
+                image={product.image}
+                imageFit={product.imageFit}
               />
             ))}
           </div>

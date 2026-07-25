@@ -12,6 +12,10 @@ export interface Product {
   description: string
   features: string[]
   highlights?: string[]
+  /** Product / brand mark from project assets */
+  image?: string
+  /** Logos usually need contain + padded stage */
+  imageFit?: 'cover' | 'contain'
 }
 
 export const productCategories: Record<
@@ -51,7 +55,6 @@ export const products: Product[] = [
       'Lab & radiology modules',
       'Multi-branch support',
     ],
-    highlights: ['Flagship Product', 'Healthcare'],
   },
   {
     slug: 'afyavox',
@@ -66,6 +69,9 @@ export const products: Product[] = [
       'Patient triage assistance',
       'Multi-language support',
     ],
+    highlights: ['Flagship Product', 'Healthcare'],
+    image: '/project-logos/afyavox.png',
+    imageFit: 'contain',
   },
   {
     slug: 'pharmacy-management',
@@ -108,6 +114,8 @@ export const products: Product[] = [
       'RV22 is Ellines Tech\'s flagship AI assistant for businesses — automating support, workflows, and knowledge retrieval.',
     features: ['Natural language chat', 'Custom knowledge bases', 'API integrations', 'Multi-channel deployment'],
     highlights: ['Flagship Product', 'AI'],
+    image: '/project-logos/rv22-ai.png',
+    imageFit: 'contain',
   },
   {
     slug: 'juno4',
@@ -118,6 +126,8 @@ export const products: Product[] = [
       'Juno4 is an Ellines Tech product platform for modern African businesses — identity, experience, and digital operations in one brand.',
     features: ['Product brand system', 'Business workflows', 'Modern UX', 'Scalable architecture'],
     highlights: ['Product Brand'],
+    image: '/project-logos/juno4.png',
+    imageFit: 'contain',
   },
   {
     slug: 'lmar',
@@ -127,6 +137,8 @@ export const products: Product[] = [
     description:
       'Lmar brand identity designed by Ellines Tech — professional mark with slogan lockup ready for digital and print.',
     features: ['Logo lockup', 'Slogan integration', 'Brand guidelines', 'Multi-format delivery'],
+    image: '/project-logos/lmar.png',
+    imageFit: 'contain',
   },
   {
     slug: 'ai-chatbots',
@@ -232,6 +244,8 @@ export const products: Product[] = [
     description: 'Ellines Tech\'s digital ecosystem connecting businesses, developers, and innovators.',
     features: ['Community forums', 'Resource library', 'Events', 'Partner network'],
     highlights: ['Brand Hub'],
+    image: '/business-logos/ellines-haven.png',
+    imageFit: 'contain',
   },
   {
     slug: 'business-websites',

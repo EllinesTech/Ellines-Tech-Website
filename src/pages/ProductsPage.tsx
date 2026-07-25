@@ -37,6 +37,8 @@ export function ProductsPage() {
                         description={product.tagline}
                         href={`/products/${product.slug}`}
                         tag={product.highlights?.[0]}
+                        image={product.image}
+                        imageFit={product.imageFit}
                       />
                     ))}
                   </div>

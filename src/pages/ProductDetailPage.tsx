@@ -47,16 +47,27 @@ export function ProductDetailPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-surface-elevated/50 p-8">
-              <h2 className="font-display text-xl font-semibold text-white">Key Features</h2>
-              <ul className="mt-6 space-y-4">
-                {product.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-400" />
-                    <span className="text-slate-300">{feature}</span>
-                  </li>
-                ))}
-              </ul>
+            <div className="space-y-6">
+              {product.image && (
+                <div className="flex aspect-[16/10] items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900 via-surface to-slate-950 p-8">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+              )}
+              <div className="rounded-2xl border border-white/10 bg-surface-elevated/50 p-8">
+                <h2 className="font-display text-xl font-semibold text-white">Key Features</h2>
+                <ul className="mt-6 space-y-4">
+                  {product.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-400" />
+                      <span className="text-slate-300">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </div>
