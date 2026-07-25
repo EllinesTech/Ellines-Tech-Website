@@ -46,6 +46,8 @@ import {
   isAdminAuthed,
   setAdminAuthed,
   verifyAdminPassword,
+  setAdminApiKey,
+  clearAdminApiKey,
 } from '@/lib/engagementStore'
 import { cn } from '@/lib/utils'
 
@@ -101,6 +103,7 @@ export function AdminLoginPage() {
     e.preventDefault()
     if (verifyAdminPassword(password)) {
       setAdminAuthed(true)
+      setAdminApiKey(password)
       navigate('/admin', { replace: true })
     } else setError('Invalid password')
   }
@@ -249,6 +252,7 @@ export function AdminLayout() {
                 type="button"
                 onClick={() => {
                   setAdminAuthed(false)
+                  clearAdminApiKey()
                   navigate('/admin/login')
                 }}
                 className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-300 hover:bg-white/5"

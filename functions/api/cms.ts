@@ -75,9 +75,15 @@ export async function onRequestGet(context) {
     if (slug) {
       const page = pages.find((p) => p.slug === slug)
       if (!page) return json({ error: 'not found' }, 404)
+      if (page.status !== 'published' && !adminOk(request, env)) {
+        return json({ error: 'not found' }, 404)
+      }
       return json({ page })
     }
     const publishedOnly = url.searchParams.get('published') === '1'
+    if (!publishedOnly && !adminOk(request, env)) {
+      return json({ error: 'unauthorized' }, 401)
+    }
     return json({
       pages: publishedOnly ? pages.filter((p) => p.status === 'published') : pages,
     })
@@ -88,10 +94,12 @@ export async function onRequestGet(context) {
   }
 
   if (resource === 'activity') {
+    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
     return json({ activity: await getJson(env, 'cms:activity', []) })
   }
 
   if (resource === 'leads') {
+    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
     return json({ leads: await getJson(env, 'cms:leads', []) })
   }
 
@@ -100,10 +108,12 @@ export async function onRequestGet(context) {
   }
 
   if (resource === 'newsletter') {
+    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
     return json({ subscribers: await getJson(env, 'cms:newsletter', []) })
   }
 
   if (resource === 'notifications') {
+    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
     return json({ notifications: await getJson(env, 'cms:notifications', []) })
   }
 
@@ -143,6 +153,7 @@ export async function onRequestGet(context) {
   }
 
   if (resource === 'analytics') {
+    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
     const visitors = await getJson(env, 'cms:visitors', { total: 0, today: 0, pages: {} })
     const sessions = await getJson(env, 'chat:index', [])
     return json({
@@ -411,6 +422,8 @@ export async function onRequestPost(context) {
     if (backup.siteCopy) await putJson(env, 'cms:site-copy', backup.siteCopy)
     if (backup.shop) await putJson(env, 'cms:shop-products', backup.shop)
     if (backup.reviews) await putJson(env, 'cms:reviews', backup.reviews)
+    if (backup.newsletter) await putJson(env, 'cms:newsletter', backup.newsletter)
+    if (backup.leads) await putJson(env, 'cms:leads', backup.leads)
     await logActivity(env, { type: 'system', message: 'Restored latest backup' })
     return json({ ok: true })
   }

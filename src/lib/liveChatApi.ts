@@ -1,3 +1,5 @@
+import { getAdminApiKey } from '@/lib/engagementStore'
+
 export type LiveRole = 'visitor' | 'admin' | 'assistant' | 'system' | 'ai'
 
 export interface LiveMessage {
@@ -30,6 +32,12 @@ export interface LiveSessionSummary {
 
 const base = '/api/live-chat'
 
+function adminHeaders(json = false): HeadersInit {
+  return json
+    ? { 'Content-Type': 'application/json', 'X-Admin-Key': getAdminApiKey() }
+    : { 'X-Admin-Key': getAdminApiKey() }
+}
+
 export async function createLiveSession(visitorName?: string): Promise<LiveSession> {
   const res = await fetch(base, {
     method: 'POST',
@@ -42,14 +50,17 @@ export async function createLiveSession(visitorName?: string): Promise<LiveSessi
 }
 
 export async function getLiveSession(sessionId: string, admin = false): Promise<LiveSession> {
-  const res = await fetch(`${base}?sessionId=${encodeURIComponent(sessionId)}${admin ? '&admin=1' : ''}`)
+  const res = await fetch(
+    `${base}?sessionId=${encodeURIComponent(sessionId)}${admin ? '&admin=1' : ''}`,
+    admin ? { headers: adminHeaders() } : undefined,
+  )
   const data = await res.json()
   if (!res.ok) throw new Error(data.error || 'Failed to load session')
   return data.session
 }
 
 export async function listLiveSessions(): Promise<LiveSessionSummary[]> {
-  const res = await fetch(`${base}?admin=1`)
+  const res = await fetch(`${base}?admin=1`, { headers: adminHeaders() })
   const data = await res.json()
   if (!res.ok) throw new Error(data.error || 'Failed to list sessions')
   return data.sessions || []
@@ -61,9 +72,13 @@ export async function postLiveMessage(
   role: 'visitor' | 'admin' | 'assistant' | 'ai',
   requestHuman = false,
 ): Promise<LiveSession> {
+  const headers =
+    role === 'admin'
+      ? adminHeaders(true)
+      : { 'Content-Type': 'application/json' }
   const res = await fetch(base, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({ action: 'message', sessionId, text, role, requestHuman }),
   })
   const data = await res.json()
@@ -85,7 +100,7 @@ export async function requestHumanAgent(sessionId: string): Promise<LiveSession>
 export async function claimLiveSession(sessionId: string, adminName = 'Admin'): Promise<LiveSession> {
   const res = await fetch(base, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: adminHeaders(true),
     body: JSON.stringify({ action: 'claim', sessionId, adminName }),
   })
   const data = await res.json()

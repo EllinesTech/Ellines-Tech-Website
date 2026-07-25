@@ -1,6 +1,12 @@
-const ADMIN_KEY = () =>
-  (typeof localStorage !== 'undefined' && localStorage.getItem('et_admin_api_key')) ||
-  'EllinesGodMode2026'
+import { getAdminApiKey } from '@/lib/engagementStore'
+
+const ADMIN_KEY = () => getAdminApiKey()
+
+function adminHeaders(json = false): HeadersInit {
+  return json
+    ? { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY() }
+    : { 'X-Admin-Key': ADMIN_KEY() }
+}
 
 async function cmsFetch(params: string, init?: RequestInit) {
   const res = await fetch(`/api/cms?${params}`, init)
@@ -31,7 +37,10 @@ export type CmsUser = {
 }
 
 export async function fetchPages(publishedOnly = false): Promise<CmsPage[]> {
-  const data = await cmsFetch(`resource=pages${publishedOnly ? '&published=1' : ''}`)
+  const data = await cmsFetch(
+    `resource=pages${publishedOnly ? '&published=1' : ''}`,
+    publishedOnly ? undefined : { headers: adminHeaders() },
+  )
   return data.pages || []
 }
 
@@ -43,7 +52,7 @@ export async function fetchPage(slug: string): Promise<CmsPage> {
 export async function savePage(page: Partial<CmsPage>) {
   return cmsFetch('resource=pages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY() },
+    headers: adminHeaders(true),
     body: JSON.stringify({ action: 'save_page', page }),
   })
 }
@@ -51,7 +60,7 @@ export async function savePage(page: Partial<CmsPage>) {
 export async function deletePage(id: string, slug?: string) {
   return cmsFetch('resource=pages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY() },
+    headers: adminHeaders(true),
     body: JSON.stringify({ action: 'delete_page', id, slug }),
   })
 }
@@ -64,24 +73,24 @@ export async function fetchSiteCopy() {
 export async function saveSiteCopy(siteCopy: unknown) {
   return cmsFetch('resource=site-copy', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY() },
+    headers: adminHeaders(true),
     body: JSON.stringify({ action: 'save_site_copy', siteCopy }),
   })
 }
 
 export async function fetchActivity() {
-  const data = await cmsFetch('resource=activity')
+  const data = await cmsFetch('resource=activity', { headers: adminHeaders() })
   return data.activity || []
 }
 
 export async function fetchLeads() {
-  const data = await cmsFetch('resource=leads')
+  const data = await cmsFetch('resource=leads', { headers: adminHeaders() })
   return data.leads || []
 }
 
 export async function fetchUsers(): Promise<CmsUser[]> {
   const data = await cmsFetch('resource=users', {
-    headers: { 'X-Admin-Key': ADMIN_KEY() },
+    headers: adminHeaders(),
   })
   return data.users || []
 }
@@ -89,7 +98,7 @@ export async function fetchUsers(): Promise<CmsUser[]> {
 export async function updateUserRole(userId: string, role: CmsUser['role']) {
   return cmsFetch('resource=users', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY() },
+    headers: adminHeaders(true),
     body: JSON.stringify({ action: 'update_user_role', userId, role }),
   })
 }
@@ -102,7 +111,7 @@ export async function createAdminUser(input: {
 }) {
   return cmsFetch('resource=users', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY() },
+    headers: adminHeaders(true),
     body: JSON.stringify({ action: 'create_admin_user', ...input }),
   })
 }
@@ -115,7 +124,7 @@ export async function fetchShop() {
 export async function saveShop(products: unknown[]) {
   return cmsFetch('resource=shop', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY() },
+    headers: adminHeaders(true),
     body: JSON.stringify({ action: 'save_shop', products }),
   })
 }
@@ -128,30 +137,30 @@ export async function fetchReviews() {
 export async function saveReviews(reviews: unknown[]) {
   return cmsFetch('resource=reviews', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY() },
+    headers: adminHeaders(true),
     body: JSON.stringify({ action: 'save_reviews', reviews }),
   })
 }
 
 export async function fetchNewsletter() {
-  const data = await cmsFetch('resource=newsletter')
+  const data = await cmsFetch('resource=newsletter', { headers: adminHeaders() })
   return data.subscribers || []
 }
 
 export async function fetchNotifications() {
-  const data = await cmsFetch('resource=notifications')
+  const data = await cmsFetch('resource=notifications', { headers: adminHeaders() })
   return data.notifications || []
 }
 
 export async function fetchAnalytics() {
-  const data = await cmsFetch('resource=analytics')
+  const data = await cmsFetch('resource=analytics', { headers: adminHeaders() })
   return data.analytics
 }
 
 export async function backupCms() {
   return cmsFetch('resource=backup', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY() },
+    headers: adminHeaders(true),
     body: JSON.stringify({ action: 'backup' }),
   })
 }
@@ -159,7 +168,7 @@ export async function backupCms() {
 export async function restoreCms() {
   return cmsFetch('resource=backup', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY() },
+    headers: adminHeaders(true),
     body: JSON.stringify({ action: 'restore_latest' }),
   })
 }

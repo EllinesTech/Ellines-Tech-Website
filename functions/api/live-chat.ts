@@ -15,9 +15,20 @@ function id() {
   return `s_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
 }
 
+function adminOk(request, env) {
+  const key = request.headers.get('X-Admin-Key') || ''
+  const expected = env.ADMIN_API_KEY || 'EllinesGodMode2026'
+  return key === expected
+}
+
 async function listSessions(env) {
-  const raw = (await env.ET_STORE.get('chat:index')) || '[]'
-  return JSON.parse(raw)
+  const raw = await env.ET_STORE.get('chat:index')
+  if (!raw) return []
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return []
+  }
 }
 
 async function saveIndex(env, sessions) {
@@ -26,7 +37,12 @@ async function saveIndex(env, sessions) {
 
 async function getSession(env, sessionId) {
   const raw = await env.ET_STORE.get(`chat:session:${sessionId}`)
-  return raw ? JSON.parse(raw) : null
+  if (!raw) return null
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
 }
 
 async function putSession(env, session) {
@@ -59,6 +75,7 @@ export async function onRequestGet(context) {
   const admin = url.searchParams.get('admin') === '1'
 
   if (admin && !sessionId) {
+    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
     const sessions = await listSessions(env)
     return json({ sessions })
   }
@@ -67,6 +84,7 @@ export async function onRequestGet(context) {
   const session = await getSession(env, sessionId)
   if (!session) return json({ error: 'not found' }, 404)
   if (admin) {
+    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
     session.unreadAdmin = 0
     await putSession(env, session)
   }
@@ -103,7 +121,12 @@ export async function onRequestPost(context) {
   if (action === 'message') {
     const session = await getSession(env, body.sessionId)
     if (!session) return json({ error: 'not found' }, 404)
-    const role = body.role || 'visitor'
+    let role = body.role || 'visitor'
+    if (role === 'admin') {
+      if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    } else if (role !== 'visitor' && role !== 'assistant' && role !== 'ai') {
+      role = 'visitor'
+    }
     const msg = {
       id: id(),
       role,
@@ -141,6 +164,7 @@ export async function onRequestPost(context) {
   }
 
   if (action === 'claim') {
+    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
     const session = await getSession(env, body.sessionId)
     if (!session) return json({ error: 'not found' }, 404)
     session.status = 'live'
@@ -157,6 +181,7 @@ export async function onRequestPost(context) {
   }
 
   if (action === 'close') {
+    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
     const session = await getSession(env, body.sessionId)
     if (!session) return json({ error: 'not found' }, 404)
     session.status = 'closed'

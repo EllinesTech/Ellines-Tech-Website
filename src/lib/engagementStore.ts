@@ -91,6 +91,24 @@ export function verifyAdminPassword(password: string): boolean {
   return password === expected
 }
 
+const ADMIN_API_KEY = 'et_admin_api_key'
+
+export function setAdminApiKey(key: string) {
+  localStorage.setItem(ADMIN_API_KEY, key)
+}
+
+export function clearAdminApiKey() {
+  localStorage.removeItem(ADMIN_API_KEY)
+}
+
+export function getAdminApiKey(): string {
+  return (
+    (typeof localStorage !== 'undefined' && localStorage.getItem(ADMIN_API_KEY)) ||
+    import.meta.env.VITE_ADMIN_PASSWORD ||
+    'EllinesGodMode2026'
+  )
+}
+
 function normalize(text: string) {
   return text.toLowerCase().replace(/[^a-z0-9\s+/]/g, ' ').replace(/\s+/g, ' ').trim()
 }

@@ -24,8 +24,10 @@ export function ContactPage() {
           action: 'lead',
           name: data.get('name'),
           email: data.get('email'),
-          phone: data.get('company') || '',
+          phone: data.get('phone') || '',
+          company: data.get('company') || '',
           message: `${data.get('interest') || ''}: ${data.get('message') || ''}`,
+          intent: 'quote',
           source: 'contact',
         }),
       })
@@ -221,6 +223,18 @@ export function ContactPage() {
                         name="company"
                         className="mt-1.5 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder:text-slate-500 focus:border-brand-500/50 focus:outline-none focus:ring-1 focus:ring-brand-500/50"
                         placeholder="Your company"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-slate-300">
+                        Phone / WhatsApp
+                      </label>
+                      <input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        className="mt-1.5 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder:text-slate-500 focus:border-brand-500/50 focus:outline-none focus:ring-1 focus:ring-brand-500/50"
+                        placeholder="+254 …"
                       />
                     </div>
                     <div>

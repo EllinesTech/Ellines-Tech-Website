@@ -1036,8 +1036,25 @@ export function AdminModulePage({ module }: { module: string }) {
     module
 
   return (
-    <Panel title={label} description="Module loaded.">
-      <p className="text-sm text-slate-400">Use Page Editor, Live Chat, Users, and Shop for day-to-day ops.</p>
+    <Panel title={label} description="Operational module — jump to the tools that drive the site.">
+      <p className="text-sm text-slate-400">
+        Use Leads for purchase requests, Live Chat for visitors, Product Pricing for packages, and
+        Page Editor for content.
+      </p>
+      <div className="mt-4 flex flex-wrap gap-3 text-sm">
+        <Link to="/admin/leads" className="text-brand-300">
+          → Leads
+        </Link>
+        <Link to="/admin/live-chat" className="text-brand-300">
+          → Live Chat
+        </Link>
+        <Link to="/admin/shop" className="text-brand-300">
+          → Product Pricing
+        </Link>
+        <Link to="/admin/pages" className="text-brand-300">
+          → Page Editor
+        </Link>
+      </div>
     </Panel>
   )
 }
