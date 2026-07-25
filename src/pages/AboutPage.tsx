@@ -44,12 +44,12 @@ export function AboutPage() {
         path="/about"
       />
 
-      {/* Media hero band */}
+      {/* Media hero band — brand poster, not founder */}
       <section className="relative min-h-[48vh] overflow-hidden">
         <img
-          src={founder.images.primary}
+          src={siteConfig.media.rebrandPoster}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover object-top"
+          className="absolute inset-0 h-full w-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/50" />
         <div className="section-container relative flex min-h-[48vh] items-end pb-14 pt-28">

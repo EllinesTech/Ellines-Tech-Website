@@ -25,21 +25,22 @@ export function GroupEcosystem({ className, compact }: GroupEcosystemProps) {
           {siteConfig.groupBrands.map((brand, i) => {
             const CardInner = (
               <>
-                <div className="relative aspect-[16/11] overflow-hidden">
-                  <img
-                    src={brand.image}
-                    alt=""
-                    className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.04]"
-                    loading="lazy"
-                  />
+                <div className="relative aspect-[16/11] overflow-hidden bg-gradient-to-br from-slate-900 via-surface to-slate-950">
                   <div
                     className={cn(
-                      'absolute inset-0 bg-gradient-to-t',
+                      'absolute inset-0 bg-gradient-to-t opacity-80',
                       brand.accent,
-                      'via-slate-950/40 to-slate-950/90',
                     )}
                   />
-                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5">
+                  <div className="absolute inset-0 flex items-center justify-center p-8">
+                    <img
+                      src={brand.image}
+                      alt=""
+                      className="max-h-full max-w-[70%] object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-[1.04]"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent p-5 pt-16">
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-200/90">
                         {brand.role}
@@ -51,7 +52,7 @@ export function GroupEcosystem({ className, compact }: GroupEcosystemProps) {
                     <img
                       src={brand.mark}
                       alt=""
-                      className="h-10 w-10 shrink-0 object-contain opacity-90 drop-shadow-lg"
+                      className="h-10 w-10 shrink-0 rounded-lg bg-white/5 object-contain p-1 opacity-90 ring-1 ring-white/10"
                       loading="lazy"
                     />
                   </div>
@@ -95,8 +96,8 @@ export function GroupEcosystem({ className, compact }: GroupEcosystemProps) {
                 {brand.url ? (
                   <a
                     href={brand.url}
-                    target={brand.url.startsWith('http') ? '_blank' : undefined}
-                    rel={brand.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-white/10 bg-surface-elevated/40 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.8)] transition-colors hover:border-brand-400/25"
                   >
                     {CardInner}

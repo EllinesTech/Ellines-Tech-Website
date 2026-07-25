@@ -4,6 +4,27 @@ import { footerNavigation } from '@/data/navigation'
 import { siteConfig, technologies } from '@/data/site'
 import { Logo } from '@/components/ui/Logo'
 
+function FooterLink({ href, label }: { href: string; label: string }) {
+  const external = href.startsWith('http')
+  if (external) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-sm text-slate-400 transition-colors hover:text-brand-300"
+      >
+        {label}
+      </a>
+    )
+  }
+  return (
+    <Link to={href} className="text-sm text-slate-400 transition-colors hover:text-brand-300">
+      {label}
+    </Link>
+  )
+}
+
 export function Footer() {
   const waHref = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
 
@@ -49,7 +70,7 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-8">
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-8 lg:grid-cols-5">
             {Object.entries(footerNavigation).map(([key, links]) => (
               <div key={key}>
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-white capitalize">
@@ -58,12 +79,7 @@ export function Footer() {
                 <ul className="mt-4 space-y-2.5">
                   {links.map((link) => (
                     <li key={link.href}>
-                      <Link
-                        to={link.href}
-                        className="text-sm text-slate-400 transition-colors hover:text-brand-300"
-                      >
-                        {link.label}
-                      </Link>
+                      <FooterLink href={link.href} label={link.label} />
                     </li>
                   ))}
                 </ul>

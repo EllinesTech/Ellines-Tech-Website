@@ -5,11 +5,9 @@ import {
   Zap,
   Globe2,
   Brain,
-  Cloud,
   Code2,
-  Globe,
-  Smartphone,
-  Lightbulb,
+  Palette,
+  Megaphone,
   ArrowRight,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -27,12 +25,10 @@ import { siteConfig, technologies } from '@/data/site'
 
 const iconMap: Record<string, React.ElementType> = {
   Code2,
-  Globe,
-  Smartphone,
+  Palette,
   Brain,
-  Cloud,
+  Megaphone,
   Shield,
-  Lightbulb,
 }
 
 const stats = [
@@ -48,41 +44,41 @@ const valueProps = [
     title: 'Perfect Business Solutions',
     description:
       'We provide perfect business solutions tailored to your unique needs, ensuring efficiency and effectiveness in every aspect of your operations.',
-    image: '/founder/elijah-4.jpg',
+    image: siteConfig.media.rebrandPoster,
   },
   {
     icon: Zap,
     title: 'Business Growth Planning',
     description:
       'Our business growth planning services help you strategize for the future, identifying opportunities and creating actionable plans to achieve your goals.',
-    image: '/founder/elijah-5.jpg',
+    image: siteConfig.media.techSquare,
   },
   {
     icon: Shield,
     title: 'Strategic Development',
     description:
       'We specialize in comprehensive strategy development, guiding you through market challenges and positioning your business for long-term success.',
-    image: '/founder/elijah-2.jpg',
+    image: siteConfig.media.techHero,
   },
   {
     icon: Globe2,
     title: 'Expert Tech Services',
     description:
       'We provide expert tech services tailored to your needs, ensuring optimal performance and support for your business.',
-    image: '/founder/elijah-1.jpg',
+    image: siteConfig.media.techMark,
   },
 ]
 
 const productVisuals = [
-  '/founder/elijah-3.jpg',
-  '/founder/elijah-1.jpg',
-  '/founder/elijah-2.jpg',
-  '/media/posters/ellines-rebranding.png',
+  siteConfig.media.rebrandPoster,
+  siteConfig.media.rv22,
+  siteConfig.media.juno4,
+  siteConfig.media.techSquare,
 ]
 
 export function HomePage() {
   const featuredProducts = products.filter((p) => p.highlights).slice(0, 4)
-  const featuredServices = Object.entries(serviceCategories).slice(0, 6)
+  const featuredServices = Object.entries(serviceCategories)
   const featuredPortfolio = portfolioProjects.slice(0, 6)
   const waHref = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
 
@@ -178,12 +174,12 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Storytelling — full-bleed founder visual */}
+      {/* Storytelling — brand poster (not founder) */}
       <section className="relative min-h-[70vh] overflow-hidden">
         <img
-          src={siteConfig.founder.images.primary}
+          src={siteConfig.media.rebrandPoster}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover object-top"
+          className="absolute inset-0 h-full w-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 to-slate-950/40" />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/50" />
@@ -237,14 +233,14 @@ export function HomePage() {
                 transition={{ delay: i * 0.08 }}
                 className="group overflow-hidden rounded-[1.35rem] border border-white/10 bg-surface-elevated/30"
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-500/20 via-surface to-sky-900/30">
                   <img
                     src={item.image}
                     alt=""
-                    className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                    className="h-full w-full object-contain p-6 transition-transform duration-700 group-hover:scale-105"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
                   <div className="absolute bottom-4 left-4 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300 ring-1 ring-brand-400/30 backdrop-blur-md">
                     <item.icon className="h-5 w-5" />
                   </div>
@@ -296,7 +292,7 @@ export function HomePage() {
           <SectionHeader
             eyebrow="Services"
             title="End-to-end technology services"
-            description="From custom software to cloud migration — we cover every stage of your digital journey."
+            description="Design, development, AI, marketing, and cyber security — the full set of offerings from Ellines Tech."
             align="center"
             className="mb-12"
           />
@@ -327,7 +323,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Founder spotlight + gallery */}
+      {/* Founder spotlight + gallery — founder photos only here */}
       <section className="section-padding border-t border-white/5">
         <div className="section-container">
           <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-14">
@@ -457,35 +453,43 @@ export function HomePage() {
             </Button>
           </div>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredPortfolio.map((project, i) => (
-              <Card
-                key={project.slug}
-                title={project.name}
-                description={project.description}
-                href={`/portfolio#${project.slug}`}
-                tag={project.category}
-                image={
-                  i % 2 === 0
-                    ? siteConfig.founder.images.gallery[i % 5]
-                    : siteConfig.media.rebrandPoster
-                }
-              />
-            ))}
+            {featuredPortfolio.map((project, i) => {
+              const visuals = [
+                siteConfig.media.rebrandPoster,
+                siteConfig.media.rv22,
+                siteConfig.media.juno4,
+                siteConfig.media.techSquare,
+                siteConfig.media.havenMark,
+                siteConfig.media.groupMark,
+              ]
+              return (
+                <Card
+                  key={project.slug}
+                  title={project.name}
+                  description={project.description}
+                  href={`/portfolio#${project.slug}`}
+                  tag={project.category}
+                  image={visuals[i % visuals.length]}
+                />
+              )
+            })}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
+      {/* CTA — gradient + brand mark (not founder) */}
       <section className="section-padding border-t border-white/5">
         <div className="section-container">
           <div className="relative overflow-hidden rounded-[2rem] border border-brand-500/20">
-            <img
-              src={siteConfig.founder.images.secondary}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover object-top opacity-35"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-950/95 via-brand-900/70 to-slate-950/95" />
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-900/80 via-slate-950 to-sky-950/90" />
+            <div className="pointer-events-none absolute -right-16 top-1/2 h-64 w-64 -translate-y-1/2 opacity-20">
+              <img
+                src={siteConfig.logos.mark}
+                alt=""
+                className="h-full w-full object-contain"
+                loading="lazy"
+              />
+            </div>
             <div className="relative p-8 sm:p-12 lg:p-16">
               <div className="max-w-2xl">
                 <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">

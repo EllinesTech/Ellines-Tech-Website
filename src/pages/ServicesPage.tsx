@@ -2,27 +2,36 @@ import { SEO } from '@/components/SEO'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Card } from '@/components/ui/Card'
 import { services, serviceCategories, type ServiceCategory } from '@/data/services'
-import {
-  Brain, Cloud, Code2, Globe, Lightbulb, Shield, Smartphone,
-} from 'lucide-react'
+import { Brain, Code2, Megaphone, Palette, Shield } from 'lucide-react'
 
 const iconMap: Record<string, React.ElementType> = {
-  Code2, Globe, Smartphone, Brain, Cloud, Shield, Lightbulb,
+  Code2,
+  Palette,
+  Brain,
+  Megaphone,
+  Shield,
 }
 
 export function ServicesPage() {
-  const categories = Object.entries(serviceCategories) as [ServiceCategory, typeof serviceCategories[ServiceCategory]][]
+  const categories = Object.entries(serviceCategories) as [
+    ServiceCategory,
+    (typeof serviceCategories)[ServiceCategory],
+  ][]
 
   return (
     <>
-      <SEO title="Services" description="Software development, web, mobile, AI, cloud, cybersecurity, and IT consulting services from Ellines Tech." path="/services" />
+      <SEO
+        title="Services"
+        description="Logo design, web design, UI/UX, software development, AI automation, marketing, and cyber security from Ellines Tech."
+        path="/services"
+      />
 
       <section className="section-padding">
         <div className="section-container">
           <SectionHeader
             eyebrow="Our Services"
             title="Complete Technology Services"
-            description="From ideation to deployment and beyond — we deliver end-to-end technology solutions tailored for African businesses."
+            description="Synced with Ellines Tech’s live offerings — design, development, AI, marketing, and cyber security."
             align="center"
             className="mb-16"
           />
@@ -48,7 +57,7 @@ export function ServicesPage() {
                         key={service.slug}
                         title={service.name}
                         description={service.description}
-                        href={`/services/${service.slug}`}
+                        href={`/services#${key}`}
                       />
                     ))}
                   </div>
