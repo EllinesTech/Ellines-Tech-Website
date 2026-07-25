@@ -22,6 +22,9 @@ export const primaryNavigation: NavItem[] = [
       { label: 'Software Development', href: '/services/software-development', description: 'Custom software & DevOps' },
       { label: 'Web Development', href: '/services/web-development', description: 'Full-stack web apps' },
       { label: 'AI Development', href: '/services/ai-development-automation', description: 'AI & automation' },
+      { label: 'IT Consulting', href: '/services/it-consulting', description: 'Strategy & architecture advisory' },
+      { label: 'Digital Transformation', href: '/services/digital-transformation-consulting', description: 'Digitisation roadmaps' },
+      { label: 'Cloud Consulting', href: '/services/cloud-infrastructure-consulting', description: 'Cloud & infrastructure advisory' },
       { label: 'Digital Marketing', href: '/services/digital-marketing', description: 'Strategy & growth' },
       { label: 'Cyber Security', href: '/services/cyber-security', description: 'Protect apps & data' },
     ],
@@ -74,11 +77,11 @@ export const footerNavigation = {
     { label: 'All Products', href: '/products' },
   ],
   services: [
+    { label: 'IT Consulting', href: '/services/it-consulting' },
     { label: 'Resume / CV Revamp', href: '/services/resume-cv-design-revamping' },
     { label: 'Resume Building', href: '/services/resume-building' },
     { label: 'Software Development', href: '/services/software-development' },
     { label: 'AI Development', href: '/services/ai-development-automation' },
-    { label: 'Digital Marketing', href: '/services/digital-marketing' },
     { label: 'All Services', href: '/services' },
   ],
   group: [

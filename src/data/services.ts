@@ -5,6 +5,7 @@ export type ServiceCategory =
   | 'marketing'
   | 'security'
   | 'career'
+  | 'consulting'
 
 export interface Service {
   slug: string
@@ -47,6 +48,11 @@ export const serviceCategories: Record<
     label: 'Career Documents',
     description: 'Resume building, CV revamp, cover letters, and LinkedIn — priced for Kenya.',
     icon: 'FileText',
+  },
+  consulting: {
+    label: 'IT Consulting',
+    description: 'Strategy, architecture, and technology advisory for ambitious teams.',
+    icon: 'Briefcase',
   },
 }
 
@@ -232,6 +238,45 @@ export const services: Service[] = [
       'Hardening & monitoring',
       'Vulnerability remediation',
       'Secure architecture',
+    ],
+  },
+  {
+    slug: 'it-consulting',
+    name: 'IT Consulting',
+    category: 'consulting',
+    description:
+      'Independent technology advisory — systems review, architecture guidance, vendor selection, and delivery roadmaps for Kenyan and regional businesses.',
+    offerings: [
+      'Technology assessment',
+      'Architecture & stack advisory',
+      'Vendor & build decisions',
+      'Delivery roadmap',
+    ],
+  },
+  {
+    slug: 'digital-transformation-consulting',
+    name: 'Digital Transformation Consulting',
+    category: 'consulting',
+    description:
+      'End-to-end digital transformation consulting — process digitisation, product strategy, and change-ready implementation plans.',
+    offerings: [
+      'Current-state audit',
+      'Target operating model',
+      'Prioritised initiative backlog',
+      'Change & adoption guidance',
+    ],
+  },
+  {
+    slug: 'cloud-infrastructure-consulting',
+    name: 'Cloud & Infrastructure Consulting',
+    category: 'consulting',
+    description:
+      'Cloud readiness, migration planning, and infrastructure cost/performance advisory for growing products and internal systems.',
+    offerings: [
+      'Cloud readiness review',
+      'Migration planning',
+      'Cost & performance tuning',
+      'Reliability & backup strategy',
     ],
   },
 ]

@@ -10,6 +10,7 @@ import {
   Megaphone,
   ArrowRight,
   FileText,
+  Briefcase,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
@@ -37,6 +38,7 @@ const iconMap: Record<string, React.ElementType> = {
   Megaphone,
   Shield,
   FileText,
+  Briefcase,
 }
 
 const valueIconMap = {

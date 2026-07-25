@@ -17,11 +17,23 @@ export const defaultChatFaqs: ChatFaq[] = [
     id: 'what-you-do',
     questions: ['what do you do', 'who are you', 'about ellines', 'services', 'what services'],
     answer:
-      'Ellines Tech builds software, AI, websites, brand identity, and digital systems for businesses across Africa. Flagship work includes AfyaVox, RV22, Juno4, MedFlow, and custom enterprise platforms.',
+      'Ellines Tech builds software, AI, websites, brand identity, IT consulting, and digital systems for businesses across Africa. Flagship work includes AfyaVox, RV22, Juno4, MedFlow, and custom enterprise platforms.',
     links: [
       { label: 'Services', href: '/services' },
+      { label: 'IT Consulting', href: '/services/it-consulting' },
       { label: 'Products', href: '/products' },
       { label: 'About', href: '/about' },
+    ],
+  },
+  {
+    id: 'consulting',
+    questions: ['consulting', 'it consulting', 'advisor', 'advisory', 'roadmap', 'digital transformation'],
+    answer:
+      'We offer IT consulting, digital transformation advisory, and cloud/infrastructure consulting — from half-day sessions to multi-week technology roadmaps.',
+    links: [
+      { label: 'IT Consulting', href: '/services/it-consulting' },
+      { label: 'Pricing', href: '/pricing' },
+      { label: 'Request', href: '/request' },
     ],
   },
   {

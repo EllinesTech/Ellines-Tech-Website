@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { ProcessSection } from '@/components/home/ProcessSection'
 import { services, serviceCategories, type ServiceCategory } from '@/data/services'
-import { Brain, Code2, FileText, Megaphone, Palette, Shield } from 'lucide-react'
+import { Brain, Briefcase, Code2, FileText, Megaphone, Palette, Shield } from 'lucide-react'
 
 const iconMap: Record<string, React.ElementType> = {
   Code2,
@@ -13,6 +13,7 @@ const iconMap: Record<string, React.ElementType> = {
   Megaphone,
   Shield,
   FileText,
+  Briefcase,
 }
 
 export function ServicesPage() {
