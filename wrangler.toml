@@ -3,3 +3,10 @@
 name = "ellines-tech-website"
 compatibility_date = "2026-07-25"
 pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "ET_STORE"
+id = "02eb0fb499854c3aa4cbed95c63486d9"
+
+[ai]
+binding = "AI"

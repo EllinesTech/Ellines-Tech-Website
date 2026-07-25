@@ -18,8 +18,12 @@ import { FaqPage, PrivacyPage, TermsPage } from '@/pages/LegalPages'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { AdminLoginPage, AdminLayout } from '@/pages/admin/AdminShell'
 import { AdminOverviewPage } from '@/pages/admin/AdminOverviewPage'
-import { AdminChatPage } from '@/pages/admin/AdminChatPage'
-import { AdminSettingsPage } from '@/pages/admin/AdminSettingsPage'
+import { AdminLiveChatPage } from '@/pages/admin/AdminLiveChatPage'
+import { AdminModulePage } from '@/pages/admin/AdminModulePage'
+
+function Module({ name }: { name: string }) {
+  return <AdminModulePage module={name} />
+}
 
 export default function App() {
   return (
@@ -28,8 +32,40 @@ export default function App() {
         <Route path="admin/login" element={<AdminLoginPage />} />
         <Route path="admin" element={<AdminLayout />}>
           <Route index element={<AdminOverviewPage />} />
-          <Route path="chat" element={<AdminChatPage />} />
-          <Route path="settings" element={<AdminSettingsPage />} />
+          <Route path="live-chat" element={<AdminLiveChatPage />} />
+          <Route path="activity" element={<Module name="activity" />} />
+          <Route path="products" element={<Module name="products" />} />
+          <Route path="services" element={<Module name="services" />} />
+          <Route path="portfolio" element={<Module name="portfolio" />} />
+          <Route path="media" element={<Module name="media" />} />
+          <Route path="clients" element={<Module name="clients" />} />
+          <Route path="leads" element={<Module name="leads" />} />
+          <Route path="users" element={<Module name="users" />} />
+          <Route path="permissions" element={<Module name="permissions" />} />
+          <Route path="reviews" element={<Module name="reviews" />} />
+          <Route path="newsletter" element={<Module name="newsletter" />} />
+          <Route path="analytics" element={<Module name="analytics" />} />
+          <Route path="reports" element={<Module name="reports" />} />
+          <Route path="visitors" element={<Module name="visitors" />} />
+          <Route path="online" element={<Module name="online" />} />
+          <Route path="settings" element={<Module name="settings" />} />
+          <Route path="notifications" element={<Module name="notifications" />} />
+          <Route path="messages" element={<Module name="messages" />} />
+          <Route path="chat-settings" element={<Module name="chat-settings" />} />
+          <Route path="social" element={<Module name="social" />} />
+          <Route path="email" element={<Module name="email" />} />
+          <Route path="site-controls" element={<Module name="site-controls" />} />
+          <Route path="pages" element={<Module name="pages" />} />
+          <Route path="faq" element={<Module name="faq" />} />
+          <Route path="resources" element={<Module name="resources" />} />
+          <Route path="testimonials" element={<Module name="testimonials" />} />
+          <Route path="design" element={<Module name="design" />} />
+          <Route path="security" element={<Module name="security" />} />
+          <Route path="integrations" element={<Module name="integrations" />} />
+          <Route path="logs" element={<Module name="logs" />} />
+          <Route path="backup" element={<Module name="backup" />} />
+          <Route path="god-mode" element={<Module name="god-mode" />} />
+          <Route path="profile" element={<Module name="profile" />} />
         </Route>
 
         <Route element={<Layout />}>

@@ -1,14 +1,90 @@
-import { useEffect, useState } from 'react'
-import { Navigate, Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import {
+  Activity,
+  AtSign,
+  BarChart3,
+  Bell,
+  BookOpen,
+  Bot,
+  Briefcase,
+  Building2,
+  CircleHelp,
+  Database,
+  FilePen,
+  Globe,
+  Home,
+  Image,
+  Inbox,
+  KeyRound,
+  Layers,
+  LineChart,
+  Mail,
+  MessageCircle,
+  MessageSquare,
+  Package,
+  Palette,
+  Puzzle,
+  Quote,
+  Radio,
+  ScrollText,
+  Settings,
+  Share2,
+  Shield,
+  SlidersHorizontal,
+  Star,
+  User,
+  Users,
+  Zap,
+  LogOut,
+  ArrowLeft,
+} from 'lucide-react'
+import { adminNavGroups } from '@/admin/nav'
+import { Button } from '@/components/ui/Button'
 import {
   isAdminAuthed,
   setAdminAuthed,
   verifyAdminPassword,
 } from '@/lib/engagementStore'
-import { siteConfig } from '@/data/site'
-import { Button } from '@/components/ui/Button'
-import { Shield, LayoutDashboard, MessageSquareText, Settings2, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+const iconMap: Record<string, React.ElementType> = {
+  Home,
+  Activity,
+  Package,
+  Layers,
+  Briefcase,
+  Image,
+  Building2,
+  Inbox,
+  Users,
+  KeyRound,
+  Star,
+  Mail,
+  BarChart3,
+  LineChart,
+  Globe,
+  Radio,
+  Settings,
+  Bell,
+  MessageSquare,
+  MessageCircle,
+  Bot,
+  Share2,
+  AtSign,
+  SlidersHorizontal,
+  FilePen,
+  CircleHelp,
+  BookOpen,
+  Quote,
+  Palette,
+  Shield,
+  Puzzle,
+  ScrollText,
+  Database,
+  Zap,
+  User,
+}
 
 export function AdminLoginPage() {
   const navigate = useNavigate()
@@ -24,42 +100,33 @@ export function AdminLoginPage() {
     if (verifyAdminPassword(password)) {
       setAdminAuthed(true)
       navigate('/admin', { replace: true })
-    } else {
-      setError('Invalid password')
-    }
+    } else setError('Invalid password')
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-md rounded-[1.5rem] border border-white/10 bg-surface-elevated/60 p-8 shadow-2xl"
+        className="w-full max-w-md rounded-[1.5rem] border border-white/10 bg-surface-elevated/70 p-8 shadow-2xl"
       >
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-500/15 text-brand-300">
-            <Shield className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-400">God Mode</p>
-            <h1 className="font-display text-xl font-bold text-white">Admin access</h1>
-          </div>
-        </div>
-        <p className="mb-6 text-sm text-slate-400">
-          Super admin controls for {siteConfig.name} engagement, knowledge, and site switches.
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-400">
+          Ellines Tech · Super Admin
         </p>
-        <label className="block text-sm text-slate-400">
-          Password
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
-            autoFocus
-          />
-        </label>
+        <h1 className="mt-2 font-display text-2xl font-bold text-white">God Mode access</h1>
+        <p className="mt-3 text-sm text-slate-400">
+          Control the website, live chat, AI knowledge, and engagement systems.
+        </p>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Super admin password"
+          className="mt-6 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
+          autoFocus
+        />
         {error && <p className="mt-2 text-sm text-rose-300">{error}</p>}
-        <Button type="submit" className="mt-6 w-full" icon>
-          Enter dashboard
+        <Button type="submit" className="mt-5 w-full" icon>
+          Enter Super Admin Panel
         </Button>
       </form>
     </div>
@@ -71,32 +138,110 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   return children
 }
 
-const nav = [
-  { to: '/admin', label: 'Overview', icon: LayoutDashboard, end: true },
-  { to: '/admin/chat', label: 'Chat knowledge', icon: MessageSquareText, end: false },
-  { to: '/admin/settings', label: 'Site controls', icon: Settings2, end: false },
-]
-
 export function AdminLayout() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  const activeLabel = useMemo(() => {
+    for (const g of adminNavGroups) {
+      for (const item of g.items) {
+        if (item.to === location.pathname) return item.label
+      }
+    }
+    return 'Dashboard'
+  }, [location.pathname])
 
   return (
     <RequireAdmin>
-      <div className="min-h-screen bg-slate-950">
-        <div className="border-b border-white/10 bg-surface/80">
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-400">
-                God Mode
-              </p>
-              <p className="font-display text-lg font-semibold text-white">{siteConfig.name} Admin</p>
+      <div className="flex min-h-screen bg-[#050b14] text-slate-100">
+        <aside
+          className={cn(
+            'fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto border-r border-white/10 bg-[#071018] px-3 py-4 transition lg:static lg:translate-x-0',
+            mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+          )}
+        >
+          <div className="mb-5 px-2">
+            <p className="font-display text-lg font-bold text-white">Ellines Tech</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-400">
+              Super Admin Panel
+            </p>
+            <span className="mt-3 inline-flex rounded-full bg-brand-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-300">
+              Super Admin
+            </span>
+          </div>
+
+          <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Manage
+          </p>
+          {adminNavGroups.map((group) => (
+            <div key={group.title} className="mb-5">
+              {group.title !== 'Manage' && (
+                <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  {group.title}
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const Icon = iconMap[item.icon] ?? Settings
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      end={item.to === '/admin'}
+                      onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) =>
+                        cn(
+                          'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition',
+                          isActive
+                            ? 'bg-brand-500/15 text-brand-200'
+                            : 'text-slate-400 hover:bg-white/5 hover:text-white',
+                        )
+                      }
+                    >
+                      <Icon className="h-4 w-4 shrink-0 opacity-80" />
+                      <span className="truncate">{item.label}</span>
+                    </NavLink>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </aside>
+
+        {mobileOpen && (
+          <button
+            type="button"
+            className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close menu"
+          />
+        )}
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-white/10 bg-[#071018]/90 px-4 py-3 backdrop-blur">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                className="rounded-lg border border-white/10 px-2 py-1 text-xs lg:hidden"
+                onClick={() => setMobileOpen(true)}
+              >
+                Menu
+              </button>
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Dashboard</p>
+                <h1 className="font-display text-lg font-semibold text-white">{activeLabel}</h1>
+              </div>
             </div>
             <div className="flex items-center gap-2">
+              <span className="hidden rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 sm:inline">
+                ⚡ Super Admin
+              </span>
               <Link
                 to="/"
-                className="rounded-lg px-3 py-2 text-sm text-slate-400 transition hover:text-white"
+                className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-300 hover:bg-white/5"
               >
-                View site
+                <ArrowLeft className="h-3.5 w-3.5" /> Site
               </Link>
               <button
                 type="button"
@@ -104,37 +249,15 @@ export function AdminLayout() {
                   setAdminAuthed(false)
                   navigate('/admin/login')
                 }}
-                className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm text-slate-300 hover:bg-white/5"
+                className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-300 hover:bg-white/5"
               >
-                <LogOut className="h-4 w-4" /> Logout
+                <LogOut className="h-3.5 w-3.5" /> Logout
               </button>
             </div>
-          </div>
-        </div>
-        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[220px_1fr]">
-          <nav className="space-y-1">
-            {nav.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition',
-                    isActive
-                      ? 'bg-brand-500/15 text-brand-200'
-                      : 'text-slate-400 hover:bg-white/5 hover:text-white',
-                  )
-                }
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-          <div>
+          </header>
+          <main className="flex-1 overflow-auto p-4 sm:p-6">
             <Outlet />
-          </div>
+          </main>
         </div>
       </div>
     </RequireAdmin>

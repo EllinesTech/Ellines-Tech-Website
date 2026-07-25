@@ -1,101 +1,209 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { MessageCircle, X, Send, UserRound, Bot, Minimize2 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { chatQuickReplies } from '@/data/chatKnowledge'
-import { siteConfig } from '@/data/site'
 import {
-  answerQuestion,
-  loadFaqs,
-  loadSettings,
-  saveTranscript,
-  type ChatTranscript,
-} from '@/lib/engagementStore'
+  MessageCircle,
+  X,
+  Send,
+  UserRound,
+  Bot,
+  Minimize2,
+  MessageSquare,
+} from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { siteConfig } from '@/data/site'
+import { answerQuestion, loadFaqs, loadSettings } from '@/lib/engagementStore'
+import {
+  askAi,
+  createLiveSession,
+  getLiveSession,
+  postLiveMessage,
+  requestHumanAgent,
+  type LiveSession,
+} from '@/lib/liveChatApi'
 import { cn } from '@/lib/utils'
 
-type Msg = { id: string; role: 'user' | 'assistant'; text: string; links?: { label: string; href: string }[] }
+type Mode = 'ai' | 'human' | 'whatsapp'
+type Bubble = {
+  id: string
+  role: 'user' | 'assistant' | 'system' | 'admin'
+  text: string
+  links?: { label: string; href: string }[]
+}
 
 function uid() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
 
+const SESSION_KEY = 'et_live_session_id'
+
 export function ChatWidget() {
   const settings = useMemo(() => loadSettings(), [])
   const [open, setOpen] = useState(false)
+  const [mode, setMode] = useState<Mode>('ai')
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState<Msg[]>([
+  const [busy, setBusy] = useState(false)
+  const [session, setSession] = useState<LiveSession | null>(null)
+  const [messages, setMessages] = useState<Bubble[]>([
     {
       id: 'welcome',
       role: 'assistant',
-      text: `Hi — I’m the Ellines Tech assistant. Ask about products, services, or pricing. We’re ${siteConfig.hours.label.toLowerCase()} and I can connect you to a human anytime.`,
+      text: `Hi — I’m Ellines Assist. Ask complex product/tech questions, open WhatsApp, or talk to a human agent live. We’re ${siteConfig.hours.label.toLowerCase()}.`,
     },
   ])
-  const transcriptId = useRef(uid())
   const endRef = useRef<HTMLDivElement>(null)
+  const waBase = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, open])
+  }, [messages, open, session?.messages.length])
+
+  // Poll live session when in human mode
+  useEffect(() => {
+    if (!open || mode !== 'human' || !session?.id) return
+    const t = setInterval(async () => {
+      try {
+        const fresh = await getLiveSession(session.id)
+        setSession(fresh)
+      } catch {
+        /* ignore transient */
+      }
+    }, 2500)
+    return () => clearInterval(t)
+  }, [open, mode, session?.id])
 
   if (!settings.chatEnabled) return null
 
-  const waBase = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
-
-  function persist(next: Msg[]) {
-    const transcript: ChatTranscript = {
-      id: transcriptId.current,
-      startedAt: new Date().toISOString(),
-      messages: next.map((m) => ({
-        role: m.role,
-        text: m.text,
-        at: new Date().toISOString(),
-      })),
-    }
-    saveTranscript(transcript)
-  }
-
-  function pushAssistant(text: string, links?: Msg['links']) {
-    setMessages((prev) => {
-      const next = [...prev, { id: uid(), role: 'assistant' as const, text, links }]
-      persist(next)
-      return next
-    })
-  }
-
-  function handleSend(raw: string) {
-    const text = raw.trim()
-    if (!text) return
-    setInput('')
-    setMessages((prev) => {
-      const withUser = [...prev, { id: uid(), role: 'user' as const, text }]
-      persist(withUser)
-      const result = answerQuestion(text, loadFaqs())
-      const assistant: Msg = {
-        id: uid(),
-        role: 'assistant',
-        text: result.answer,
-        links: result.links,
+  async function ensureSession() {
+    if (session) return session
+    const existing = localStorage.getItem(SESSION_KEY)
+    if (existing) {
+      try {
+        const s = await getLiveSession(existing)
+        setSession(s)
+        return s
+      } catch {
+        localStorage.removeItem(SESSION_KEY)
       }
-      const next = [...withUser, assistant]
-      persist(next)
-      return next
-    })
+    }
+    const created = await createLiveSession('Website visitor')
+    localStorage.setItem(SESSION_KEY, created.id)
+    setSession(created)
+    return created
   }
 
-  function connectHuman() {
-    const summary = messages
-      .filter((m) => m.role === 'user')
-      .slice(-4)
-      .map((m) => `• ${m.text}`)
-      .join('%0A')
+  async function sendAi(text: string) {
+    setBusy(true)
+    setMessages((prev) => [...prev, { id: uid(), role: 'user', text }])
+    try {
+      const local = answerQuestion(text, loadFaqs())
+      let answer = local.answer
+      // For unmatched / complex questions, call Workers AI
+      if (!local.matched || text.split(' ').length > 8) {
+        try {
+          const history = messages
+            .filter((m) => m.role === 'user' || m.role === 'assistant')
+            .slice(-6)
+            .map((m) => ({ role: m.role, text: m.text }))
+          answer = await askAi(text, history)
+        } catch {
+          if (!local.matched) {
+            answer =
+              local.answer +
+              ' You can also switch to Talk to a human for a live agent, or WhatsApp.'
+          }
+        }
+      } else {
+        answer = local.answer
+      }
+      setMessages((prev) => [
+        ...prev,
+        { id: uid(), role: 'assistant', text: answer, links: local.links },
+      ])
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function sendHuman(text: string) {
+    setBusy(true)
+    try {
+      const s = await ensureSession()
+      const updated = await postLiveMessage(s.id, text, 'visitor')
+      setSession(updated)
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: uid(),
+          role: 'system',
+          text: 'Live chat is connecting… If this persists, use WhatsApp and we’ll reply ASAP.',
+        },
+      ])
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function startHuman() {
+    setMode('human')
+    setBusy(true)
+    try {
+      const s = await ensureSession()
+      const updated = await requestHumanAgent(s.id)
+      setSession(updated)
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: uid(),
+          role: 'system',
+          text: 'Connecting you to a human Ellines Tech agent. Stay on this tab — replies appear here live.',
+        },
+      ])
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: uid(),
+          role: 'system',
+          text: 'Human queue unavailable right now. Use WhatsApp for instant human support.',
+        },
+      ])
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function openWhatsApp() {
+    setMode('whatsapp')
     const msg = encodeURIComponent(
-      `Hello Ellines Tech — I'd like to speak with a human.\n\nChat context:\n${decodeURIComponent(summary || '• (new conversation)')}`,
+      'Hello Ellines Tech — I need help from the website chat.',
     )
     window.open(`${waBase}?text=${msg}`, '_blank', 'noopener,noreferrer')
-    pushAssistant(
-      'Opening WhatsApp so a human can continue with you. We’re always available — typically replies within a day or sooner.',
-    )
   }
+
+  async function handleSend(raw: string) {
+    const text = raw.trim()
+    if (!text || busy) return
+    setInput('')
+    if (mode === 'human') await sendHuman(text)
+    else await sendAi(text)
+  }
+
+  const liveBubbles: Bubble[] =
+    mode === 'human' && session
+      ? session.messages.map((m) => ({
+          id: m.id,
+          role:
+            m.role === 'visitor'
+              ? 'user'
+              : m.role === 'admin'
+                ? 'admin'
+                : m.role === 'system'
+                  ? 'system'
+                  : 'assistant',
+          text: m.text,
+        }))
+      : messages
 
   return (
     <div className="pointer-events-none fixed bottom-4 right-4 z-[70] flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
@@ -105,7 +213,7 @@ export function ChatWidget() {
             initial={{ opacity: 0, y: 16, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.96 }}
-            className="pointer-events-auto flex h-[min(34rem,78vh)] w-[min(24rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-[1.35rem] border border-white/12 bg-slate-950/95 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.85)] backdrop-blur-xl"
+            className="pointer-events-auto flex h-[min(36rem,80vh)] w-[min(25rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-[1.35rem] border border-white/12 bg-slate-950/95 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.85)] backdrop-blur-xl"
           >
             <div className="flex items-center justify-between border-b border-white/10 bg-gradient-to-r from-brand-500/15 via-transparent to-sky-500/10 px-4 py-3">
               <div className="flex items-center gap-3">
@@ -115,7 +223,16 @@ export function ChatWidget() {
                 </div>
                 <div>
                   <p className="font-display text-sm font-semibold text-white">Ellines Assist</p>
-                  <p className="text-[11px] text-emerald-300/90">{siteConfig.hours.label} · Online</p>
+                  <p className="text-[11px] text-emerald-300/90">
+                    {siteConfig.hours.label} ·{' '}
+                    {mode === 'human'
+                      ? session?.status === 'live'
+                        ? 'Human connected'
+                        : 'Waiting for human'
+                      : mode === 'whatsapp'
+                        ? 'WhatsApp'
+                        : 'AI online'}
+                  </p>
                 </div>
               </div>
               <button
@@ -128,98 +245,101 @@ export function ChatWidget() {
               </button>
             </div>
 
+            <div className="grid grid-cols-3 gap-1 border-b border-white/10 p-2">
+              {(
+                [
+                  { id: 'ai', label: 'AI', icon: Bot },
+                  { id: 'human', label: 'Human', icon: UserRound },
+                  { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    if (tab.id === 'whatsapp') openWhatsApp()
+                    else if (tab.id === 'human') startHuman()
+                    else setMode('ai')
+                  }}
+                  className={cn(
+                    'inline-flex items-center justify-center gap-1 rounded-lg px-2 py-2 text-[11px] font-semibold transition',
+                    mode === tab.id
+                      ? 'bg-brand-500/20 text-brand-200'
+                      : 'text-slate-400 hover:bg-white/5 hover:text-white',
+                  )}
+                >
+                  <tab.icon className="h-3.5 w-3.5" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
             <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
-              {messages.map((m) => (
+              {liveBubbles.map((m) => (
                 <div
                   key={m.id}
-                  className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}
+                  className={cn(
+                    'flex',
+                    m.role === 'user' || m.role === 'admin' ? 'justify-end' : 'justify-start',
+                  )}
                 >
                   <div
                     className={cn(
                       'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed',
-                      m.role === 'user'
-                        ? 'bg-brand-500 text-slate-950'
-                        : 'border border-white/10 bg-white/[0.04] text-slate-200',
+                      m.role === 'user' && 'bg-brand-500 text-slate-950',
+                      m.role === 'admin' && 'bg-emerald-500 text-slate-950',
+                      m.role === 'assistant' &&
+                        'border border-white/10 bg-white/[0.04] text-slate-200',
+                      m.role === 'system' && 'text-xs text-slate-500',
                     )}
                   >
-                    <p>{m.text}</p>
-                    {m.links && m.links.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {m.links.map((link) =>
-                          link.href.startsWith('http') ? (
-                            <a
-                              key={link.href}
-                              href={link.href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs font-semibold text-brand-300 underline-offset-2 hover:underline"
-                            >
-                              {link.label}
-                            </a>
-                          ) : (
-                            <Link
-                              key={link.href}
-                              to={link.href}
-                              className="text-xs font-semibold text-brand-300 underline-offset-2 hover:underline"
-                              onClick={() => setOpen(false)}
-                            >
-                              {link.label}
-                            </Link>
-                          ),
-                        )}
-                      </div>
+                    {m.role === 'admin' && (
+                      <p className="mb-1 text-[10px] font-bold uppercase tracking-wider opacity-80">
+                        Human agent
+                      </p>
                     )}
+                    <p>{m.text}</p>
+                    {m.links?.map((link) => (
+                      <Link
+                        key={link.href}
+                        to={link.href}
+                        className="mt-2 mr-2 inline-block text-xs font-semibold text-brand-300"
+                        onClick={() => setOpen(false)}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
                   </div>
                 </div>
               ))}
               <div ref={endRef} />
             </div>
 
-            <div className="border-t border-white/10 px-3 py-2">
-              <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
-                {chatQuickReplies.map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    onClick={() => (q.toLowerCase().includes('human') ? connectHuman() : handleSend(q))}
-                    className="shrink-0 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] text-slate-300 transition hover:border-brand-400/30 hover:text-brand-200"
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={connectHuman}
-                  className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/15"
-                >
-                  <UserRound className="h-3.5 w-3.5" />
-                  Human
-                </button>
-                <form
-                  className="flex flex-1 items-center gap-2"
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    handleSend(input)
-                  }}
-                >
-                  <input
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Ask anything…"
-                    className="h-10 flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-brand-400/40"
-                  />
-                  <button
-                    type="submit"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-400 text-slate-950 transition hover:bg-brand-300"
-                    aria-label="Send"
-                  >
-                    <Send className="h-4 w-4" />
-                  </button>
-                </form>
-              </div>
-            </div>
+            <form
+              className="flex items-center gap-2 border-t border-white/10 p-3"
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleSend(input)
+              }}
+            >
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={
+                  mode === 'human' ? 'Message the human agent…' : 'Ask anything…'
+                }
+                disabled={busy || mode === 'whatsapp'}
+                className="h-10 flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-brand-400/40 disabled:opacity-50"
+              />
+              <button
+                type="submit"
+                disabled={busy || mode === 'whatsapp'}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-400 text-slate-950 transition hover:bg-brand-300 disabled:opacity-50"
+                aria-label="Send"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </form>
           </motion.div>
         )}
       </AnimatePresence>
