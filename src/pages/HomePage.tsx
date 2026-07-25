@@ -343,62 +343,36 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Founder spotlight + gallery — founder photos only here */}
-      <section className="section-padding border-t border-white/5">
+      {/* Founder trust strip — full story lives on About */}
+      <section className="border-t border-white/5 py-10 sm:py-12">
         <div className="section-container">
-          <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-14">
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="relative lg:col-span-5"
-            >
-              <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-brand-500/25 via-transparent to-sky-700/15 blur-2xl" />
-              <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 shadow-2xl shadow-black/50">
-                <img
-                  src={siteConfig.founder.images.portrait}
-                  alt={siteConfig.founder.name}
-                  className="aspect-[4/5] w-full object-cover object-top"
-                  loading="lazy"
-                />
-              </div>
-            </motion.div>
-            <div className="lg:col-span-7">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-400">
-                Leadership · {siteConfig.group.name}
-              </p>
-              <h2 className="mt-3 font-display text-3xl font-bold text-white sm:text-4xl">
-                {siteConfig.founder.name}
-              </h2>
-              <p className="mt-2 text-brand-300">{siteConfig.founder.role}</p>
-              <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-400">
-                {siteConfig.founder.bio}
-              </p>
-              <p className="mt-4 font-display text-sm font-semibold uppercase tracking-[0.22em] text-slate-300">
-                {siteConfig.motto}
-              </p>
-              <div className="mt-8">
-                <Button href="/about" icon>
-                  Meet the Founder
-                </Button>
-              </div>
-              <div className="mt-10 grid grid-cols-4 gap-2 sm:gap-3">
-                {siteConfig.founder.images.gallery.slice(0, 4).map((src) => (
-                  <div
-                    key={src}
-                    className="overflow-hidden rounded-xl border border-white/10"
-                  >
-                    <img
-                      src={src}
-                      alt=""
-                      className="aspect-square w-full object-cover object-top"
-                      loading="lazy"
-                    />
-                  </div>
-                ))}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex flex-col items-start justify-between gap-6 rounded-[1.35rem] border border-white/10 bg-white/[0.02] px-5 py-5 sm:flex-row sm:items-center sm:px-7 sm:py-6"
+          >
+            <div className="flex items-center gap-4">
+              <img
+                src={siteConfig.founder.images.portrait}
+                alt={siteConfig.founder.name}
+                className="h-14 w-14 rounded-full object-cover object-top ring-2 ring-brand-400/25 sm:h-16 sm:w-16"
+                loading="lazy"
+              />
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-400">
+                  Leadership · {siteConfig.group.name}
+                </p>
+                <p className="mt-1 font-display text-lg font-semibold text-white">
+                  {siteConfig.founder.name}
+                </p>
+                <p className="text-sm text-slate-400">{siteConfig.founder.role}</p>
               </div>
             </div>
-          </div>
+            <Button href="/about" variant="secondary" icon>
+              Meet the Founder
+            </Button>
+          </motion.div>
         </div>
       </section>
 
