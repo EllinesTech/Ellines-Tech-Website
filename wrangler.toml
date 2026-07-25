@@ -8,5 +8,6 @@ pages_build_output_dir = "dist"
 binding = "ET_STORE"
 id = "02eb0fb499854c3aa4cbed95c63486d9"
 
-[ai]
-binding = "AI"
+# Workers AI is bound in the Cloudflare Pages dashboard (name: AI), not here.
+# A toml [ai] binding forces remote auth and blocks local `wrangler pages dev`
+# without CLOUDFLARE_API_TOKEN. `/api/ai` already falls back when unbound.

@@ -20,3 +20,6 @@ _live_fetch
 .DS_Store
 .vscode
 .idea
+
+.wrangler/
+

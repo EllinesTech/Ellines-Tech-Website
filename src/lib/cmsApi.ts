@@ -30,9 +30,23 @@ function elevatedHeaders(json = false): HeadersInit {
 }
 
 async function cmsFetch(params: string, init?: RequestInit) {
-  const res = await fetch(`/api/cms?${params}`, init)
+  let res: Response
+  try {
+    res = await fetch(`/api/cms?${params}`, init)
+  } catch {
+    throw new Error(
+      'CMS API unreachable. Run `npm run preview:full` (or `npm run dev:api` with Vite) so /api/cms is available.',
+    )
+  }
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.error || 'CMS request failed')
+  if (!res.ok) {
+    if (!data.error && (res.status === 500 || res.status === 502 || res.status === 503)) {
+      throw new Error(
+        'CMS API unreachable. Start Pages Functions with `npm run preview:full` or `npm run dev:api` (port 8788).',
+      )
+    }
+    throw new Error(data.error || 'CMS request failed')
+  }
   return data
 }
 
