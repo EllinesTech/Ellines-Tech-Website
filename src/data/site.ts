@@ -84,8 +84,11 @@ export const siteConfig = {
     groupMark: '/business-logos/ellines-group.png',
     havenMark: '/business-logos/ellines-haven.png',
     rattanMark: '/business-logos/ellines-rattan.png',
-    juno4: '/business-logos/juno4.png',
-    rv22: '/business-logos/rv22-ai.png',
+    juno4: '/project-logos/juno4.png',
+    rv22: '/project-logos/rv22-ai.png',
+    afyavox: '/project-logos/afyavox.png',
+    lmar: '/project-logos/lmar.png',
+    brandWork: '/project-logos/brand-work-collection.png',
   },
   social: {
     facebook: 'https://www.facebook.com/ellines.tech/',

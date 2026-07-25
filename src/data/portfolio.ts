@@ -1,4 +1,4 @@
-export type PortfolioCategory = 'healthcare' | 'education' | 'business' | 'ai' | 'web'
+export type PortfolioCategory = 'healthcare' | 'education' | 'business' | 'ai' | 'web' | 'brand'
 
 export interface PortfolioProject {
   slug: string
@@ -8,6 +8,8 @@ export interface PortfolioProject {
   description: string
   technologies: string[]
   results?: string[]
+  logo?: string
+  image?: string
 }
 
 export const portfolioCategories: Record<PortfolioCategory, string> = {
@@ -16,31 +18,88 @@ export const portfolioCategories: Record<PortfolioCategory, string> = {
   business: 'Business',
   ai: 'AI',
   web: 'Web',
+  brand: 'Brand',
 }
 
 export const portfolioProjects: PortfolioProject[] = [
   {
+    slug: 'rv22-enterprise',
+    name: 'RV22 AI Assistant',
+    category: 'ai',
+    description:
+      'Enterprise AI assistant deployed for customer support and internal knowledge management.',
+    technologies: ['Python', 'OpenAI', 'React', 'Vector DB'],
+    results: ['60% reduction in support tickets', '24/7 automated responses'],
+    logo: '/project-logos/rv22-ai.png',
+  },
+  {
+    slug: 'afyavox-clinical',
+    name: 'AfyaVox Clinical AI',
+    category: 'ai',
+    description: 'Voice-powered clinical documentation assistant for healthcare providers.',
+    technologies: ['Python', 'Speech AI', 'React', 'PostgreSQL'],
+    results: ['50% faster clinical documentation', 'Multi-language support'],
+    logo: '/project-logos/afyavox.png',
+  },
+  {
+    slug: 'juno4-platform',
+    name: 'Juno4',
+    category: 'business',
+    description:
+      'Product platform brand and digital experience built for modern African businesses.',
+    technologies: ['React', 'Brand Design', 'Product UX'],
+    results: ['Distinct product identity', 'Launch-ready brand system'],
+    logo: '/project-logos/juno4.png',
+  },
+  {
+    slug: 'lmar-brand',
+    name: 'Lmar',
+    category: 'brand',
+    client: 'Lmar',
+    description:
+      'Complete brand identity with slogan lockup — logo system designed and delivered by Ellines Tech.',
+    technologies: ['Logo Design', 'Brand Guidelines'],
+    results: ['Professional brand mark', 'Slogan-integrated lockup'],
+    logo: '/project-logos/lmar.png',
+  },
+  {
     slug: 'medflow-deployment',
     name: 'MedFlow Hospital Management',
     category: 'healthcare',
-    description: 'End-to-end hospital management system deployed across multiple healthcare facilities.',
+    description:
+      'End-to-end hospital management system deployed across multiple healthcare facilities.',
     technologies: ['Python', 'React', 'PostgreSQL', 'Docker'],
     results: ['40% reduction in patient wait times', 'Unified billing across departments'],
+    image: '/project-logos/brand-work-collection.png',
   },
   {
     slug: 'eliprime-home-wellness',
     name: 'Eliprime Home Wellness Clinic',
     category: 'healthcare',
     client: 'Eliprime',
-    description: 'Home-based wellness clinic platform with caregiver scheduling and patient monitoring.',
-    technologies: ['Flutter', 'Firebase', 'Node.js'],
+    description:
+      'Home-based wellness clinic platform with caregiver scheduling and patient monitoring — plus brand identity.',
+    technologies: ['Flutter', 'Firebase', 'Node.js', 'Logo Design'],
     results: ['500+ home visits coordinated monthly', 'Real-time caregiver tracking'],
+    logo: '/client-logos/eliprime.webp',
+  },
+  {
+    slug: 'eventra-fest-identity',
+    name: 'Eventra Fest Brand Identity',
+    category: 'brand',
+    client: 'Eventra Fest',
+    description:
+      'Official square logo and event brand system for Eventra Fest.',
+    technologies: ['Logo Design', 'Brand Identity'],
+    results: ['Launch-ready event brand', 'Consistent visual system'],
+    logo: '/client-logos/eventra-fest.png',
   },
   {
     slug: 'school-management-kenya',
     name: 'School Management Systems',
     category: 'education',
-    description: 'Multi-school management platform with fee collection, timetabling, and parent portals.',
+    description:
+      'Multi-school management platform with fee collection, timetabling, and parent portals.',
     technologies: ['React', 'PostgreSQL', 'M-Pesa Integration'],
     results: ['15+ schools onboarded', '90% fee collection rate improvement'],
   },
@@ -48,7 +107,8 @@ export const portfolioProjects: PortfolioProject[] = [
     slug: 'erp-manufacturing',
     name: 'ERP for Manufacturing',
     category: 'business',
-    description: 'Custom ERP system for a manufacturing company with inventory and production tracking.',
+    description:
+      'Custom ERP system for a manufacturing company with inventory and production tracking.',
     technologies: ['Python', 'React', 'MySQL'],
     results: ['30% inventory cost reduction', 'Real-time production visibility'],
   },
@@ -61,34 +121,21 @@ export const portfolioProjects: PortfolioProject[] = [
     results: ['20 outlets connected', 'Automated reorder workflows'],
   },
   {
-    slug: 'rv22-enterprise',
-    name: 'RV22 AI Assistant',
-    category: 'ai',
-    description: 'Enterprise AI assistant deployed for customer support and internal knowledge management.',
-    technologies: ['Python', 'OpenAI', 'React', 'Vector DB'],
-    results: ['60% reduction in support tickets', '24/7 automated responses'],
-  },
-  {
-    slug: 'afyavox-clinical',
-    name: 'AfyaVox Clinical AI',
-    category: 'ai',
-    description: 'Voice-powered clinical documentation assistant for healthcare providers.',
-    technologies: ['Python', 'Speech AI', 'React', 'PostgreSQL'],
-    results: ['50% faster clinical documentation', 'Multi-language support'],
-  },
-  {
     slug: 'corporate-websites',
-    name: 'Corporate Websites',
+    name: 'Corporate Websites & Brand Marks',
     category: 'web',
-    description: 'Modern corporate websites for businesses across finance, healthcare, and professional services.',
-    technologies: ['React', 'Tailwind CSS', 'Cloudflare Pages'],
-    results: ['SEO-optimized', 'Sub-second load times'],
+    description:
+      'Modern corporate websites and logo systems for hospitality, services, and professional brands — including Black Sauce, Delightful Staycation, and Eli’s Xpress Errands.',
+    technologies: ['React', 'Tailwind CSS', 'Logo Design', 'Cloudflare Pages'],
+    results: ['SEO-optimized', 'Sub-second load times', 'Distinct brand identities'],
+    image: '/project-logos/brand-work-collection.png',
   },
   {
     slug: 'ecommerce-platforms',
     name: 'E-commerce Platforms',
     category: 'web',
-    description: 'Full-featured online stores with payment integration and mobile-first design.',
+    description:
+      'Full-featured online stores with payment integration and mobile-first design.',
     technologies: ['React', 'Node.js', 'Stripe', 'M-Pesa'],
     results: ['Mobile-first checkout', 'Integrated payment gateways'],
   },

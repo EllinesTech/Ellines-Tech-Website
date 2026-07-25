@@ -21,6 +21,7 @@ import { products } from '@/data/products'
 import { services, serviceCategories } from '@/data/services'
 import { industries } from '@/data/industries'
 import { portfolioProjects } from '@/data/portfolio'
+import { clientBrands } from '@/data/clients'
 import { siteConfig, technologies } from '@/data/site'
 
 const iconMap: Record<string, React.ElementType> = {
@@ -73,7 +74,7 @@ const productVisuals = [
   siteConfig.media.rebrandPoster,
   siteConfig.media.rv22,
   siteConfig.media.juno4,
-  siteConfig.media.techSquare,
+  siteConfig.media.afyavox,
 ]
 
 export function HomePage() {
@@ -257,6 +258,48 @@ export function HomePage() {
 
       {/* Ellines Group — Tech, Haven, Rattan */}
       <GroupEcosystem className="bg-surface/35" />
+
+      {/* Brands we built & worked with */}
+      <section className="section-padding border-t border-white/5">
+        <div className="section-container">
+          <SectionHeader
+            eyebrow="Brands & clients"
+            title="Logos we created. Businesses we work with."
+            description="Identity systems and digital work for brands across hospitality, healthcare, events, and services — plus Ellines Group ventures."
+            align="center"
+            className="mb-12"
+          />
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+            {clientBrands.map((brand, i) => (
+              <motion.div
+                key={brand.id}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.04 }}
+                className="flex flex-col items-center gap-3 rounded-2xl border border-white/8 bg-white/[0.02] px-3 py-5 text-center"
+              >
+                <div className="flex h-16 w-full items-center justify-center">
+                  <img
+                    src={brand.logo}
+                    alt={brand.name}
+                    className="max-h-12 w-auto max-w-[85%] object-contain"
+                    loading="lazy"
+                  />
+                </div>
+                <p className="font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  {brand.name}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+          <div className="mt-10 flex justify-center">
+            <Button href="/clients" variant="ghost" icon>
+              View all clients
+            </Button>
+          </div>
+        </div>
+      </section>
 
       {/* Products */}
       <section className="section-padding border-t border-white/5">
@@ -453,15 +496,11 @@ export function HomePage() {
             </Button>
           </div>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredPortfolio.map((project, i) => {
-              const visuals = [
-                siteConfig.media.rebrandPoster,
-                siteConfig.media.rv22,
-                siteConfig.media.juno4,
-                siteConfig.media.techSquare,
-                siteConfig.media.havenMark,
-                siteConfig.media.groupMark,
-              ]
+            {featuredPortfolio.map((project) => {
+              const image =
+                project.logo ??
+                project.image ??
+                siteConfig.media.rebrandPoster
               return (
                 <Card
                   key={project.slug}
@@ -469,7 +508,7 @@ export function HomePage() {
                   description={project.description}
                   href={`/portfolio#${project.slug}`}
                   tag={project.category}
-                  image={visuals[i % visuals.length]}
+                  image={image}
                 />
               )
             })}

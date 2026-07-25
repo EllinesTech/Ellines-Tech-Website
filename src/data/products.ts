@@ -110,6 +110,25 @@ export const products: Product[] = [
     highlights: ['Flagship Product', 'AI'],
   },
   {
+    slug: 'juno4',
+    name: 'Juno4',
+    category: 'business',
+    tagline: 'Modern Business Platform',
+    description:
+      'Juno4 is an Ellines Tech product platform for modern African businesses — identity, experience, and digital operations in one brand.',
+    features: ['Product brand system', 'Business workflows', 'Modern UX', 'Scalable architecture'],
+    highlights: ['Product Brand'],
+  },
+  {
+    slug: 'lmar',
+    name: 'Lmar',
+    category: 'digital',
+    tagline: 'Brand Identity System',
+    description:
+      'Lmar brand identity designed by Ellines Tech — professional mark with slogan lockup ready for digital and print.',
+    features: ['Logo lockup', 'Slogan integration', 'Brand guidelines', 'Multi-format delivery'],
+  },
+  {
     slug: 'ai-chatbots',
     name: 'AI Chatbots',
     category: 'ai',

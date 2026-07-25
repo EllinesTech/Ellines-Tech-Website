@@ -2,9 +2,9 @@ import { motion } from 'framer-motion'
 
 const stack = ['React', 'Python', 'AI / ML', 'Cloud', 'Flutter', 'APIs']
 const products = [
-  { name: 'MedFlow', role: 'Hospital OS' },
   { name: 'AfyaVox', role: 'Clinical AI' },
   { name: 'RV22', role: 'AI Assistant' },
+  { name: 'Juno4', role: 'Business OS' },
 ]
 
 /**

@@ -60,6 +60,7 @@ export const footerNavigation = {
   products: [
     { label: 'MedFlow', href: '/products/medflow' },
     { label: 'AfyaVox AI', href: '/products/afyavox' },
+    { label: 'Juno4', href: '/products/juno4' },
     { label: 'RV22 AI', href: '/products/rv22' },
     { label: 'All Products', href: '/products' },
   ],
