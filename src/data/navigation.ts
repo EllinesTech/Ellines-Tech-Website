@@ -1,7 +1,27 @@
+export interface NavLink {
+  label: string
+  href: string
+  description?: string
+}
+
+export interface NavGroup {
+  label: string
+  items: NavLink[]
+}
+
 export interface NavItem {
   label: string
   href: string
-  children?: { label: string; href: string; description?: string }[]
+  /** Flat dropdown (e.g. Products) */
+  children?: NavLink[]
+  /** Grouped mega-menu (e.g. Services) */
+  groups?: NavGroup[]
+}
+
+/** Flatten groups or children for consumers that need a single list */
+export function getNavLinks(item: NavItem): NavLink[] {
+  if (item.groups?.length) return item.groups.flatMap((g) => g.items)
+  return item.children ?? []
 }
 
 /** Primary desktop nav — keep short to avoid logo collision */
@@ -11,30 +31,60 @@ export const primaryNavigation: NavItem[] = [
   {
     label: 'Services',
     href: '/services',
-    children: [
-      { label: 'Logo Design', href: '/services/logo-design', description: 'Brand identity & logo design' },
-      { label: 'Web Design', href: '/services/web-design', description: 'Visual website design' },
-      { label: 'UI/UX Designing', href: '/services/ui-ux-designing', description: 'Interfaces & product UX' },
-      { label: 'Resume / CV Revamp', href: '/services/resume-cv-design-revamping', description: 'ATS-friendly CV refresh' },
-      { label: 'Resume Building', href: '/services/resume-building', description: 'Professional CV from scratch' },
-      { label: 'Cover Letter', href: '/services/cover-letter-writing', description: 'Role-targeted cover letters' },
-      { label: 'LinkedIn Optimisation', href: '/services/linkedin-optimisation', description: 'Profile rewrite for recruiters' },
-      { label: 'Software Development', href: '/services/software-development', description: 'Custom software & DevOps' },
-      { label: 'Web Development', href: '/services/web-development', description: 'Full-stack web apps' },
-      { label: 'AI Development', href: '/services/ai-development-automation', description: 'AI & automation' },
-      { label: 'IT Consulting', href: '/services/it-consulting', description: 'Strategy & architecture advisory' },
-      { label: 'Digital Transformation', href: '/services/digital-transformation-consulting', description: 'Digitisation roadmaps' },
-      { label: 'Cloud Consulting', href: '/services/cloud-infrastructure-consulting', description: 'Cloud & infrastructure advisory' },
-      { label: 'Digital Marketing', href: '/services/digital-marketing', description: 'Strategy & growth' },
-      { label: 'Cyber Security', href: '/services/cyber-security', description: 'Protect apps & data' },
-      { label: 'Kenya Tax Returns', href: '/services/kenya-tax-return', description: 'From KES 200 via iTax' },
-      { label: 'OS Installation', href: '/services/os-installation', description: 'Windows & Linux setup' },
-      { label: 'App Testing', href: '/services/app-testing', description: 'Manual QA & bug reports' },
-      { label: 'Branding', href: '/services/branding-services', description: 'Identity & brand systems' },
-      { label: 'Apparel Branding', href: '/services/apparel-branding', description: 'Tees, caps & hoodies' },
-      { label: 'Business Cards', href: '/services/business-cards', description: 'Print-ready card design' },
-      { label: 'Stationery Rebrand', href: '/services/stationery-rebrand', description: 'Letterheads & envelopes' },
-      { label: 'Business Rebrand Kit', href: '/services/business-rebrand-kit', description: 'Full identity refresh' },
+    groups: [
+      {
+        label: 'Design',
+        items: [
+          { label: 'Logo Design', href: '/services/logo-design' },
+          { label: 'Web Design', href: '/services/web-design' },
+          { label: 'UI/UX Designing', href: '/services/ui-ux-designing' },
+          { label: 'Branding', href: '/services/branding-services' },
+        ],
+      },
+      {
+        label: 'Career',
+        items: [
+          { label: 'Resume Building', href: '/services/resume-building' },
+          { label: 'Resume / CV Revamp', href: '/services/resume-cv-design-revamping' },
+          { label: 'Cover Letter', href: '/services/cover-letter-writing' },
+          { label: 'LinkedIn Optimisation', href: '/services/linkedin-optimisation' },
+        ],
+      },
+      {
+        label: 'Development',
+        items: [
+          { label: 'Web Development', href: '/services/web-development' },
+          { label: 'Software Development', href: '/services/software-development' },
+          { label: 'AI Development', href: '/services/ai-development-automation' },
+        ],
+      },
+      {
+        label: 'Consulting',
+        items: [
+          { label: 'IT Consulting', href: '/services/it-consulting' },
+          { label: 'Digital Transformation', href: '/services/digital-transformation-consulting' },
+          { label: 'Cloud Consulting', href: '/services/cloud-infrastructure-consulting' },
+        ],
+      },
+      {
+        label: 'Growth & Security',
+        items: [
+          { label: 'Digital Marketing', href: '/services/digital-marketing' },
+          { label: 'Cyber Security', href: '/services/cyber-security' },
+          { label: 'App Testing', href: '/services/app-testing' },
+        ],
+      },
+      {
+        label: 'Support & Print',
+        items: [
+          { label: 'OS Installation', href: '/services/os-installation' },
+          { label: 'Kenya Tax Returns', href: '/services/kenya-tax-return' },
+          { label: 'Apparel Branding', href: '/services/apparel-branding' },
+          { label: 'Business Cards', href: '/services/business-cards' },
+          { label: 'Stationery Rebrand', href: '/services/stationery-rebrand' },
+          { label: 'Business Rebrand Kit', href: '/services/business-rebrand-kit' },
+        ],
+      },
     ],
   },
   {
