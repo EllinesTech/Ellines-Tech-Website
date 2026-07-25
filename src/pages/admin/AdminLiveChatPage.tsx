@@ -28,16 +28,6 @@ export function AdminLiveChatPage() {
     }
   }
 
-  async function refreshActive() {
-    if (!activeId) return
-    try {
-      const s = await getLiveSession(activeId, true)
-      setSession(s)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Unable to load session')
-    }
-  }
-
   useEffect(() => {
     refreshList()
     const t = setInterval(refreshList, 4000)
@@ -45,10 +35,25 @@ export function AdminLiveChatPage() {
   }, [])
 
   useEffect(() => {
-    refreshActive()
-    if (!activeId) return
-    const t = setInterval(refreshActive, 2500)
-    return () => clearInterval(t)
+    if (!activeId) {
+      setSession(null)
+      return
+    }
+    let cancelled = false
+    async function load() {
+      try {
+        const s = await getLiveSession(activeId!, true)
+        if (!cancelled) setSession(s)
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Unable to load session')
+      }
+    }
+    load()
+    const t = setInterval(load, 2500)
+    return () => {
+      cancelled = true
+      clearInterval(t)
+    }
   }, [activeId])
 
   useEffect(() => {
