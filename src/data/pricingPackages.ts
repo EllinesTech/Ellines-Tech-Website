@@ -1,4 +1,4 @@
-/** Starter IT product pricing — Super Admin can edit/add via Product Pricing */
+/** Starter product pricing — Super Admin can edit/add via Product Pricing */
 export type PricingPackage = {
   id: string
   name: string
@@ -8,6 +8,9 @@ export type PricingPackage = {
   description: string
   status: 'draft' | 'published'
 }
+
+/** IDs retired from the catalogue (e.g. services we no longer offer) */
+export const retiredPricingIds = ['shop_hosting_care'] as const
 
 export const starterPricingPackages: PricingPackage[] = [
   {
@@ -110,12 +113,80 @@ export const starterPricingPackages: PricingPackage[] = [
     status: 'published',
   },
   {
-    id: 'shop_hosting_care',
-    name: 'Hosting & Care Plan (monthly)',
-    price: 8000,
+    id: 'career_resume_revamp',
+    name: 'Resume / CV Revamp',
+    price: 3500,
     currency: 'KES',
-    category: 'Support',
-    description: 'Hosting support, updates, and monitoring for your live site.',
+    category: 'Career',
+    description:
+      'Refresh your existing CV into a clean, ATS-friendly format — Kenya market rates for graduates and early professionals.',
+    status: 'published',
+  },
+  {
+    id: 'career_resume_build',
+    name: 'Resume Building (ATS CV)',
+    price: 5000,
+    currency: 'KES',
+    category: 'Career',
+    description:
+      'Full professional resume built from scratch — structure, achievements, and keywords for Kenyan and remote roles.',
+    status: 'published',
+  },
+  {
+    id: 'career_resume_mid',
+    name: 'Mid-Career Resume Package',
+    price: 6500,
+    currency: 'KES',
+    category: 'Career',
+    description:
+      'Role-targeted CV for 3–9 years’ experience — impact bullets, skills mapping, and role keywords.',
+    status: 'published',
+  },
+  {
+    id: 'career_resume_senior',
+    name: 'Senior Resume Package',
+    price: 9000,
+    currency: 'KES',
+    category: 'Career',
+    description:
+      'Leadership-focused CV for managers and senior specialists — aligned with Kenya mid-to-senior market pricing.',
+    status: 'published',
+  },
+  {
+    id: 'career_resume_executive',
+    name: 'Executive Resume Package',
+    price: 14000,
+    currency: 'KES',
+    category: 'Career',
+    description:
+      'Executive / C-suite CV with career narrative and achievement framing — Kenya executive writing range.',
+    status: 'published',
+  },
+  {
+    id: 'career_cover_letter',
+    name: 'Cover Letter',
+    price: 1500,
+    currency: 'KES',
+    category: 'Career',
+    description: 'Tailored cover letter matched to your CV and target role.',
+    status: 'published',
+  },
+  {
+    id: 'career_linkedin',
+    name: 'LinkedIn Profile Optimisation',
+    price: 3500,
+    currency: 'KES',
+    category: 'Career',
+    description: 'Headline, about, and experience rewrite so recruiters find you faster.',
+    status: 'published',
+  },
+  {
+    id: 'career_docs_bundle',
+    name: 'Career Docs Bundle',
+    price: 8500,
+    currency: 'KES',
+    category: 'Career',
+    description: 'Resume build or revamp + cover letter + LinkedIn optimisation in one package.',
     status: 'published',
   },
 ]

@@ -5,7 +5,7 @@ import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Button } from '@/components/ui/Button'
 import { fetchShop } from '@/lib/cmsApi'
 import { loadAuthUser } from '@/lib/auth'
-import { starterPricingPackages, type PricingPackage } from '@/data/pricingPackages'
+import { starterPricingPackages, retiredPricingIds, type PricingPackage } from '@/data/pricingPackages'
 
 export function PricingPage() {
   const [products, setProducts] = useState<PricingPackage[]>([])
@@ -13,9 +13,15 @@ export function PricingPage() {
   const user = loadAuthUser()
 
   useEffect(() => {
+    const retired = new Set<string>(retiredPricingIds)
     fetchShop()
       .then((list) => {
-        const published = (list as PricingPackage[]).filter((p) => p.status === 'published')
+        const published = (list as PricingPackage[]).filter(
+          (p) =>
+            p.status === 'published' &&
+            !retired.has(p.id) &&
+            !String(p.name || '').toLowerCase().includes('hosting'),
+        )
         setProducts(published.length ? published : starterPricingPackages.filter((p) => p.status === 'published'))
       })
       .catch((e) => {
