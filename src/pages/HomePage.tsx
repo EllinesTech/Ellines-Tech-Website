@@ -11,6 +11,9 @@ import {
   ArrowRight,
   FileText,
   Briefcase,
+  FileCheck,
+  Wrench,
+  Shirt,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
@@ -39,6 +42,9 @@ const iconMap: Record<string, React.ElementType> = {
   Shield,
   FileText,
   Briefcase,
+  FileCheck,
+  Wrench,
+  Shirt,
 }
 
 const valueIconMap = {

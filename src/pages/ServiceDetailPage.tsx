@@ -9,6 +9,7 @@ import {
   services,
 } from '@/data/services'
 import { siteConfig } from '@/data/site'
+import { servicePosterMap } from '@/data/posterMap'
 
 const categoryScenes: Record<string, string> = {
   design: siteConfig.media.scenes.webDesign,
@@ -18,6 +19,9 @@ const categoryScenes: Record<string, string> = {
   security: siteConfig.media.scenes.uiDesign,
   career: siteConfig.media.scenes.workspace,
   consulting: siteConfig.media.scenes.solutionsAi,
+  support: '/media/posters/poster-os-install.png',
+  compliance: '/media/posters/poster-tax-returns.png',
+  merch: '/media/posters/poster-apparel.png',
 }
 
 export function ServiceDetailPage() {
@@ -32,7 +36,10 @@ export function ServiceDetailPage() {
   const related = services
     .filter((s) => s.category === service.category && s.slug !== service.slug)
     .slice(0, 3)
-  const scene = categoryScenes[service.category] ?? siteConfig.media.scenes.heroTech
+  const scene =
+    servicePosterMap[service.slug] ||
+    categoryScenes[service.category] ||
+    siteConfig.media.scenes.heroTech
 
   return (
     <>

@@ -4,7 +4,19 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { ProcessSection } from '@/components/home/ProcessSection'
 import { services, serviceCategories, type ServiceCategory } from '@/data/services'
-import { Brain, Briefcase, Code2, FileText, Megaphone, Palette, Shield } from 'lucide-react'
+import {
+  Brain,
+  Briefcase,
+  Code2,
+  FileCheck,
+  FileText,
+  Megaphone,
+  Palette,
+  Shield,
+  Shirt,
+  Wrench,
+} from 'lucide-react'
+import { servicePosterMap } from '@/data/posterMap'
 
 const iconMap: Record<string, React.ElementType> = {
   Code2,
@@ -14,6 +26,9 @@ const iconMap: Record<string, React.ElementType> = {
   Shield,
   FileText,
   Briefcase,
+  FileCheck,
+  Wrench,
+  Shirt,
 }
 
 export function ServicesPage() {
@@ -75,6 +90,7 @@ export function ServicesPage() {
                         title={service.name}
                         description={service.description}
                         href={`/services/${service.slug}`}
+                        image={servicePosterMap[service.slug]}
                       />
                     ))}
                   </div>
