@@ -27,7 +27,7 @@ const solutionAreas = [
     icon: CloudCog,
     title: 'Cloud & Infrastructure',
     description: 'Cloud migration, DevOps, security, and managed infrastructure.',
-    href: '/services#cloud',
+    href: '/services/cyber-security',
   },
 ]
 

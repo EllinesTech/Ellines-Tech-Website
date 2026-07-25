@@ -57,7 +57,7 @@ export function ServicesPage() {
                         key={service.slug}
                         title={service.name}
                         description={service.description}
-                        href={`/services#${key}`}
+                        href={`/services/${service.slug}`}
                       />
                     ))}
                   </div>

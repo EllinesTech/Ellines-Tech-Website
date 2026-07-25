@@ -54,7 +54,6 @@ const valueProps = valuePropData.map((item) => ({
 
 export function HomePage() {
   const featuredProducts = products.filter((p) => p.highlights && p.image).slice(0, 4)
-  const featuredServices = Object.entries(serviceCategories)
   const featuredPortfolio = portfolioProjects.slice(0, 6)
   const waHref = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
 
@@ -305,32 +304,37 @@ export function HomePage() {
       {/* Services */}
       <section className="section-padding border-t border-white/5 bg-surface/40">
         <div className="section-container">
-          <SectionHeader
-            eyebrow="Services"
-            title="End-to-end technology services"
-            description="Design, development, AI, marketing, and cyber security — the full set of offerings from Ellines Tech."
-            align="center"
-            className="mb-12"
-          />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredServices.map(([key, cat]) => {
+          <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
+            <SectionHeader
+              eyebrow="Services"
+              title="End-to-end technology services"
+              description="Design, development, AI, marketing, and cyber security — open any service for full details."
+            />
+            <Button href="/services" variant="ghost" icon>
+              View All Services
+            </Button>
+          </div>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {services.slice(0, 6).map((service) => {
+              const cat = serviceCategories[service.category]
               const Icon = iconMap[cat.icon] ?? Code2
-              const count = services.filter((s) => s.category === key).length
               return (
                 <Link
-                  key={key}
-                  to={`/services#${key}`}
+                  key={service.slug}
+                  to={`/services/${service.slug}`}
                   className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-surface-elevated/25 p-5 transition-all hover:border-brand-500/25 hover:bg-surface-elevated/50"
                 >
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-500/10 text-brand-400 transition-colors group-hover:bg-brand-500/20">
                     <Icon className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="font-display font-semibold text-white transition-colors group-hover:text-brand-300">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                       {cat.label}
+                    </p>
+                    <h3 className="mt-1 font-display font-semibold text-white transition-colors group-hover:text-brand-300">
+                      {service.name}
                     </h3>
-                    <p className="mt-1 text-sm text-slate-400">{cat.description}</p>
-                    <p className="mt-2 text-xs font-medium text-brand-400">{count} offerings</p>
+                    <p className="mt-1 line-clamp-2 text-sm text-slate-400">{service.description}</p>
                   </div>
                 </Link>
               )
