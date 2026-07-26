@@ -17,5 +17,6 @@
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
   Cross-Origin-Opener-Policy: same-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(self "https://checkout.paystack.com"), interest-cohort=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(self "https://checkout.paystack.com")
   Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://js.paystack.co; connect-src 'self' https://api.paystack.co https://checkout.paystack.com ws: wss:; frame-src https://checkout.paystack.com https://js.paystack.co https://www.openstreetmap.org; upgrade-insecure-requests

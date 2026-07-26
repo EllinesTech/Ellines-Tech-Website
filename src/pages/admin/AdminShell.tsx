@@ -50,9 +50,16 @@ import { Button } from '@/components/ui/Button'
 import { Logo } from '@/components/ui/Logo'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import { setAdminAuthed, setAdminApiKey, clearAdminApiKey } from '@/lib/engagementStore'
-import { adminLogin, adminLogout, loginCustomer, logoutUser } from '@/lib/cmsApi'
+import {
+  adminLogin,
+  adminLogout,
+  completeLogin2fa,
+  loginCustomer,
+  logoutUser,
+} from '@/lib/cmsApi'
 import { clearAuthSession, isGodRole, loadAuthUser, saveAuthSession } from '@/lib/auth'
 import { currentActor, hasGodMode } from '@/lib/adminAccess'
+import { TotpChallengeForm } from '@/components/auth/TotpChallengeForm'
 import { useLockViewportScroll } from '@/hooks/useLockViewportScroll'
 import { cn } from '@/lib/utils'
 
@@ -107,6 +114,8 @@ export function AdminLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [challengeToken, setChallengeToken] = useState('')
+  const [challengeKind, setChallengeKind] = useState<'owner' | 'account' | null>(null)
 
   useEffect(() => {
     if (hasGodMode()) navigate('/admin', { replace: true })
@@ -119,12 +128,22 @@ export function AdminLoginPage() {
     try {
       if (mode === 'owner') {
         // The password is checked at the edge; we only ever store the returned token.
-        const { token } = await adminLogin(password.trim())
-        setAdminApiKey(token)
+        const res = await adminLogin(password.trim())
+        if ('requires2fa' in res && res.requires2fa) {
+          setChallengeToken(res.challengeToken)
+          setChallengeKind('owner')
+          return
+        }
+        setAdminApiKey(res.token)
         setAdminAuthed(true)
       } else {
         const res = await loginCustomer({ email: email.trim(), password })
-        if (!isGodRole(res.user.role)) {
+        if ('requires2fa' in res && res.requires2fa) {
+          setChallengeToken(res.challengeToken)
+          setChallengeKind('account')
+          return
+        }
+        if (!('user' in res) || !isGodRole(res.user.role)) {
           setError(
             'That account is not a Super Admin. Staff sign in at /staff/login; clients at /account.',
           )
@@ -140,115 +159,158 @@ export function AdminLoginPage() {
     }
   }
 
+  async function onVerify2fa(code: string) {
+    setError('')
+    setBusy(true)
+    try {
+      const res = await completeLogin2fa({ challengeToken, code })
+      if (challengeKind === 'owner') {
+        setAdminApiKey(res.token)
+        setAdminAuthed(true)
+      } else if ('user' in res && res.user) {
+        if (!isGodRole(res.user.role)) {
+          setError('That account is not a Super Admin.')
+          return
+        }
+        saveAuthSession(res.token, res.user)
+      } else {
+        setError('Sign-in incomplete. Try again.')
+        return
+      }
+      navigate('/admin', { replace: true })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Verification failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4 font-ui">
-      <form
-        onSubmit={onSubmit}
-        className="w-full max-w-md rounded-[1.5rem] border border-white/10 bg-surface-elevated/70 p-8 shadow-2xl"
-      >
+      <div className="w-full max-w-md rounded-[1.5rem] border border-white/10 bg-surface-elevated/70 p-8 shadow-2xl">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-400">
           Ellines Tech · God Mode
         </p>
-        <h1 className="mt-2 font-display text-2xl font-bold text-white">Admin access</h1>
-        <p className="mt-3 text-sm text-slate-400">
-          Two separate ways in — do not mix them. Employees use{' '}
-          <a href="/staff/login" className="text-brand-300">
-            Staff login
-          </a>
-          ; clients use{' '}
-          <a href="/account" className="text-brand-300">
-            Client account
-          </a>
-          .
-        </p>
+        <h1 className="mt-2 font-display text-2xl font-bold text-white">
+          {challengeToken ? 'Two-factor verification' : 'Admin access'}
+        </h1>
 
-        <div className="mt-5 grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1">
-          {(
-            [
-              { id: 'owner', label: 'Owner key' },
-              { id: 'account', label: 'Super Admin' },
-            ] as const
-          ).map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => {
-                setMode(tab.id)
+        {challengeToken ? (
+          <div className="mt-6">
+            <TotpChallengeForm
+              busy={busy}
+              error={error}
+              onVerify={onVerify2fa}
+              onBack={() => {
+                setChallengeToken('')
+                setChallengeKind(null)
                 setError('')
-                setPassword('')
               }}
-              className={cn(
-                'rounded-lg px-3 py-2 text-xs font-semibold transition',
-                mode === tab.id
-                  ? 'bg-brand-500/20 text-brand-200'
-                  : 'text-slate-400 hover:bg-white/5 hover:text-white',
+            />
+          </div>
+        ) : (
+          <form onSubmit={onSubmit}>
+            <p className="mt-3 text-sm text-slate-400">
+              Two separate ways in — do not mix them. Employees use{' '}
+              <a href="/staff/login" className="text-brand-300">
+                Staff login
+              </a>
+              ; clients use{' '}
+              <a href="/account" className="text-brand-300">
+                Client account
+              </a>
+              .
+            </p>
+
+            <div className="mt-5 grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1">
+              {(
+                [
+                  { id: 'owner', label: 'Owner key' },
+                  { id: 'account', label: 'Super Admin' },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    setMode(tab.id)
+                    setError('')
+                    setPassword('')
+                  }}
+                  className={cn(
+                    'rounded-lg px-3 py-2 text-xs font-semibold transition',
+                    mode === tab.id
+                      ? 'bg-brand-500/20 text-brand-200'
+                      : 'text-slate-400 hover:bg-white/5 hover:text-white',
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.02] px-3.5 py-3 text-xs leading-relaxed text-slate-400">
+              {mode === 'owner' ? (
+                <>
+                  <p className="font-semibold text-slate-200">Owner key</p>
+                  <p className="mt-1">
+                    The server secret <code className="text-brand-300">ADMIN_API_KEY</code> from
+                    Cloudflare Pages → Environment variables (or local{' '}
+                    <code className="text-brand-300">.dev.vars</code>). Not an email login — paste the
+                    key alone below.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-semibold text-slate-200">Super Admin email + password</p>
+                  <p className="mt-1">
+                    Account login for <span className="text-slate-200">{SUPER_ADMIN_EMAIL_HINT}</span>.
+                    This is a different password from the Owner key. If the account is not set up yet,
+                    sign in with the Owner key first, then open{' '}
+                    <span className="text-slate-200">Security &amp; Password</span> to set it.
+                  </p>
+                </>
               )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+            </div>
 
-        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.02] px-3.5 py-3 text-xs leading-relaxed text-slate-400">
-          {mode === 'owner' ? (
-            <>
-              <p className="font-semibold text-slate-200">Owner key</p>
-              <p className="mt-1">
-                The server secret <code className="text-brand-300">ADMIN_API_KEY</code> from
-                Cloudflare Pages → Environment variables (or local{' '}
-                <code className="text-brand-300">.dev.vars</code>). Not an email login — paste the
-                key alone below.
+            {mode === 'account' && (
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={SUPER_ADMIN_EMAIL_HINT}
+                className="mt-4 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
+                autoFocus
+                autoComplete="username"
+              />
+            )}
+            <PasswordInput
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={mode === 'owner' ? 'Paste ADMIN_API_KEY' : 'Super Admin account password'}
+              className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
+              autoFocus={mode === 'owner'}
+              autoComplete={mode === 'owner' ? 'off' : 'current-password'}
+            />
+            {error && <p className="mt-2 text-sm text-rose-300">{error}</p>}
+            <Button type="submit" className="mt-5 w-full" icon disabled={busy}>
+              {busy ? 'Verifying…' : 'Enter Admin Panel'}
+            </Button>
+            {mode === 'account' && (
+              <p className="mt-4 text-center text-xs text-slate-500">
+                <a
+                  href={`/account/reset?from=${encodeURIComponent('/admin/login')}`}
+                  className="text-brand-300"
+                >
+                  Forgot password?
+                </a>
               </p>
-            </>
-          ) : (
-            <>
-              <p className="font-semibold text-slate-200">Super Admin email + password</p>
-              <p className="mt-1">
-                Account login for <span className="text-slate-200">{SUPER_ADMIN_EMAIL_HINT}</span>.
-                This is a different password from the Owner key. If the account is not set up yet,
-                sign in with the Owner key first, then open{' '}
-                <span className="text-slate-200">Security &amp; Password</span> to set it.
-              </p>
-            </>
-          )}
-        </div>
-
-        {mode === 'account' && (
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={SUPER_ADMIN_EMAIL_HINT}
-            className="mt-4 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
-            autoFocus
-            autoComplete="username"
-          />
+            )}
+          </form>
         )}
-        <PasswordInput
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder={mode === 'owner' ? 'Paste ADMIN_API_KEY' : 'Super Admin account password'}
-          className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
-          autoFocus={mode === 'owner'}
-          autoComplete={mode === 'owner' ? 'off' : 'current-password'}
-        />
-        {error && <p className="mt-2 text-sm text-rose-300">{error}</p>}
-        <Button type="submit" className="mt-5 w-full" icon disabled={busy}>
-          {busy ? 'Verifying…' : 'Enter Admin Panel'}
-        </Button>
-        {mode === 'account' && (
-          <p className="mt-4 text-center text-xs text-slate-500">
-            <a
-              href={`/account/reset?from=${encodeURIComponent('/admin/login')}`}
-              className="text-brand-300"
-            >
-              Forgot password?
-            </a>
-          </p>
-        )}
-      </form>
+      </div>
     </div>
   )
 }

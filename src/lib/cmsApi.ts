@@ -596,11 +596,121 @@ export async function registerCustomer(input: {
   })
 }
 
-export async function loginCustomer(input: { email: string; password: string }) {
+export type LoginSuccess = {
+  ok: true
+  requires2fa?: false
+  token: string
+  user: {
+    id: string
+    email: string
+    name: string
+    phone?: string
+    role: 'super_admin' | 'admin' | 'staff' | 'customer'
+    jobTitle?: string
+    totpEnabled?: boolean
+  }
+}
+
+export type LoginRequires2fa = {
+  ok: true
+  requires2fa: true
+  challengeToken: string
+  email?: string
+  expiresIn?: number
+  message?: string
+}
+
+export type LoginResult = LoginSuccess | LoginRequires2fa
+
+export async function loginCustomer(input: {
+  email: string
+  password: string
+}): Promise<LoginResult> {
   return cmsFetch('resource=users', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'login', ...input }),
+  }) as Promise<LoginResult>
+}
+
+/** Complete account sign-in after password + TOTP challenge. */
+export async function completeLogin2fa(input: {
+  challengeToken: string
+  code: string
+}): Promise<LoginSuccess | { ok: true; token: string; expiresIn?: number }> {
+  return cmsFetch('resource=users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'login_2fa', ...input }),
+  }) as Promise<LoginSuccess | { ok: true; token: string; expiresIn?: number }>
+}
+
+export async function fetchTotpStatus(): Promise<{
+  subject: 'owner' | 'user'
+  enabled: boolean
+  recoveryRemaining: number
+  enabledAt: string | null
+  role?: string | null
+}> {
+  const data = await cmsFetch('resource=users', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'totp_status' }),
+  })
+  return {
+    subject: data.subject === 'owner' ? 'owner' : 'user',
+    enabled: Boolean(data.enabled),
+    recoveryRemaining: Number(data.recoveryRemaining || 0),
+    enabledAt: (data.enabledAt as string) || null,
+    role: (data.role as string) || null,
+  }
+}
+
+export async function beginTotpSetup(): Promise<{
+  subject: 'owner' | 'user'
+  secret: string
+  otpauthUrl: string
+  accountName: string
+  issuer: string
+}> {
+  const data = await cmsFetch('resource=users', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'totp_setup_begin' }),
+  })
+  return {
+    subject: data.subject === 'owner' ? 'owner' : 'user',
+    secret: String(data.secret || ''),
+    otpauthUrl: String(data.otpauthUrl || ''),
+    accountName: String(data.accountName || ''),
+    issuer: String(data.issuer || 'Ellines Tech'),
+  }
+}
+
+export async function confirmTotpSetup(code: string): Promise<{
+  enabled: boolean
+  recoveryCodes: string[]
+  message: string
+}> {
+  const data = await cmsFetch('resource=users', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'totp_setup_confirm', code }),
+  })
+  return {
+    enabled: Boolean(data.enabled),
+    recoveryCodes: Array.isArray(data.recoveryCodes)
+      ? data.recoveryCodes.map((c: unknown) => String(c))
+      : [],
+    message: String(data.message || 'Two-factor authentication enabled.'),
+  }
+}
+
+export async function disableTotp(input: { password: string; code: string }): Promise<void> {
+  await cmsFetch('resource=users', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'totp_disable', ...input }),
   })
 }
 
@@ -621,12 +731,29 @@ export async function logoutUser() {
  * and exchanged for a short-lived God Mode session token — it is never compared
  * in the browser and never shipped in the bundle.
  */
-export async function adminLogin(password: string): Promise<{ token: string }> {
+export type AdminLoginResult =
+  | { token: string; requires2fa?: false }
+  | {
+      requires2fa: true
+      challengeToken: string
+      expiresIn?: number
+      message?: string
+    }
+
+export async function adminLogin(password: string): Promise<AdminLoginResult> {
   const data = await cmsFetch('resource=users', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'admin_login', password }),
   })
+  if (data.requires2fa) {
+    return {
+      requires2fa: true,
+      challengeToken: String(data.challengeToken || ''),
+      expiresIn: Number(data.expiresIn || 0) || undefined,
+      message: data.message ? String(data.message) : undefined,
+    }
+  }
   return { token: data.token as string }
 }
 

@@ -283,7 +283,7 @@ export function ChatWidget() {
             : 'AI online'
 
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-[70] flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
+    <div className="no-print pointer-events-none fixed bottom-4 right-4 z-[70] flex flex-col items-end gap-3 print:hidden sm:bottom-6 sm:right-6">
       <AnimatePresence>
         {open && (
           <motion.div

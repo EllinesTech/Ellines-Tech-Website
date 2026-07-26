@@ -110,7 +110,7 @@ export function InstallAppBanner() {
 
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[55] flex justify-center p-3 sm:p-4"
+      className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-[55] flex justify-center p-3 print:hidden sm:p-4"
       role="region"
       aria-label="Install Ellines Tech app"
     >

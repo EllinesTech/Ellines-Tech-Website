@@ -20,6 +20,7 @@ import { PasswordInput } from '@/components/ui/PasswordInput'
 import { CompanyMaterials } from '@/components/downloads/CompanyMaterials'
 import { AdminLiveChatPage } from '@/pages/admin/AdminLiveChatPage'
 import {
+  completeLogin2fa,
   loginCustomer,
   fetchLeads,
   fetchInvoices,
@@ -32,6 +33,8 @@ import {
   type VisitorContext,
 } from '@/lib/cmsApi'
 import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm'
+import { TotpChallengeForm } from '@/components/auth/TotpChallengeForm'
+import { TotpSetupPanel } from '@/components/auth/TotpSetupPanel'
 import { VisitorChips } from '@/components/admin/VisitorContext'
 import {
   clearAuthSession,
@@ -64,6 +67,8 @@ export function StaffLoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [challengeToken, setChallengeToken] = useState('')
 
   useEffect(() => {
     const user = loadAuthUser()
@@ -71,71 +76,117 @@ export function StaffLoginPage() {
     else if (user && isStaffRole(user.role)) navigate('/staff', { replace: true })
   }, [navigate])
 
+  function finishLogin(token: string, user: AuthUser) {
+    if (!isStaffRole(user.role)) {
+      setError('This portal is for employees only. Clients use Client login at /account.')
+      return
+    }
+    saveAuthSession(token, user)
+    navigate(isGodRole(user.role) ? '/admin' : '/staff', { replace: true })
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+    setBusy(true)
     try {
       const res = await loginCustomer({ email, password })
-      if (!isStaffRole(res.user.role)) {
-        setError('This portal is for employees only. Clients use Client login at /account.')
+      if ('requires2fa' in res && res.requires2fa) {
+        setChallengeToken(res.challengeToken)
         return
       }
-      saveAuthSession(res.token, res.user)
-      // Super Admins land in God Mode; everyone else in the staff workspace.
-      navigate(isGodRole(res.user.role) ? '/admin' : '/staff', { replace: true })
+      if (!('user' in res)) {
+        setError('Sign-in incomplete. Try again.')
+        return
+      }
+      finishLogin(res.token, res.user)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function onVerify2fa(code: string) {
+    setError('')
+    setBusy(true)
+    try {
+      const res = await completeLogin2fa({ challengeToken, code })
+      if (!('user' in res) || !res.user) {
+        setError('Sign-in incomplete. Try again.')
+        return
+      }
+      finishLogin(res.token, res.user)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Verification failed')
+    } finally {
+      setBusy(false)
     }
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4 font-ui">
-      <form
-        onSubmit={onSubmit}
-        className="w-full max-w-md rounded-[1.5rem] border border-white/10 bg-surface-elevated/70 p-8 shadow-2xl"
-      >
+      <div className="w-full max-w-md rounded-[1.5rem] border border-white/10 bg-surface-elevated/70 p-8 shadow-2xl">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-400">
           Ellines Tech · Staff
         </p>
-        <h1 className="mt-2 font-display text-2xl font-bold text-white">Staff login</h1>
-        <p className="mt-3 text-sm text-slate-400">
-          Employee workspace for Marketing, Sales, Support, and Finance.
-        </p>
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Work email"
-          className="mt-6 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
-          autoFocus
-        />
-        <PasswordInput
-          required
-          minLength={6}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
-        />
-        {error && <p className="mt-2 text-sm text-rose-300">{error}</p>}
-        <Button type="submit" className="mt-5 w-full" icon>
-          Enter staff workspace
-        </Button>
-        <p className="mt-4 text-center text-xs text-slate-500">
-          <Link
-            to={`/account/reset?from=${encodeURIComponent('/staff/login')}`}
-            className="text-brand-300"
-          >
-            Forgot password?
-          </Link>
-          {' · '}
-          Clients:{' '}
-          <Link to="/account" className="text-brand-300">
-            Client login
-          </Link>
-        </p>
-      </form>
+        <h1 className="mt-2 font-display text-2xl font-bold text-white">
+          {challengeToken ? 'Two-factor verification' : 'Staff login'}
+        </h1>
+        {challengeToken ? (
+          <div className="mt-6">
+            <TotpChallengeForm
+              busy={busy}
+              error={error}
+              onVerify={onVerify2fa}
+              onBack={() => {
+                setChallengeToken('')
+                setError('')
+              }}
+            />
+          </div>
+        ) : (
+          <form onSubmit={onSubmit}>
+            <p className="mt-3 text-sm text-slate-400">
+              Employee workspace for Marketing, Sales, Support, and Finance.
+            </p>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Work email"
+              className="mt-6 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
+              autoFocus
+            />
+            <PasswordInput
+              required
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
+            />
+            {error && <p className="mt-2 text-sm text-rose-300">{error}</p>}
+            <Button type="submit" className="mt-5 w-full" icon disabled={busy}>
+              {busy ? 'Verifying…' : 'Enter staff workspace'}
+            </Button>
+            <p className="mt-4 text-center text-xs text-slate-500">
+              <Link
+                to={`/account/reset?from=${encodeURIComponent('/staff/login')}`}
+                className="text-brand-300"
+              >
+                Forgot password?
+              </Link>
+              {' · '}
+              Clients:{' '}
+              <Link to="/account" className="text-brand-300">
+                Client login
+              </Link>
+            </p>
+          </form>
+        )}
+      </div>
     </div>
   )
 }
@@ -739,6 +790,7 @@ export function StaffProfilePage() {
         {error && <p className="text-sm text-amber-200">{error}</p>}
       </div>
       <ChangePasswordForm user={user} onUpdated={setUser} />
+      <TotpSetupPanel />
     </div>
   )
 }

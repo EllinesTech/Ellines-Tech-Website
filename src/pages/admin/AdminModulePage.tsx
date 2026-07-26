@@ -18,6 +18,7 @@ import { AdminPaymentsModule } from '@/pages/admin/AdminPaymentsModule'
 import { AdminVisitorsModule } from '@/pages/admin/AdminVisitorsModule'
 import { MaskedIpNotice, VisitorChips } from '@/components/admin/VisitorContext'
 import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm'
+import { TotpSetupPanel } from '@/components/auth/TotpSetupPanel'
 import { loadAuthUser } from '@/lib/auth'
 import { currentActor } from '@/lib/adminAccess'
 import {
@@ -1777,6 +1778,11 @@ function SecurityPasswordModule() {
           Password reset sends a one-time code by email (Resend) and SMS (Africa&apos;s Talking or
           Twilio) when a phone number is on the account.
         </li>
+        <li>
+          Two-factor authentication (TOTP) can be enabled below for this session. Owner-key 2FA is
+          configured while signed in with the owner key; Super Admin / staff 2FA follows the account
+          login.
+        </li>
       </ul>
 
       <div id="change-password" className="mt-6 space-y-6">
@@ -1792,6 +1798,8 @@ function SecurityPasswordModule() {
             once that account exists.
           </p>
         )}
+
+        <TotpSetupPanel />
 
         {(actor.role === 'owner' || actor.role === 'super_admin') && (
           <form

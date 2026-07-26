@@ -8,7 +8,7 @@ export function AnnouncementBar() {
   if (!settings.announcement.trim() || dismissed) return null
 
   return (
-    <div className="relative z-[60] border-b border-brand-400/20 bg-brand-500/10 px-4 py-2.5 text-center text-sm text-brand-100">
+    <div className="no-print relative z-[60] border-b border-brand-400/20 bg-brand-500/10 px-4 py-2.5 text-center text-sm text-brand-100 print:hidden">
       <p className="mx-auto max-w-4xl pr-8">{settings.announcement}</p>
       <button
         type="button"

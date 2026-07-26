@@ -6,6 +6,7 @@ import { Field, fieldClass } from '@/components/ui/Field'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import { CompanyMaterials } from '@/components/downloads/CompanyMaterials'
 import {
+  completeLogin2fa,
   fetchMyInvoices,
   fetchMyLeads,
   loginCustomer,
@@ -15,6 +16,7 @@ import {
   type Invoice,
 } from '@/lib/cmsApi'
 import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm'
+import { TotpChallengeForm } from '@/components/auth/TotpChallengeForm'
 import {
   clearAuthSession,
   isCustomerRole,
@@ -62,6 +64,8 @@ export function AccountPage() {
   const [profileName, setProfileName] = useState('')
   const [profilePhone, setProfilePhone] = useState('')
   const [payingId, setPayingId] = useState<string | null>(null)
+  const [challengeToken, setChallengeToken] = useState('')
+  const [busyAuth, setBusyAuth] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -75,6 +79,22 @@ export function AccountPage() {
       .then(setInvoices)
       .catch(() => setInvoices([]))
   }, [user])
+
+  function finishAuth(token: string, next: AuthUser) {
+    if (isStaffRole(next.role)) {
+      saveAuthSession(token, next)
+      window.location.href = '/staff'
+      return
+    }
+    if (!isCustomerRole(next.role)) {
+      setError('Use the correct portal for your account type.')
+      return
+    }
+    saveAuthSession(token, next)
+    setUser(next)
+    setChallengeToken('')
+    setMessage(mode === 'login' ? 'Signed in' : 'Account created')
+  }
 
   async function payInvoice(inv: Invoice, kind: 'full' | 'deposit' = 'full') {
     if (!inv.clientEmail) {
@@ -103,25 +123,44 @@ export function AccountPage() {
     e.preventDefault()
     setError('')
     setMessage('')
+    setBusyAuth(true)
     try {
-      const res =
-        mode === 'login'
-          ? await loginCustomer({ email, password })
-          : await registerCustomer({ email, password, name })
-      if (isStaffRole(res.user.role)) {
-        saveAuthSession(res.token, res.user)
-        window.location.href = '/staff'
+      if (mode === 'login') {
+        const res = await loginCustomer({ email, password })
+        if ('requires2fa' in res && res.requires2fa) {
+          setChallengeToken(res.challengeToken)
+          return
+        }
+        if (!('user' in res) || !res.user) {
+          setError('Sign-in incomplete. Try again.')
+          return
+        }
+        finishAuth(res.token, res.user)
         return
       }
-      if (!isCustomerRole(res.user.role)) {
-        setError('Use the correct portal for your account type.')
-        return
-      }
-      saveAuthSession(res.token, res.user)
-      setUser(res.user)
-      setMessage(mode === 'login' ? 'Signed in' : 'Account created')
+      const res = await registerCustomer({ email, password, name })
+      finishAuth(res.token as string, res.user as AuthUser)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Request failed')
+    } finally {
+      setBusyAuth(false)
+    }
+  }
+
+  async function onVerify2fa(code: string) {
+    setError('')
+    setBusyAuth(true)
+    try {
+      const res = await completeLogin2fa({ challengeToken, code })
+      if (!('user' in res) || !res.user) {
+        setError('Sign-in incomplete. Try again.')
+        return
+      }
+      finishAuth(res.token, res.user)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Verification failed')
+    } finally {
+      setBusyAuth(false)
     }
   }
 
@@ -475,102 +514,125 @@ export function AccountPage() {
               )}
             </div>
           ) : (
-            <form
-              onSubmit={submit}
-              className="relative mt-10 max-w-md overflow-hidden rounded-[1.5rem] border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.015] p-6 sm:p-8"
-            >
+            <div className="relative mt-10 max-w-md overflow-hidden rounded-[1.5rem] border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.015] p-6 sm:p-8">
               <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-brand-500/10 blur-3xl" />
 
-              <div
-                className="relative grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1"
-                role="tablist"
-              >
-                {(
-                  [
-                    ['login', 'Sign in'],
-                    ['register', 'Create account'],
-                  ] as const
-                ).map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    role="tab"
-                    aria-selected={mode === value}
-                    className={cn(
-                      'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                      mode === value
-                        ? 'bg-brand-500/15 text-brand-200'
-                        : 'text-slate-400 hover:text-slate-200',
-                    )}
-                    onClick={() => setMode(value)}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="relative mt-7 space-y-5">
-                {mode === 'register' && (
-                  <Field label="Name" htmlFor="account-name">
-                    <input
-                      id="account-name"
-                      required
-                      placeholder="Amina Wanjiku"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className={fieldClass}
-                      autoComplete="name"
+              {challengeToken ? (
+                <div className="relative">
+                  <p className="text-sm font-medium text-white">Two-factor verification</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    This account has authenticator 2FA enabled.
+                  </p>
+                  <div className="mt-5">
+                    <TotpChallengeForm
+                      busy={busyAuth}
+                      error={error}
+                      onVerify={onVerify2fa}
+                      onBack={() => {
+                        setChallengeToken('')
+                        setError('')
+                      }}
                     />
-                  </Field>
-                )}
-                <Field label="Email" htmlFor="account-email">
-                  <input
-                    id="account-email"
-                    required
-                    type="email"
-                    placeholder="you@company.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={fieldClass}
-                    autoComplete="email"
-                  />
-                </Field>
-                <Field label="Password" htmlFor="account-password">
-                  <PasswordInput
-                    id="account-password"
-                    required
-                    minLength={mode === 'register' ? 8 : 6}
-                    placeholder={mode === 'register' ? 'At least 8 characters' : 'Your password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={fieldClass}
-                    autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-                  />
-                </Field>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={submit}>
+                  <div
+                    className="relative grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1"
+                    role="tablist"
+                  >
+                    {(
+                      [
+                        ['login', 'Sign in'],
+                        ['register', 'Create account'],
+                      ] as const
+                    ).map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        role="tab"
+                        aria-selected={mode === value}
+                        className={cn(
+                          'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                          mode === value
+                            ? 'bg-brand-500/15 text-brand-200'
+                            : 'text-slate-400 hover:text-slate-200',
+                        )}
+                        onClick={() => {
+                          setMode(value)
+                          setChallengeToken('')
+                          setError('')
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
 
-                {mode === 'login' && (
-                  <p className="text-right text-xs">
-                    <Link
-                      to={`/account/reset?from=${encodeURIComponent('/account')}`}
-                      className="text-brand-300 hover:text-brand-200"
-                    >
-                      Forgot password?
-                    </Link>
-                  </p>
-                )}
+                  <div className="relative mt-7 space-y-5">
+                    {mode === 'register' && (
+                      <Field label="Name" htmlFor="account-name">
+                        <input
+                          id="account-name"
+                          required
+                          placeholder="Amina Wanjiku"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className={fieldClass}
+                          autoComplete="name"
+                        />
+                      </Field>
+                    )}
+                    <Field label="Email" htmlFor="account-email">
+                      <input
+                        id="account-email"
+                        required
+                        type="email"
+                        placeholder="you@company.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className={fieldClass}
+                        autoComplete="email"
+                      />
+                    </Field>
+                    <Field label="Password" htmlFor="account-password">
+                      <PasswordInput
+                        id="account-password"
+                        required
+                        minLength={8}
+                        placeholder={mode === 'register' ? 'At least 8 characters' : 'Your password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className={fieldClass}
+                        autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                      />
+                    </Field>
 
-                {error && (
-                  <p className="rounded-xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-                    {error}
-                  </p>
-                )}
-                {message && <p className="text-sm text-emerald-300">{message}</p>}
+                    {mode === 'login' && (
+                      <p className="text-right text-xs">
+                        <Link
+                          to={`/account/reset?from=${encodeURIComponent('/account')}`}
+                          className="text-brand-300 hover:text-brand-200"
+                        >
+                          Forgot password?
+                        </Link>
+                      </p>
+                    )}
 
-                <Button type="submit" size="lg" className="w-full">
-                  {mode === 'login' ? 'Sign in' : 'Create account'}
-                </Button>
-              </div>
-            </form>
+                    {error && (
+                      <p className="rounded-xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                        {error}
+                      </p>
+                    )}
+                    {message && <p className="text-sm text-emerald-300">{message}</p>}
+
+                    <Button type="submit" size="lg" className="w-full" disabled={busyAuth}>
+                      {busyAuth ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </div>
           )}
         </div>
       </section>

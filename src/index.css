@@ -195,3 +195,50 @@
     transform: translateX(-50%);
   }
 }
+
+/* Print: hide site chrome; force ink-friendly invoice/receipt pages */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm 14mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    background-image: none !important;
+    color: #0f172a !important;
+  }
+
+  .no-print,
+  .noise-overlay {
+    display: none !important;
+  }
+
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+
+  /* Invoice / receipt document surface */
+  .invoice-document {
+    box-shadow: none !important;
+    border-color: #e2e8f0 !important;
+    background: #fff !important;
+    color: #0f172a !important;
+  }
+
+  .invoice-document thead {
+    display: table-header-group;
+  }
+
+  .invoice-document tr,
+  .invoice-document .invoice-block {
+    break-inside: avoid;
+  }
+
+  .invoice-document img {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

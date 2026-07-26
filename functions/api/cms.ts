@@ -25,11 +25,18 @@ import {
   sanitizeRichText,
   revokeGodSession,
   timingSafeEqual,
+  token,
   validatePassword,
   visitorContext,
 } from '../_shared/security'
 import { deliverResetCode, sendEmail } from '../_shared/notify'
 import { defaultElleniaFaqs, mergeElleniaFaqs } from '../_shared/elleniaFaqs'
+import {
+  buildOtpauthUri,
+  generateRecoveryCodes,
+  generateTotpSecret,
+  verifyTotpCode,
+} from '../_shared/totp'
 
 /**
  * Origin reflection and security headers are applied centrally in
@@ -520,9 +527,97 @@ async function sendResendEmail(env, { to, subject, html }) {
 
 const RESET_TTL_SECONDS = 15 * 60
 const RESET_CODE_LENGTH = 6
+const TOTP_CHALLENGE_TTL_SECONDS = 5 * 60
+const OWNER_TOTP_KEY = 'cms:owner-totp'
+const PRIVILEGED_ROLES = new Set(['super_admin', 'admin', 'staff'])
 
 function resetKey(email) {
   return `cms:pwd-reset:${email}`
+}
+
+function challengeKey(value) {
+  return `cms:2fa-challenge:${value}`
+}
+
+async function hashRecoveryCode(code, saltB64) {
+  const normalized = String(code || '')
+    .toLowerCase()
+    .replace(/\s/g, '')
+  return hashPassword(`recovery:${normalized}`, saltB64)
+}
+
+async function consumeRecoveryCode(storedHashes, code) {
+  const list = Array.isArray(storedHashes) ? storedHashes : []
+  for (let i = 0; i < list.length; i += 1) {
+    const entry = list[i]
+    if (!entry?.hash || !entry?.salt) continue
+    const { hash } = await hashRecoveryCode(code, entry.salt)
+    if (timingSafeEqual(hash, entry.hash)) {
+      const next = list.filter((_, idx) => idx !== i)
+      return { ok: true, remaining: next }
+    }
+  }
+  return { ok: false, remaining: list }
+}
+
+async function createTotpChallenge(env, payload) {
+  const value = token('chal')
+  await env.ET_STORE.put(
+    challengeKey(value),
+    JSON.stringify({ ...payload, at: new Date().toISOString() }),
+    { expirationTtl: TOTP_CHALLENGE_TTL_SECONDS },
+  )
+  return value
+}
+
+async function readTotpChallenge(env, value) {
+  const key = String(value || '').trim()
+  if (!key.startsWith('chal_')) return null
+  return getJson(env, challengeKey(key), null)
+}
+
+async function clearTotpChallenge(env, value) {
+  const key = String(value || '').trim()
+  if (!key.startsWith('chal_')) return
+  try {
+    await env.ET_STORE.delete(challengeKey(key))
+  } catch {
+    /* ignore */
+  }
+}
+
+function publicUser(user) {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    phone: user.phone || '',
+    role: user.role,
+    jobTitle: user.jobTitle || '',
+    totpEnabled: Boolean(user.totpEnabled),
+  }
+}
+
+/** Strip credentials and TOTP material before any user object leaves the edge. */
+function sanitizeUserRecord(user) {
+  if (!user || typeof user !== 'object') return user
+  const {
+    passwordHash: _ph,
+    salt: _salt,
+    totpSecret: _ts,
+    totpPendingSecret: _tps,
+    totpRecoveryHashes: _trh,
+    ...safe
+  } = user
+  return {
+    ...safe,
+    totpEnabled: Boolean(user.totpEnabled),
+  }
+}
+
+async function loadOwnerTotp(env) {
+  const stored = await getJson(env, OWNER_TOTP_KEY, null)
+  return stored && typeof stored === 'object' ? stored : { enabled: false }
 }
 
 /** Cryptographically random 6-digit OTP (leading zeros allowed). */
@@ -740,7 +835,7 @@ export async function onRequestGet(context) {
   if (resource === 'me') {
     const user = await resolveUserSession(request, env)
     if (!user) return json({ error: 'unauthorized' }, 401)
-    const { passwordHash, salt, ...safe } = user
+    const safe = sanitizeUserRecord(user)
     return json({ user: safe })
   }
 
@@ -974,7 +1069,7 @@ export async function onRequestGet(context) {
     if (!(await isGodMode(request, env))) return json({ error: 'unauthorized' }, 401)
     const users = await getJson(env, 'cms:users', [])
     return json({
-      users: users.map(({ passwordHash, salt, ...safe }) => safe),
+      users: users.map((u) => sanitizeUserRecord(u)),
     })
   }
 
@@ -1100,7 +1195,8 @@ export async function onRequestPost(context) {
   const action = body.action || 'save'
 
   // Owner panel sign-in: the key is verified here so it never ships in the
-  // browser bundle. Success returns a short-lived God Mode session token.
+  // browser bundle. Success returns a short-lived God Mode session token
+  // (or a 2FA challenge when owner TOTP is enabled).
   if (action === 'admin_login') {
     const bucket = authAttemptBucket(request, 'admin_login')
     const limits = { limit: 8, windowSeconds: 600 }
@@ -1112,6 +1208,17 @@ export async function onRequestPost(context) {
       await rateLimitBump(env, bucket, limits)
       await logActivity(env, { type: 'security', message: 'Failed admin panel sign-in' })
       return json({ error: 'Invalid password' }, 401)
+    }
+    const ownerTotp = await loadOwnerTotp(env)
+    if (ownerTotp.enabled && ownerTotp.secret) {
+      const challengeToken = await createTotpChallenge(env, { kind: 'owner' })
+      return json({
+        ok: true,
+        requires2fa: true,
+        challengeToken,
+        expiresIn: TOTP_CHALLENGE_TTL_SECONDS,
+        message: 'Enter the 6-digit code from your authenticator app.',
+      })
     }
     const session = await createGodSession(env, { name: 'Owner' })
     await logActivity(env, { type: 'security', message: 'Admin panel sign-in (owner key)' })
@@ -1547,19 +1654,310 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
       await logActivity(env, { type: 'security', message: `Failed sign-in: ${email}` })
       return failed('Invalid credentials')
     }
-    const token = await createUserSession(env, user)
+    if (PRIVILEGED_ROLES.has(user.role) && user.totpEnabled && user.totpSecret) {
+      const challengeToken = await createTotpChallenge(env, {
+        kind: 'user',
+        userId: user.id,
+        email: user.email,
+      })
+      return json({
+        ok: true,
+        requires2fa: true,
+        challengeToken,
+        email: user.email,
+        expiresIn: TOTP_CHALLENGE_TTL_SECONDS,
+        message: 'Enter the 6-digit code from your authenticator app.',
+      })
+    }
+    const sessionToken = await createUserSession(env, user)
     return json({
       ok: true,
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        phone: user.phone || '',
-        role: user.role,
-        jobTitle: user.jobTitle || '',
-      },
+      token: sessionToken,
+      user: publicUser(user),
     })
+  }
+
+  /** Complete privileged sign-in after password succeeded and TOTP was required. */
+  if (action === 'login_2fa') {
+    const limits = { limit: 12, windowSeconds: 600 }
+    const bucket = authAttemptBucket(request, 'login-2fa')
+    if (!(await rateLimitPeek(env, bucket, limits)).ok) {
+      return json({ error: 'Too many attempts. Try again in a few minutes.' }, 429)
+    }
+    const challengeToken = String(body.challengeToken || '').trim()
+    const code = String(body.code || '').trim()
+    const challenge = await readTotpChallenge(env, challengeToken)
+    if (!challenge) {
+      await rateLimitBump(env, bucket, limits)
+      return json({ error: 'Challenge expired. Sign in again.' }, 401)
+    }
+
+    if (challenge.kind === 'owner') {
+      const ownerTotp = await loadOwnerTotp(env)
+      if (!ownerTotp.enabled || !ownerTotp.secret) {
+        await clearTotpChallenge(env, challengeToken)
+        return json({ error: 'Two-factor authentication is not enabled for the owner key.' }, 400)
+      }
+      let ok = await verifyTotpCode(ownerTotp.secret, code)
+      let recoveryHashes = ownerTotp.recoveryHashes || []
+      if (!ok) {
+        const consumed = await consumeRecoveryCode(recoveryHashes, code)
+        if (consumed.ok) {
+          ok = true
+          recoveryHashes = consumed.remaining
+          await putJson(env, OWNER_TOTP_KEY, { ...ownerTotp, recoveryHashes })
+        }
+      }
+      if (!ok) {
+        await rateLimitBump(env, bucket, limits)
+        await logActivity(env, { type: 'security', message: 'Failed owner 2FA challenge' })
+        return json({ error: 'Invalid authenticator or recovery code' }, 401)
+      }
+      await clearTotpChallenge(env, challengeToken)
+      const session = await createGodSession(env, { name: 'Owner', via: 'owner_2fa' })
+      await logActivity(env, { type: 'security', message: 'Admin panel sign-in (owner key + 2FA)' })
+      return json({ ok: true, token: session.token, expiresIn: session.expiresIn })
+    }
+
+    if (challenge.kind === 'user' && challenge.userId) {
+      const users = await getJson(env, 'cms:users', [])
+      const idx = users.findIndex((u) => u.id === challenge.userId)
+      if (idx < 0 || users[idx].active === false) {
+        await clearTotpChallenge(env, challengeToken)
+        return json({ error: 'Account unavailable. Sign in again.' }, 401)
+      }
+      const user = users[idx]
+      if (!user.totpEnabled || !user.totpSecret) {
+        await clearTotpChallenge(env, challengeToken)
+        return json({ error: 'Two-factor authentication is not enabled for this account.' }, 400)
+      }
+      let ok = await verifyTotpCode(user.totpSecret, code)
+      if (!ok) {
+        const consumed = await consumeRecoveryCode(user.totpRecoveryHashes, code)
+        if (consumed.ok) {
+          ok = true
+          users[idx].totpRecoveryHashes = consumed.remaining
+          await putJson(env, 'cms:users', users)
+        }
+      }
+      if (!ok) {
+        await rateLimitBump(env, bucket, limits)
+        await logActivity(env, {
+          type: 'security',
+          message: `Failed 2FA challenge: ${user.email}`,
+        })
+        return json({ error: 'Invalid authenticator or recovery code' }, 401)
+      }
+      await clearTotpChallenge(env, challengeToken)
+      const sessionToken = await createUserSession(env, users[idx])
+      await logActivity(env, { type: 'security', message: `Sign-in with 2FA: ${user.email}` })
+      return json({ ok: true, token: sessionToken, user: publicUser(users[idx]) })
+    }
+
+    await clearTotpChallenge(env, challengeToken)
+    return json({ error: 'Invalid challenge' }, 400)
+  }
+
+  if (action === 'totp_status') {
+    const actor = await resolveActor(request, env)
+    if (!actor) return json({ error: 'unauthorized' }, 401)
+    if (actor.via === 'owner_key' || actor.via === 'admin_session') {
+      const ownerTotp = await loadOwnerTotp(env)
+      return json({
+        ok: true,
+        subject: 'owner',
+        enabled: Boolean(ownerTotp.enabled),
+        recoveryRemaining: Array.isArray(ownerTotp.recoveryHashes)
+          ? ownerTotp.recoveryHashes.length
+          : 0,
+        enabledAt: ownerTotp.enabledAt || null,
+      })
+    }
+    if (!actor.user) return json({ error: 'unauthorized' }, 401)
+    return json({
+      ok: true,
+      subject: 'user',
+      enabled: Boolean(actor.user.totpEnabled),
+      recoveryRemaining: Array.isArray(actor.user.totpRecoveryHashes)
+        ? actor.user.totpRecoveryHashes.length
+        : 0,
+      enabledAt: actor.user.totpEnabledAt || null,
+      role: actor.user.role,
+    })
+  }
+
+  if (action === 'totp_setup_begin') {
+    const actor = await resolveActor(request, env)
+    if (!actor) return json({ error: 'unauthorized' }, 401)
+    const limited = await rateLimitByIp(env, request, 'totp-setup', {
+      limit: 10,
+      windowSeconds: 600,
+    })
+    if (!limited.ok) return json({ error: 'Too many attempts. Try again shortly.' }, 429)
+
+    if (actor.via === 'owner_key' || actor.via === 'admin_session') {
+      const ownerTotp = await loadOwnerTotp(env)
+      if (ownerTotp.enabled) {
+        return json({ error: 'Owner 2FA is already enabled. Disable it before re-enrolling.' }, 400)
+      }
+      const secret = generateTotpSecret()
+      await putJson(env, OWNER_TOTP_KEY, {
+        ...ownerTotp,
+        enabled: false,
+        pendingSecret: secret,
+      })
+      const accountName = 'Owner key'
+      return json({
+        ok: true,
+        subject: 'owner',
+        secret,
+        otpauthUrl: buildOtpauthUri({ secret, accountName }),
+        accountName,
+        issuer: 'Ellines Tech',
+      })
+    }
+
+    if (!actor.user || !PRIVILEGED_ROLES.has(actor.user.role)) {
+      return json({ error: 'Two-factor authentication is available for staff and admin accounts.' }, 403)
+    }
+    if (actor.user.totpEnabled) {
+      return json({ error: '2FA is already enabled. Disable it before re-enrolling.' }, 400)
+    }
+    const secret = generateTotpSecret()
+    const users = await getJson(env, 'cms:users', [])
+    const idx = users.findIndex((u) => u.id === actor.user.id)
+    if (idx < 0) return json({ error: 'user not found' }, 404)
+    users[idx].totpPendingSecret = secret
+    await putJson(env, 'cms:users', users)
+    const accountName = users[idx].email
+    return json({
+      ok: true,
+      subject: 'user',
+      secret,
+      otpauthUrl: buildOtpauthUri({ secret, accountName }),
+      accountName,
+      issuer: 'Ellines Tech',
+    })
+  }
+
+  if (action === 'totp_setup_confirm') {
+    const actor = await resolveActor(request, env)
+    if (!actor) return json({ error: 'unauthorized' }, 401)
+    const code = String(body.code || '').trim()
+    const recoveryCodes = generateRecoveryCodes(8)
+
+    if (actor.via === 'owner_key' || actor.via === 'admin_session') {
+      const ownerTotp = await loadOwnerTotp(env)
+      const secret = ownerTotp.pendingSecret
+      if (!secret) return json({ error: 'Start setup first.' }, 400)
+      if (!(await verifyTotpCode(secret, code))) {
+        return json({ error: 'Invalid authenticator code. Check the time on your device.' }, 401)
+      }
+      const recoveryHashes = []
+      for (const recovery of recoveryCodes) {
+        recoveryHashes.push(await hashRecoveryCode(recovery))
+      }
+      await putJson(env, OWNER_TOTP_KEY, {
+        enabled: true,
+        secret,
+        recoveryHashes,
+        enabledAt: new Date().toISOString(),
+      })
+      await logActivity(env, { type: 'security', message: 'Owner key 2FA enabled' })
+      return json({
+        ok: true,
+        subject: 'owner',
+        enabled: true,
+        recoveryCodes,
+        message: 'Owner-key 2FA is on. Store these recovery codes offline — they are shown once.',
+      })
+    }
+
+    if (!actor.user || !PRIVILEGED_ROLES.has(actor.user.role)) {
+      return json({ error: 'unauthorized' }, 401)
+    }
+    const users = await getJson(env, 'cms:users', [])
+    const idx = users.findIndex((u) => u.id === actor.user.id)
+    if (idx < 0) return json({ error: 'user not found' }, 404)
+    const secret = users[idx].totpPendingSecret
+    if (!secret) return json({ error: 'Start setup first.' }, 400)
+    if (!(await verifyTotpCode(secret, code))) {
+      return json({ error: 'Invalid authenticator code. Check the time on your device.' }, 401)
+    }
+    const recoveryHashes = []
+    for (const recovery of recoveryCodes) {
+      recoveryHashes.push(await hashRecoveryCode(recovery))
+    }
+    users[idx].totpEnabled = true
+    users[idx].totpSecret = secret
+    users[idx].totpPendingSecret = ''
+    users[idx].totpRecoveryHashes = recoveryHashes
+    users[idx].totpEnabledAt = new Date().toISOString()
+    await putJson(env, 'cms:users', users)
+    await logActivity(env, {
+      type: 'security',
+      message: `2FA enabled: ${users[idx].email}`,
+    })
+    return json({
+      ok: true,
+      subject: 'user',
+      enabled: true,
+      recoveryCodes,
+      message: 'Two-factor authentication is on. Store these recovery codes offline — they are shown once.',
+    })
+  }
+
+  if (action === 'totp_disable') {
+    const actor = await resolveActor(request, env)
+    if (!actor) return json({ error: 'unauthorized' }, 401)
+    const code = String(body.code || '').trim()
+    const password = String(body.password || '')
+
+    if (actor.via === 'owner_key' || actor.via === 'admin_session') {
+      const ownerTotp = await loadOwnerTotp(env)
+      if (!ownerTotp.enabled || !ownerTotp.secret) {
+        return json({ error: 'Owner 2FA is not enabled.' }, 400)
+      }
+      if (!timingSafeEqual(password.trim(), resolveAdminKey(env))) {
+        return json({ error: 'Owner key is incorrect' }, 401)
+      }
+      let ok = await verifyTotpCode(ownerTotp.secret, code)
+      if (!ok) {
+        const consumed = await consumeRecoveryCode(ownerTotp.recoveryHashes, code)
+        ok = consumed.ok
+      }
+      if (!ok) return json({ error: 'Invalid authenticator or recovery code' }, 401)
+      await putJson(env, OWNER_TOTP_KEY, { enabled: false })
+      await logActivity(env, { type: 'security', message: 'Owner key 2FA disabled' })
+      return json({ ok: true, subject: 'owner', enabled: false })
+    }
+
+    if (!actor.user || !PRIVILEGED_ROLES.has(actor.user.role)) {
+      return json({ error: 'unauthorized' }, 401)
+    }
+    const users = await getJson(env, 'cms:users', [])
+    const idx = users.findIndex((u) => u.id === actor.user.id)
+    if (idx < 0) return json({ error: 'user not found' }, 404)
+    const user = users[idx]
+    if (!user.totpEnabled) return json({ error: '2FA is not enabled.' }, 400)
+    const { hash } = await hashPassword(password, user.salt)
+    if (!timingSafeEqual(hash, user.passwordHash)) {
+      return json({ error: 'Current password is incorrect' }, 401)
+    }
+    let ok = await verifyTotpCode(user.totpSecret, code)
+    if (!ok) {
+      const consumed = await consumeRecoveryCode(user.totpRecoveryHashes, code)
+      ok = consumed.ok
+    }
+    if (!ok) return json({ error: 'Invalid authenticator or recovery code' }, 401)
+    users[idx].totpEnabled = false
+    users[idx].totpSecret = ''
+    users[idx].totpPendingSecret = ''
+    users[idx].totpRecoveryHashes = []
+    users[idx].totpEnabledAt = null
+    await putJson(env, 'cms:users', users)
+    await logActivity(env, { type: 'security', message: `2FA disabled: ${user.email}` })
+    return json({ ok: true, subject: 'user', enabled: false })
   }
 
   if (action === 'logout') {
@@ -1590,8 +1988,7 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
       users[idx].phone = phone
     }
     await putJson(env, 'cms:users', users)
-    const { passwordHash, salt, ...safe } = users[idx]
-    return json({ ok: true, user: safe })
+    return json({ ok: true, user: sanitizeUserRecord(users[idx]) })
   }
 
   /**
@@ -1647,8 +2044,7 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
       type: 'security',
       message: `Password changed: ${users[idx].email}`,
     })
-    const { passwordHash, salt: _s, ...safe } = users[idx]
-    return json({ ok: true, token, user: safe })
+    return json({ ok: true, token, user: sanitizeUserRecord(users[idx]) })
   }
 
   /**
@@ -1821,18 +2217,10 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
       type: 'security',
       message: `Password reset completed: ${users[idx].email}`,
     })
-    const { passwordHash, salt: _s, ...safe } = users[idx]
     return json({
       ok: true,
       token,
-      user: {
-        id: safe.id,
-        email: safe.email,
-        name: safe.name,
-        role: safe.role,
-        jobTitle: safe.jobTitle || '',
-        phone: safe.phone || '',
-      },
+      user: publicUser(users[idx]),
     })
   }
 
@@ -2337,18 +2725,23 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     const faqs = Array.isArray(body.faqs) ? body.faqs : null
     if (!faqs) return json({ error: 'faqs array required' }, 400)
     const normalized = faqs.map((f) => ({
-      id: String(f.id || id('faq')),
+      id: cleanPlain(f.id || id('faq'), 80),
       questions: Array.isArray(f.questions)
-        ? f.questions.map((q) => String(q).trim()).filter(Boolean)
+        ? f.questions.map((q) => cleanPlain(q, 120)).filter(Boolean).slice(0, 24)
         : String(f.questionsText || '')
             .split(',')
-            .map((q) => q.trim())
-            .filter(Boolean),
-      answer: String(f.answer || ''),
+            .map((q) => cleanPlain(q, 120))
+            .filter(Boolean)
+            .slice(0, 24),
+      answer: sanitizeRichText(f.answer || '', 4000),
       links: Array.isArray(f.links)
         ? f.links
-            .map((l) => ({ label: String(l.label || ''), href: String(l.href || '') }))
-            .filter((l) => l.label && l.href)
+            .map((l) => ({
+              label: cleanPlain(l.label || '', 80),
+              href: cleanPlain(l.href || '', 300),
+            }))
+            .filter((l) => l.label && l.href && (l.href.startsWith('/') || l.href.startsWith('https://')))
+            .slice(0, 6)
         : [],
     }))
     await putJson(env, 'cms:chat-faqs', normalized)

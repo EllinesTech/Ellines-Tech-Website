@@ -50,7 +50,7 @@ export function Footer() {
   }, [profile.phone, profile.whatsapp])
 
   return (
-    <footer className="relative border-t border-white/5 bg-surface/80">
+    <footer className="no-print relative border-t border-white/5 bg-surface/80 print:hidden">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/25 to-transparent" />
       <div className="section-container section-padding">
         <div className="grid gap-12 lg:grid-cols-12">

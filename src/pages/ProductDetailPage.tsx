@@ -151,7 +151,7 @@ export function ProductDetailPage() {
                     <img
                       src={visual.src}
                       alt={product.name}
-                      className="aspect-[4/3] h-full w-full object-cover object-center"
+                      className="aspect-[3/2] h-full w-full object-cover object-center"
                       loading="lazy"
                     />
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/55 via-transparent to-transparent" />

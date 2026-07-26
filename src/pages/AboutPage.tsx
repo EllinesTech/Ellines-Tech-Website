@@ -108,12 +108,13 @@ export function AboutPage() {
             </div>
             <div className="relative lg:col-span-6">
               <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-brand-500/20 via-transparent to-sky-700/15 blur-2xl" />
-              <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 shadow-2xl shadow-black/40">
+              <div className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#070b18] shadow-2xl shadow-black/40">
                 <img
                   src={siteConfig.media.banners.aboutStory}
                   alt="Ellines Tech — who we are"
-                  className="aspect-[5/4] w-full object-cover"
+                  className="aspect-[3/2] h-auto w-full object-contain object-center"
                   loading="lazy"
+                  decoding="async"
                 />
               </div>
             </div>
@@ -144,11 +145,11 @@ export function AboutPage() {
       {/* Execute story — from live about page */}
       <section className="relative overflow-hidden border-y border-white/5">
         <div className="grid lg:grid-cols-2">
-          <div className="relative min-h-[360px] lg:min-h-full">
+          <div className="relative min-h-[360px] bg-[#070b18] lg:min-h-full">
             <img
               src={siteConfig.media.banners.execute}
               alt="Ellines Tech executes ideas from start to finish"
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover object-center"
               loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-slate-950/30 to-slate-950/80" />
@@ -198,11 +199,11 @@ export function AboutPage() {
                   transition={{ delay: i * 0.06 }}
                   className="group overflow-hidden rounded-[1.35rem] border border-white/10 bg-surface-elevated/30"
                 >
-                  <div className="aspect-[16/10] overflow-hidden bg-slate-900">
+                  <div className="aspect-[3/2] overflow-hidden bg-slate-900">
                     <img
                       src={capabilityImages[item.title] || siteConfig.media.scenes.workspace}
                       alt=""
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                       loading="lazy"
                     />
                   </div>

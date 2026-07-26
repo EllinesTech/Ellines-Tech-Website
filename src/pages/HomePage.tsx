@@ -263,7 +263,7 @@ export function HomePage() {
         <motion.img
           src={siteConfig.media.banners.homeStory}
           alt="Ellines Tech — Your Idea. Our Code."
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          className="absolute inset-0 h-full w-full object-cover object-[center_40%]"
           initial={{ scale: 1.06 }}
           whileInView={{ scale: 1 }}
           viewport={{ once: true }}
@@ -318,11 +318,11 @@ export function HomePage() {
                 transition={{ delay: i * 0.08 }}
                 className="group overflow-hidden rounded-[1.35rem] border border-white/10 bg-surface-elevated/30"
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative aspect-[3/2] overflow-hidden bg-slate-950">
                   <img
                     src={item.image}
                     alt=""
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/35 to-transparent" />
@@ -496,11 +496,11 @@ export function HomePage() {
       {/* Brand poster moment */}
       <section className="relative overflow-hidden border-y border-white/5">
         <div className="grid lg:grid-cols-2">
-          <div className="relative min-h-[320px] lg:min-h-[420px]">
+          <div className="relative min-h-[320px] bg-[#070b18] lg:min-h-[420px]">
             <img
               src={siteConfig.media.banners.homeCraft}
               alt="Ellines Tech software craft"
-              className="absolute inset-0 h-full w-full object-cover object-center"
+              className="absolute inset-0 h-full w-full object-contain object-center"
               loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-transparent to-slate-950/40 lg:to-slate-950/80" />
@@ -622,7 +622,7 @@ export function HomePage() {
               >
                 <Link
                   to={`/industries#${industry.slug}`}
-                  className="group relative flex aspect-[4/3] items-end overflow-hidden rounded-[1.25rem] border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:border-brand-500/35 sm:aspect-[3/2]"
+                  className="group relative flex aspect-[3/2] items-end overflow-hidden rounded-[1.25rem] border border-white/10 bg-slate-950 transition-all duration-300 hover:-translate-y-1 hover:border-brand-500/35"
                 >
                   <img
                     src={industryImage(industry.slug)}

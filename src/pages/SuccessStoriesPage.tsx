@@ -142,14 +142,14 @@ export function SuccessStoriesPage() {
                               'bg-gradient-to-br from-slate-900 via-surface to-slate-950',
                           )}
                         >
-                          <div className="aspect-[16/10]">
+                          <div className="aspect-[3/2] bg-slate-950">
                             <img
                               src={visual.src}
                               alt={story.name}
                               className={cn(
                                 'h-full w-full transition-transform duration-[900ms] ease-out group-hover:scale-[1.04]',
                                 visual.fit === 'contain'
-                                  ? 'object-contain p-10'
+                                  ? 'object-contain p-8 sm:p-10'
                                   : 'object-cover object-center',
                               )}
                               loading="lazy"

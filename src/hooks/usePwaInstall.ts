@@ -94,8 +94,13 @@ function ensureListeners() {
   })
 
   const onBip = (event: BeforeInstallPromptEvent) => {
-    event.preventDefault()
-    patch({ deferred: event })
+    // Re-check at event time — standalone / prior dismiss should not stash a prompt.
+    if (isStandaloneDisplay() || readDismissed()) return
+    // Capture for InstallApp CTA + prompt() on user gesture.
+    // Do not call preventDefault(): Chromium logs a console warning when the
+    // default is cancelled but prompt() has not run yet, and Chrome 108+ keeps
+    // the event usable for a later custom install UI without suppressing default.
+    patch({ deferred: event, dismissed: false })
   }
   const onInstalled = () => {
     patch({ installed: true, deferred: null })
@@ -151,7 +156,8 @@ export function usePwaInstall() {
     } catch {
       /* ignore */
     }
-    patch({ dismissed: true })
+    // Drop unused deferred prompt so we never hold an event we will not prompt().
+    patch({ dismissed: true, deferred: null })
   }
 
   const promptInstall = async () => {

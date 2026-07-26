@@ -249,7 +249,7 @@ export function Header() {
   }, [location.pathname])
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.08] bg-slate-950/80 shadow-[0_1px_0_0_rgba(34,211,238,0.1)] backdrop-blur-2xl supports-[backdrop-filter]:bg-slate-950/65">
+    <header className="no-print fixed inset-x-0 top-0 z-50 border-b border-white/[0.08] bg-slate-950/80 shadow-[0_1px_0_0_rgba(34,211,238,0.1)] backdrop-blur-2xl supports-[backdrop-filter]:bg-slate-950/65 print:hidden">
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-brand-400/40 to-transparent" />
       <div className="section-container flex h-16 items-center gap-4 xl:h-[4.25rem] xl:gap-8">
         <Logo onClick={() => setMobileOpen(false)} className="mr-auto xl:mr-0" />

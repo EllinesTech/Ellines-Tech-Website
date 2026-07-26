@@ -27,7 +27,7 @@ export function GroupEcosystem({ className, compact, title, description }: Group
           {siteConfig.groupBrands.map((brand, i) => {
             const CardInner = (
               <>
-                <div className="relative aspect-[16/11] overflow-hidden bg-gradient-to-br from-slate-900 via-surface to-slate-950">
+                <div className="relative aspect-[3/2] overflow-hidden bg-gradient-to-br from-slate-900 via-surface to-slate-950">
                   <div
                     className={cn(
                       'absolute inset-0 bg-gradient-to-t opacity-80',

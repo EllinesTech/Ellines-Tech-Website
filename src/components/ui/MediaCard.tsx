@@ -6,8 +6,9 @@ import { cn } from '@/lib/utils'
 type Aspect = 'wide' | 'photo' | 'portrait'
 
 const aspectClass: Record<Aspect, string> = {
-  wide: 'aspect-[16/9]',
-  photo: 'aspect-[4/3]',
+  // Match site media library (most banners/scenes are 1536×1024 = 3:2)
+  wide: 'aspect-[3/2]',
+  photo: 'aspect-[3/2]',
   portrait: 'aspect-[3/4]',
 }
 

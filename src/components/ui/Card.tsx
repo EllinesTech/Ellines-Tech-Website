@@ -36,7 +36,7 @@ export function Card({
       {image && (
         <div
           className={cn(
-            'relative aspect-[16/9] overflow-hidden border-b border-white/5',
+            'relative aspect-[3/2] overflow-hidden border-b border-white/5 bg-slate-950',
             imageFit === 'contain' && 'bg-gradient-to-br from-slate-900 via-surface to-slate-950',
           )}
         >
@@ -45,7 +45,7 @@ export function Card({
             alt=""
             className={cn(
               'h-full w-full transition-transform duration-700 group-hover:scale-[1.04]',
-              imageFit === 'contain' ? 'object-contain p-5 sm:p-6' : 'object-cover',
+              imageFit === 'contain' ? 'object-contain p-5 sm:p-6' : 'object-cover object-center',
             )}
             loading="lazy"
           />

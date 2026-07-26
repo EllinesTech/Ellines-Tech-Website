@@ -515,7 +515,7 @@ function CareersContent() {
                 transition={{ delay: i * 0.07, duration: 0.5 }}
                 className="group relative overflow-hidden rounded-[1.35rem] border border-white/10"
               >
-                <div className="aspect-[4/3] sm:aspect-[3/4]">
+                <div className="aspect-[3/2] bg-slate-950">
                   <img
                     src={item.image}
                     alt=""

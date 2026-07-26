@@ -61,12 +61,12 @@ function ServicePricingCard({
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-surface-elevated/90 ring-1 ring-inset ring-white/[0.03] transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-400/35 hover:shadow-[0_20px_40px_-24px_rgba(34,211,238,0.22)]">
-      <div className="relative aspect-[2/1] shrink-0 overflow-hidden bg-slate-950">
+      <div className="relative aspect-[3/2] shrink-0 overflow-hidden bg-slate-950">
         <img
           key={poster}
           src={poster}
           alt={`${group.groupName} — package preview`}
-          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+          className="h-full w-full object-contain object-center transition-transform duration-700 group-hover:scale-[1.03]"
           loading="lazy"
           onError={(e) => {
             const el = e.currentTarget
