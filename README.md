@@ -57,13 +57,24 @@ npm run preview:full
 
 ## Cloudflare Pages
 
-1. Connect repo: `https://github.com/EllinesTech/Ellines-Tech-Website.git`
-2. Build command: `npm run build`
-3. Output directory: `dist`
-4. Custom domain: `tech.ellines.co.ke`
-5. Set server secrets (at minimum `ADMIN_API_KEY`) — see `.env.example`. There is no production fallback for the owner key.
+Project: `ellines-tech-website` (Direct Upload). Pushes to `main` deploy via GitHub Actions (`.github/workflows/deploy-pages.yml`) — no manual Wrangler required once secrets are set.
 
-SPA routing is handled via `public/_redirects`.
+**GitHub Actions secrets (repo → Settings → Secrets and variables → Actions):**
+
+| Secret | Purpose |
+|--------|---------|
+| `CLOUDFLARE_API_TOKEN` | API token with **Cloudflare Pages — Edit** |
+| `CLOUDFLARE_ACCOUNT_ID` | Account id from the Cloudflare dashboard |
+
+**Pages production env vars** (dashboard → Settings → Environment variables; see `.env.example`):
+
+- Required: `ADMIN_API_KEY`
+- Email: `RESEND_API_KEY` (optional `RESEND_FROM`)
+- Paystack: `PAYSTACK_SECRET_KEY` (optional `PAYSTACK_WEBHOOK_SECRET`, `PAYSTACK_HUB_ORIGIN`)
+
+Custom domains: `ellines.co.ke`, `www.ellines.co.ke`, `tech.ellines.co.ke`. SPA routing: `public/_redirects`.
+
+**Optional later — native Git connect (dashboard OAuth only):** Workers & Pages → `ellines-tech-website` → Settings → Builds → Connect to Git → `EllinesTech/Ellines-Tech-Website` → branch `main`, build `npm run build`, output `dist`. Then disable the Actions workflow to avoid double deploys. (API cannot attach Git to an existing Direct Upload project.)
 
 ## Brand
 

@@ -1,0 +1,54 @@
+# Auto-deploy Ellines Tech Website to Cloudflare Pages on push to main.
+# Direct Upload projects cannot attach Git via API/dashboard migration without
+# recreating the project, so CI deploys with Wrangler instead.
+#
+# Required GitHub Actions secrets:
+#   CLOUDFLARE_API_TOKEN   Account API token with Pages Edit (and Workers if needed)
+#   CLOUDFLARE_ACCOUNT_ID  Cloudflare account id
+#
+# Optional one-click Git later (dashboard OAuth only):
+#   dash.cloudflare.com → Workers & Pages → ellines-tech-website → Settings → Builds
+#   → Connect to Git → EllinesTech/Ellines-Tech-Website → main / npm run build / dist
+#   Then disable this workflow to avoid double deploys.
+
+name: Deploy Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.claude/**'
+  workflow_dispatch:
+
+concurrency:
+  group: pages-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=ellines-tech-website --commit-dirty=true
