@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { SEO } from '@/components/SEO'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Button } from '@/components/ui/Button'
@@ -191,6 +191,8 @@ function ServicePricingCard({
 }
 
 export function PricingPage() {
+  const location = useLocation()
+  const seoPath = location.pathname.startsWith('/shop') ? '/shop' : '/pricing'
   const [products, setProducts] = useState<PricingPackage[]>([])
   const [error, setError] = useState('')
   const [activeCategory, setActiveCategory] = useState<string>('All')
@@ -234,9 +236,9 @@ export function PricingPage() {
   return (
     <>
       <SEO
-        title="Product Pricing"
-        description="Transparent Kenya-market packages with in-card options — choose by experience, needs, and budget across career docs, web, consulting, design, and more."
-        path="/pricing"
+        title="Pricing & Packages in Kenya"
+        description="Transparent Ellines Tech pricing in Kenya — web design, software, IT consulting, design, tax returns, and career document packages with clear options and budgets."
+        path={seoPath}
       />
       <section className="section-padding">
         <div className="section-container">

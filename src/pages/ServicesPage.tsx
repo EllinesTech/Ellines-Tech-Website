@@ -40,8 +40,8 @@ export function ServicesPage() {
   return (
     <>
       <SEO
-        title="Services"
-        description="Logo design, web design, UI/UX, software development, AI automation, marketing, cyber security, and career documents from Ellines Tech."
+        title="IT & Digital Services in Kenya"
+        description="Ellines Tech services in Kenya — web design, software development, AI automation, IT consulting, digital marketing, cyber security, logo design, and career documents."
         path="/services"
       />
 

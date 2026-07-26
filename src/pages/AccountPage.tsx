@@ -83,6 +83,7 @@ export function AccountPage() {
         title="Client account"
         description="Client login for Ellines Tech product pricing, packages, requests, and invoices."
         path="/account"
+        noindex
       />
       <section className="section-padding">
         <div className="section-container max-w-3xl">

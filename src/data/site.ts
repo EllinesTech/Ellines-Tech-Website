@@ -1,9 +1,9 @@
 export const siteConfig = {
   name: 'Ellines Tech',
-  tagline: 'Technology Solutions for the Future',
+  tagline: 'IT, Web Design & Consulting in Kenya',
   motto: 'Your Idea. Our Code.',
   description:
-    'Ellines Tech, based in Kenya, leads the IT industry with innovative solutions for global enterprises. Our expert team combines technical skill and creativity for top-tier software development, mobile apps, and digital transformation.',
+    'Ellines Tech is a Kenya-based IT company offering software development, web design, AI, IT consulting, digital marketing, and career documents for businesses across Nairobi and Africa.',
   url: 'https://tech.ellines.co.ke',
   email: 'info@tech.ellines.co.ke',
   emails: ['info@ellines.co.ke', 'info@tech.ellines.co.ke'] as const,

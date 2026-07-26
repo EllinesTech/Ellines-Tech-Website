@@ -42,8 +42,8 @@ export function ContactPage() {
   return (
     <>
       <SEO
-        title="Contact"
-        description="Contact Ellines Tech — request a quote, book a meeting, or reach us via WhatsApp, email, or phone."
+        title="Contact — Nairobi, Kenya"
+        description="Contact Ellines Tech in Nairobi, Kenya — request a quote, book a meeting, or reach us via WhatsApp, email, or phone for IT, web design, and consulting."
         path="/contact"
       />
 

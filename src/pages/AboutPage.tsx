@@ -43,8 +43,8 @@ export function AboutPage() {
   return (
     <>
       <SEO
-        title="About Us"
-        description="Ellines Tech, based in Kenya, leads the IT industry with innovative solutions for global enterprises — software development, mobile apps, and digital transformation."
+        title="About — IT Company in Kenya"
+        description="About Ellines Tech — Nairobi-based software, web design, AI, and IT consulting company serving businesses across Kenya and Africa."
         path="/about"
       />
 

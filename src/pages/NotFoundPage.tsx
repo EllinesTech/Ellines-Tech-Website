@@ -4,7 +4,11 @@ import { Button } from '@/components/ui/Button'
 export function NotFoundPage() {
   return (
     <>
-      <SEO title="Page Not Found" description="The page you're looking for doesn't exist." />
+      <SEO
+        title="Page Not Found"
+        description="The page you're looking for doesn't exist."
+        noindex
+      />
       <section className="section-padding">
         <div className="section-container text-center">
           <p className="font-display text-8xl font-bold text-brand-500/30">404</p>

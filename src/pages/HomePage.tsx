@@ -74,7 +74,10 @@ export function HomePage() {
 
   return (
     <>
-      <SEO />
+      <SEO
+        description="Ellines Tech — Kenya IT company for software development, web design, AI, IT consulting, digital marketing, and career documents. Nairobi · Your Idea. Our Code."
+        path="/"
+      />
 
       {/* Hero — brand typography + one product canvas (no 3D logo dump) */}
       <section className="relative overflow-hidden mesh-bg">

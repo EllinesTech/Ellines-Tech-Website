@@ -32,6 +32,8 @@ function setJsonLd(id: string, data: unknown) {
   el.textContent = JSON.stringify(data)
 }
 
+const DEFAULT_OG_IMAGE = '/logos/logo-full-bg.png'
+
 export function SEO({
   title,
   description,
@@ -42,31 +44,40 @@ export function SEO({
 }: SEOProps) {
   const pageTitle = title
     ? `${title} | ${siteConfig.name}`
-    : `${siteConfig.name} — ${siteConfig.tagline}`
+    : `${siteConfig.name} | ${siteConfig.tagline}`
   const pageDescription = description ?? siteConfig.description
-  const url = `${siteConfig.url}${path}`
+  const url = `${siteConfig.url}${path || '/'}`
   const ogImage = image
     ? image.startsWith('http')
       ? image
       : `${siteConfig.url}${image}`
-    : `${siteConfig.url}${siteConfig.logos.hero || siteConfig.media.techHero}`
+    : `${siteConfig.url}${DEFAULT_OG_IMAGE}`
 
   useEffect(() => {
     document.title = pageTitle
     setMeta('description', pageDescription)
-    setMeta('robots', noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large')
+    setMeta(
+      'robots',
+      noindex
+        ? 'noindex, nofollow'
+        : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+    )
     setMeta('author', siteConfig.name)
+    setMeta('geo.region', 'KE-30')
+    setMeta('geo.placename', 'Nairobi')
     setMeta('og:title', pageTitle, true)
     setMeta('og:description', pageDescription, true)
     setMeta('og:url', url, true)
     setMeta('og:type', type, true)
     setMeta('og:site_name', siteConfig.name, true)
     setMeta('og:image', ogImage, true)
+    setMeta('og:image:alt', `${siteConfig.name} — ${siteConfig.tagline}`, true)
     setMeta('og:locale', 'en_KE', true)
     setMeta('twitter:card', 'summary_large_image')
     setMeta('twitter:title', pageTitle)
     setMeta('twitter:description', pageDescription)
     setMeta('twitter:image', ogImage)
+    setMeta('twitter:image:alt', `${siteConfig.name} — ${siteConfig.tagline}`)
 
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null
     if (!canonical) {
@@ -79,16 +90,23 @@ export function SEO({
     setJsonLd('ld-org', {
       '@context': 'https://schema.org',
       '@type': 'Organization',
+      '@id': `${siteConfig.url}/#organization`,
       name: siteConfig.name,
+      alternateName: ['EllinesTech', 'Ellines Technology'],
       url: siteConfig.url,
-      logo: `${siteConfig.url}${siteConfig.logos.mark}`,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${siteConfig.url}${siteConfig.logos.mark}`,
+      },
+      image: `${siteConfig.url}/logos/logo-full-bg.png`,
       email: siteConfig.email,
-      telephone: siteConfig.phone,
+      telephone: siteConfig.phone.replace(/\s+/g, ''),
       address: {
         '@type': 'PostalAddress',
         addressLocality: 'Nairobi',
         addressCountry: 'KE',
       },
+      areaServed: ['KE', 'Africa'],
       parentOrganization: {
         '@type': 'Organization',
         name: siteConfig.group.name,
@@ -103,17 +121,61 @@ export function SEO({
       sameAs: Object.values(siteConfig.social || {}),
     })
 
+    setJsonLd('ld-local', {
+      '@context': 'https://schema.org',
+      '@type': 'LocalBusiness',
+      '@id': `${siteConfig.url}/#localbusiness`,
+      name: siteConfig.name,
+      url: siteConfig.url,
+      image: `${siteConfig.url}/logos/logo-full-bg.png`,
+      email: siteConfig.email,
+      telephone: siteConfig.phone.replace(/\s+/g, ''),
+      priceRange: '$$',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Nairobi',
+        addressCountry: 'KE',
+        streetAddress: siteConfig.address,
+      },
+      openingHoursSpecification: {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: [
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
+        ],
+        opens: '00:00',
+        closes: '23:59',
+      },
+      areaServed: {
+        '@type': 'Country',
+        name: 'Kenya',
+      },
+      knowsAbout: [
+        'Software development',
+        'Web design',
+        'IT consulting',
+        'Artificial intelligence',
+        'Digital marketing',
+        'Cyber security',
+        'Resume and CV services',
+      ],
+      parentOrganization: { '@id': `${siteConfig.url}/#organization` },
+    })
+
     setJsonLd('ld-website', {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
+      '@id': `${siteConfig.url}/#website`,
       name: siteConfig.name,
       alternateName: ['EllinesTech', 'Ellines Technology'],
       url: siteConfig.url,
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: `${siteConfig.url}/services?q={search_term_string}`,
-        'query-input': 'required name=search_term_string',
-      },
+      publisher: { '@id': `${siteConfig.url}/#organization` },
+      inLanguage: 'en-KE',
     })
   }, [pageTitle, pageDescription, url, ogImage, noindex, type])
 

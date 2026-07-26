@@ -1,9 +1,13 @@
 User-agent: *
 Allow: /
 
-# Keep admin and account areas out of the index
+# Keep private and operational areas out of the index
 Disallow: /admin
+Disallow: /admin/
+Disallow: /staff
+Disallow: /staff/
 Disallow: /account
+Disallow: /account/
 Disallow: /invoice/
 
 Sitemap: https://tech.ellines.co.ke/sitemap.xml
