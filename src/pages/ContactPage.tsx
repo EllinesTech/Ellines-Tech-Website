@@ -73,10 +73,19 @@ export function ContactPage() {
           website: data.get('website') || '',
         }),
       })
-      if (!res.ok) throw new Error('Could not send message')
+      const payload = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(
+          typeof payload.error === 'string' ? payload.error : 'Could not send message',
+        )
+      }
       setSubmitted(true)
-    } catch {
-      setError('Could not reach the server. Please try WhatsApp or email.')
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : 'Could not reach the server. Please try WhatsApp or email.',
+      )
     } finally {
       setSending(false)
     }

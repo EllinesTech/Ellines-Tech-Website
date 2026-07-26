@@ -1336,13 +1336,61 @@ export async function onRequestPost(context) {
       message: `${lead.intent || 'Lead'}: ${lead.packageName || lead.service || lead.name || lead.email}`,
     })
 
+    // In-app + email alert so contact/quote leads are not a black hole for staff.
+    const staffNotes = await getJson(env, 'cms:notifications', [])
+    staffNotes.unshift({
+      id: id('note'),
+      title: `New ${lead.intent || 'lead'}`,
+      body: `${lead.name || 'Visitor'} · ${lead.email} — ${lead.packageName || lead.service || lead.message || 'message'}`.slice(
+        0,
+        280,
+      ),
+      at: new Date().toISOString(),
+      read: false,
+      kind: 'lead',
+      leadId: lead.id,
+    })
+    await putJson(env, 'cms:notifications', staffNotes.slice(0, 100))
+
+    const staffNotifyTo =
+      cleanEmail(env.LEADS_NOTIFY_EMAIL) ||
+      cleanEmail(env.SUPER_ADMIN_EMAIL) ||
+      'info@ellines.co.ke'
+    const staffEmailResult = await sendResendEmail(env, {
+      to: staffNotifyTo,
+      subject: `[Ellines Tech] ${lead.intent || 'Lead'}: ${lead.name || lead.email}`,
+      html: `<p><strong>${lead.name || 'Visitor'}</strong> submitted a <strong>${lead.intent || 'lead'}</strong>.</p>
+<p>Email: ${lead.email}<br/>Phone: ${lead.phone || '—'}<br/>Company: ${lead.company || '—'}<br/>
+Source: ${lead.source || '—'}<br/>
+Package: ${lead.packageName || lead.service || '—'} (${lead.packagePrice || '—'})</p>
+<p>${(lead.message || '').replace(/</g, '&lt;').slice(0, 2000)}</p>
+<p>View in Admin → Leads.</p>`,
+    })
+
     // Auto-draft invoice on purchase intent — email if Resend configured (never block)
     let invoice = null
     let emailResult = { sent: false, reason: 'skipped' }
     if (lead.intent === 'buy' && lead.email) {
       const invoices = await getJson(env, 'cms:invoices', [])
-      const priceMatch = String(lead.packagePrice || '').replace(/[^\d.]/g, '')
-      const unitPrice = Number(priceMatch) || 0
+      // Prefer catalog price from KV over client-supplied packagePrice.
+      let unitPrice = 0
+      let currency = 'KES'
+      let itemDescription = lead.packageName || lead.service || 'Service request'
+      if (lead.packageId) {
+        const products = await getJson(env, 'cms:shop-products', [])
+        const pkg = Array.isArray(products)
+          ? products.find((p) => p.id === lead.packageId && p.status === 'published')
+          : null
+        if (pkg && Number(pkg.price) > 0) {
+          unitPrice = Number(pkg.price)
+          currency = String(pkg.currency || 'KES').toUpperCase() === 'USD' ? 'USD' : 'KES'
+          itemDescription = pkg.name || itemDescription
+        }
+      }
+      if (!unitPrice) {
+        const priceMatch = String(lead.packagePrice || '').replace(/[^\d.]/g, '')
+        unitPrice = Number(priceMatch) || 0
+      }
       invoice = {
         id: id('inv'),
         number: `ET-${new Date().getFullYear()}-${String(invoices.length + 1).padStart(4, '0')}`,
@@ -1354,12 +1402,12 @@ export async function onRequestPost(context) {
         userId: lead.userId || '',
         items: [
           {
-            description: lead.packageName || lead.service || 'Service request',
+            description: itemDescription,
             qty: 1,
             unitPrice,
           },
         ],
-        currency: 'KES',
+        currency,
         subtotal: unitPrice,
         tax: 0,
         total: unitPrice,
@@ -1417,6 +1465,7 @@ export async function onRequestPost(context) {
           }
         : null,
       email: emailResult,
+      staffEmail: staffEmailResult,
     })
   }
 
@@ -1503,7 +1552,7 @@ export async function onRequestPost(context) {
     })
     await putJson(env, 'cms:notifications', notes.slice(0, 100))
     const emailResult = await sendResendEmail(env, {
-      to: env.CAREERS_NOTIFY_EMAIL || 'careers@ellinestech.co.ke',
+      to: cleanEmail(env.CAREERS_NOTIFY_EMAIL) || 'info@ellines.co.ke',
       subject: `Application: ${application.jobTitle} — ${application.name}`,
       html: `<p><strong>${application.name}</strong> applied for <strong>${application.jobTitle}</strong>.</p>
 <p>Email: ${application.email}<br/>Phone: ${application.phone || '—'}<br/>

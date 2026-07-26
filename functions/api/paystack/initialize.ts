@@ -101,18 +101,8 @@ export async function onRequestPost(context) {
 
   if (type === 'checkout') {
     if (!packageId) return json({ error: 'packageId required for checkout' }, 400)
-    let pkg = await findShopPackage(env, packageId)
-    // Fallback: accept client-supplied snapshot only if amount matches a known shape
-    if (!pkg && body.packageSnapshot) {
-      const snap = body.packageSnapshot
-      if (
-        snap.id === packageId &&
-        INSTANT_CHECKOUT_CATEGORIES.has(String(snap.category || '')) &&
-        Number(snap.price) > 0
-      ) {
-        pkg = snap
-      }
-    }
+    // Price always comes from KV catalog — never trust client packageSnapshot.
+    const pkg = await findShopPackage(env, packageId)
     if (!pkg) return json({ error: 'package not found or not published' }, 404)
     if (!INSTANT_CHECKOUT_CATEGORIES.has(String(pkg.category || ''))) {
       return json(

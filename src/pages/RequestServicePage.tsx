@@ -132,13 +132,6 @@ export function RequestServicePage() {
           packageId: selectedPackage.id,
           currency,
           brand: 'tech',
-          packageSnapshot: {
-            id: selectedPackage.id,
-            name: selectedPackage.name,
-            price: selectedPackage.price,
-            currency: selectedPackage.currency || 'KES',
-            category: selectedPackage.category,
-          },
         })
         return
       }

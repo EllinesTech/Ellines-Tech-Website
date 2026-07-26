@@ -38,6 +38,14 @@ export function PasswordResetPage() {
     setBusy(true)
     try {
       const res = await requestPasswordReset(email.trim())
+      const emailReady = Boolean(res.channels?.emailConfigured)
+      const smsReady = Boolean(res.channels?.smsConfigured)
+      if (!emailReady && !smsReady) {
+        setError(
+          'Password reset delivery is not configured on this site yet. Contact support or try again later.',
+        )
+        return
+      }
       setMessage(
         res.message ||
           'If an account exists for that email, a reset code has been sent by email and SMS.',
