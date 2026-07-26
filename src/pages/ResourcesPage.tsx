@@ -12,6 +12,10 @@ import {
 } from 'lucide-react'
 import { SEO } from '@/components/SEO'
 import { CompanyMaterials } from '@/components/downloads/CompanyMaterials'
+import { Button } from '@/components/ui/Button'
+import { MediaBadge, MediaCard } from '@/components/ui/MediaCard'
+import { knowledgeCategoryImages } from '@/data/imagery'
+import { siteConfig } from '@/data/site'
 import {
   defaultKnowledgeArticles,
   knowledgeCategories,
@@ -72,7 +76,14 @@ export function ResourcesPage() {
       />
 
       <section className="relative overflow-hidden border-b border-white/5">
-        <div className="pointer-events-none absolute inset-0 mesh-bg opacity-60" />
+        <img
+          src={siteConfig.media.scenes.resourcesHero}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-center opacity-30"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/92 to-slate-950/60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/70" />
+        <div className="pointer-events-none absolute inset-0 mesh-bg opacity-55" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/40 to-transparent" />
         <div className="pointer-events-none absolute -left-32 top-0 h-80 w-80 rounded-full bg-brand-500/12 blur-[100px]" />
         <div className="section-container relative py-20 sm:py-24">
@@ -123,44 +134,92 @@ export function ResourcesPage() {
             </p>
           )}
 
-          <div className="grid gap-x-12 gap-y-12 sm:grid-cols-2">
-            {knowledgeCategories.map((section) => {
+          <div className="mb-12 max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-400">
+              Browse by type
+            </p>
+            <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+              Everything we publish, in one place
+            </h2>
+            <p className="mt-4 leading-relaxed text-slate-400">
+              Written by the same people who build the systems — practical notes rather than
+              vendor marketing.
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {knowledgeCategories.map((section, i) => {
               const Icon = categoryIcons[section.id]
               const items = byCategory.get(section.id) || []
               return (
-                <div
-                  key={section.id}
-                  id={section.id}
-                  className="scroll-mt-28 border-t border-white/10 pt-7"
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon className="h-5 w-5 text-brand-400" />
-                    <h2 className="font-display text-lg font-semibold text-white">
-                      {section.title}
-                    </h2>
-                  </div>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-400">
-                    {section.description}
-                  </p>
-                  <ul className="mt-5 divide-y divide-white/8 border-t border-white/8">
-                    {items.length === 0 && (
-                      <li className="py-3 text-sm text-slate-600">No published items yet.</li>
-                    )}
-                    {items.map((item) => (
-                      <li key={item.id}>
-                        <Link
-                          to={`/resources/${item.slug}`}
-                          className="group flex items-center justify-between gap-4 py-3 text-sm text-slate-300 transition-colors hover:text-brand-200"
-                        >
-                          <span>{item.title}</span>
-                          <ArrowUpRight className="h-4 w-4 shrink-0 text-slate-700 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand-300" />
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                <div key={section.id} id={section.id} className="scroll-mt-28">
+                  <MediaCard
+                    title={section.title}
+                    description={section.description}
+                    image={knowledgeCategoryImages[section.id]}
+                    aspect="photo"
+                    index={i % 3}
+                    badge={
+                      <MediaBadge>
+                        <Icon className="h-5 w-5" />
+                      </MediaBadge>
+                    }
+                    overline={
+                      <span className="rounded-lg bg-slate-950/65 px-2.5 py-1 font-mono text-[11px] tabular-nums tracking-[0.12em] text-slate-200 ring-1 ring-white/10 backdrop-blur-md">
+                        {String(items.length).padStart(2, '0')}
+                      </span>
+                    }
+                  >
+                    <ul className="mt-5 divide-y divide-white/8 border-t border-white/8">
+                      {items.length === 0 && (
+                        <li className="py-3 text-sm text-slate-600">No published items yet.</li>
+                      )}
+                      {items.map((item) => (
+                        <li key={item.id}>
+                          <Link
+                            to={`/resources/${item.slug}`}
+                            className="group/item flex items-center justify-between gap-4 py-3 text-sm text-slate-300 transition-colors hover:text-brand-200"
+                          >
+                            <span>{item.title}</span>
+                            <ArrowUpRight className="h-4 w-4 shrink-0 text-slate-700 transition-all group-hover/item:-translate-y-0.5 group-hover/item:translate-x-0.5 group-hover/item:text-brand-300" />
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </MediaCard>
                 </div>
               )
             })}
+          </div>
+        </div>
+      </section>
+
+      <section className="section-padding border-t border-white/5">
+        <div className="section-container">
+          <div className="relative overflow-hidden rounded-[1.75rem] border border-brand-500/20 bg-gradient-to-br from-brand-900/50 via-slate-950 to-sky-950/60 p-8 sm:p-12">
+            <div className="pointer-events-none absolute -right-10 -top-10 h-52 w-52 rounded-full bg-brand-500/10 blur-3xl" />
+            <div className="relative flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center">
+              <div className="max-w-xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
+                  Put it to work
+                </p>
+                <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                  Reading is the easy part
+                </h2>
+                <p className="mt-4 text-slate-300">
+                  Tell us what you&apos;re trying to build and we&apos;ll turn the theory into a
+                  scoped plan — timeline, price, and deliverables in writing.
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
+                <Button href="/contact#quote" size="lg" icon>
+                  Send a brief
+                </Button>
+                <Button href="/success-stories" variant="secondary" size="lg">
+                  See the outcomes
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </section>

@@ -70,7 +70,7 @@ export const portfolioProjects: PortfolioProject[] = [
       'End-to-end hospital management system deployed across multiple healthcare facilities.',
     technologies: ['Python', 'React', 'PostgreSQL', 'Docker'],
     results: ['40% reduction in patient wait times', 'Unified billing across departments'],
-    image: '/media/scenes/about.png',
+    image: '/media/posters/packages/shop_custom_software.jpg',
   },
   {
     slug: 'eliprime-home-wellness',
@@ -102,6 +102,7 @@ export const portfolioProjects: PortfolioProject[] = [
       'Multi-school management platform with fee collection, timetabling, and parent portals.',
     technologies: ['React', 'PostgreSQL', 'M-Pesa Integration'],
     results: ['15+ schools onboarded', '90% fee collection rate improvement'],
+    image: '/media/posters/packages/shop_starter_web.jpg',
   },
   {
     slug: 'erp-manufacturing',
@@ -111,6 +112,7 @@ export const portfolioProjects: PortfolioProject[] = [
       'Custom ERP system for a manufacturing company with inventory and production tracking.',
     technologies: ['Python', 'React', 'MySQL'],
     results: ['30% inventory cost reduction', 'Real-time production visibility'],
+    image: '/media/posters/packages/consult_it_fullday.jpg',
   },
   {
     slug: 'inventory-retail-chain',
@@ -119,6 +121,7 @@ export const portfolioProjects: PortfolioProject[] = [
     description: 'Multi-outlet inventory management for a retail chain across East Africa.',
     technologies: ['React', 'PostgreSQL', 'REST APIs'],
     results: ['20 outlets connected', 'Automated reorder workflows'],
+    image: '/media/posters/packages/shop_ecommerce.jpg',
   },
   {
     slug: 'corporate-websites',
@@ -138,6 +141,7 @@ export const portfolioProjects: PortfolioProject[] = [
       'Full-featured online stores with payment integration and mobile-first design.',
     technologies: ['React', 'Node.js', 'Stripe', 'M-Pesa'],
     results: ['Mobile-first checkout', 'Integrated payment gateways'],
+    image: '/media/posters/packages/shop_business_web.jpg',
   },
 ]
 

@@ -357,6 +357,72 @@ function id(prefix = 'id') {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
 }
 
+function slugifyPage(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+/**
+ * Route paths let a CMS page target a real site route (/about) instead of only /p/:slug.
+ * Empty string means "custom page" — the legacy behaviour.
+ */
+function normalizeRoutePath(value) {
+  const raw = String(value || '').trim()
+  if (!raw) return ''
+  const noQuery = raw.split(/[?#]/)[0]
+  const withSlash = noQuery.startsWith('/') ? noQuery : `/${noQuery}`
+  const trimmed = withSlash.replace(/\/+$/, '')
+  return trimmed || '/'
+}
+
+/** Slug fallback for route-backed pages so /p/:slug stays unique and viewable. */
+function slugFromRoutePath(path) {
+  const normalized = normalizeRoutePath(path)
+  if (!normalized || normalized === '/') return 'home'
+  return slugifyPage(normalized.replace(/^\//, '').replace(/\//g, '-')) || 'page'
+}
+
+function normalizePageRecord(page, existing) {
+  const routePath = normalizeRoutePath(page.path ?? existing?.path ?? '')
+  const slug =
+    slugifyPage(page.slug) || existing?.slug || (routePath ? slugFromRoutePath(routePath) : '')
+  const now = new Date().toISOString()
+  return {
+    id: page.id || existing?.id || id('page'),
+    slug,
+    path: routePath,
+    mode: page.mode === 'replace' ? 'replace' : 'append',
+    title: page.title,
+    excerpt: page.excerpt || '',
+    body: page.body || '',
+    status: page.status === 'published' ? 'published' : 'draft',
+    seoTitle: page.seoTitle || page.title,
+    seoDescription: page.seoDescription || page.excerpt || '',
+    updatedAt: now,
+    createdAt: page.createdAt || existing?.createdAt || now,
+  }
+}
+
+function findPageIndex(pages, { id: pageId, slug, path }) {
+  const routePath = normalizeRoutePath(path)
+  if (pageId) {
+    const byId = pages.findIndex((p) => p.id === pageId)
+    if (byId >= 0) return byId
+  }
+  if (routePath) {
+    const byPath = pages.findIndex((p) => normalizeRoutePath(p.path) === routePath)
+    if (byPath >= 0) return byPath
+  }
+  if (slug) {
+    const normalized = slugifyPage(slug)
+    return pages.findIndex((p) => p.slug === normalized)
+  }
+  return -1
+}
+
 function adminOk(request, env) {
   // Align with client DEFAULT_ADMIN_PASSWORD / VITE_ADMIN_PASSWORD resolution:
   // empty or whitespace ADMIN_API_KEY must fall back (not compare as "").
@@ -472,8 +538,10 @@ export async function onRequestGet(context) {
 
   if (resource === 'pages') {
     const pages = await getJson(env, 'cms:pages', [])
-    if (slug) {
-      const page = pages.find((p) => p.slug === slug)
+    const routePath = url.searchParams.get('path')
+    if (slug || routePath) {
+      const idx = findPageIndex(pages, { slug, path: routePath })
+      const page = idx >= 0 ? pages[idx] : null
       if (!page) return json({ error: 'not found' }, 404)
       if (page.status !== 'published' && !(await staffOrGod(request, env))) {
         return json({ error: 'not found' }, 404)
@@ -1152,37 +1220,72 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
   if (action === 'save_page') {
     const pages = await getJson(env, 'cms:pages', [])
     const page = body.page
-    if (!page?.slug || !page?.title) return json({ error: 'slug and title required' }, 400)
-    const slug = String(page.slug)
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, '-')
-      .replace(/-+/g, '-')
-    const existing = pages.findIndex((p) => p.id === page.id || p.slug === slug)
-    const record = {
-      id: page.id || id('page'),
-      slug,
-      title: page.title,
-      excerpt: page.excerpt || '',
-      body: page.body || '',
-      status: page.status === 'published' ? 'published' : 'draft',
-      seoTitle: page.seoTitle || page.title,
-      seoDescription: page.seoDescription || page.excerpt || '',
-      updatedAt: new Date().toISOString(),
-      createdAt: page.createdAt || new Date().toISOString(),
+    if (!page?.title) return json({ error: 'title required' }, 400)
+    const routePath = normalizeRoutePath(page.path)
+    if (!page.slug && !routePath) return json({ error: 'slug or path required' }, 400)
+    const existingIdx = findPageIndex(pages, {
+      id: page.id,
+      slug: page.slug,
+      path: routePath,
+    })
+    const existing = existingIdx >= 0 ? pages[existingIdx] : null
+    const record = normalizePageRecord(page, existing)
+    if (!record.slug) return json({ error: 'slug or path required' }, 400)
+    // Slugs stay unique so /p/:slug never resolves to two records.
+    const clash = pages.findIndex((p, i) => i !== existingIdx && p.slug === record.slug)
+    if (clash >= 0) {
+      return json({ error: `Slug "${record.slug}" is already used by another page` }, 409)
     }
-    if (existing >= 0) pages[existing] = { ...pages[existing], ...record }
+    if (existingIdx >= 0) pages[existingIdx] = { ...existing, ...record }
     else pages.unshift(record)
     await putJson(env, 'cms:pages', pages)
     await logActivity(env, {
       type: 'page',
-      message: `Saved page /p/${record.slug} (${record.status})`,
+      message: `Saved page ${record.path || `/p/${record.slug}`} (${record.status})`,
     })
     return json({ ok: true, page: record })
   }
 
+  /**
+   * Open-for-edit primitive: returns the record for a slug/route, creating a draft
+   * on first use so admins can edit site routes that have no CMS record yet.
+   */
+  if (action === 'ensure_page') {
+    const pages = await getJson(env, 'cms:pages', [])
+    const routePath = normalizeRoutePath(body.path)
+    const requestedSlug = slugifyPage(body.slug)
+    if (!routePath && !requestedSlug) return json({ error: 'slug or path required' }, 400)
+    const existingIdx = findPageIndex(pages, { id: body.id, slug: requestedSlug, path: routePath })
+    if (existingIdx >= 0) return json({ ok: true, created: false, page: pages[existingIdx] })
+
+    const slug = requestedSlug || slugFromRoutePath(routePath)
+    if (pages.some((p) => p.slug === slug)) {
+      return json({ error: `Slug "${slug}" is already used by another page` }, 409)
+    }
+    const record = normalizePageRecord(
+      {
+        slug,
+        path: routePath,
+        mode: body.mode,
+        title: body.title || slug.replace(/-/g, ' '),
+        excerpt: body.excerpt || '',
+        body: body.body || '',
+        status: 'draft',
+      },
+      null,
+    )
+    pages.unshift(record)
+    await putJson(env, 'cms:pages', pages)
+    await logActivity(env, {
+      type: 'page',
+      message: `Created draft for ${record.path || `/p/${record.slug}`}`,
+    })
+    return json({ ok: true, created: true, page: record })
+  }
+
   if (action === 'delete_page') {
     const pages = await getJson(env, 'cms:pages', [])
-    const next = pages.filter((p) => p.id !== body.id && p.slug !== body.slug)
+    const next = pages.filter((p) => !(body.id && p.id === body.id) && !(body.slug && p.slug === body.slug))
     await putJson(env, 'cms:pages', next)
     await logActivity(env, { type: 'page', message: `Deleted page ${body.slug || body.id}` })
     return json({ ok: true })

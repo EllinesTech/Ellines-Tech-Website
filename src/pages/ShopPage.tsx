@@ -14,6 +14,7 @@ import {
   type PricingServiceGroup,
 } from '@/data/pricingPackages'
 import { packagePosterMap, posterForPackage } from '@/data/posterMap'
+import { siteConfig } from '@/data/site'
 import { isInstantCheckoutPackage } from '@/lib/checkoutPackages'
 import { cn } from '@/lib/utils'
 
@@ -251,7 +252,14 @@ export function PricingPage() {
         path={seoPath}
       />
       <section className="relative overflow-hidden border-b border-white/5">
-        <div className="pointer-events-none absolute inset-0 mesh-bg opacity-60" />
+        <img
+          src={siteConfig.media.scenes.pricingHero}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-center opacity-35"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/92 to-slate-950/55" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/70" />
+        <div className="pointer-events-none absolute inset-0 mesh-bg opacity-55" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/40 to-transparent" />
         <div className="pointer-events-none absolute -left-32 top-0 h-80 w-80 rounded-full bg-brand-500/12 blur-[100px] " />
         <div className="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-sky-600/10 blur-[110px]" />
@@ -381,6 +389,36 @@ export function PricingPage() {
               No packages in this category yet.
             </p>
           )}
+        </div>
+      </section>
+
+      <section className="section-padding border-t border-white/5">
+        <div className="section-container">
+          <div className="relative overflow-hidden rounded-[1.75rem] border border-brand-500/20 bg-gradient-to-br from-brand-900/50 via-slate-950 to-sky-950/60 p-8 sm:p-12">
+            <div className="pointer-events-none absolute -right-10 -top-10 h-52 w-52 rounded-full bg-brand-500/10 blur-3xl" />
+            <div className="relative flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center">
+              <div className="max-w-xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
+                  Nothing quite fits?
+                </p>
+                <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                  We&apos;ll price the work around your scope
+                </h2>
+                <p className="mt-4 text-slate-300">
+                  Packages cover the common cases. For everything else, send a brief and
+                  you&apos;ll get a written quote with timeline and deliverables.
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
+                <Button href="/contact#quote" size="lg" icon>
+                  Get a custom quote
+                </Button>
+                <Button href="/services" variant="secondary" size="lg">
+                  Browse services
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </>

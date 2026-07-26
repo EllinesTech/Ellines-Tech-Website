@@ -4,10 +4,20 @@ import { Link } from 'react-router-dom'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
 import { portfolioCategories, portfolioProjects } from '@/data/portfolio'
+import { projectVisual } from '@/data/imagery'
 import { siteConfig } from '@/data/site'
+import { cn } from '@/lib/utils'
 
 export function SuccessStoriesPage() {
   const stories = portfolioProjects.filter((p) => p.results)
+  const outcomeCount = stories.reduce((total, s) => total + (s.results?.length || 0), 0)
+
+  const summary = [
+    { value: String(stories.length), label: 'Case studies' },
+    { value: `${outcomeCount}+`, label: 'Measured outcomes' },
+    { value: '6', label: 'Sectors represented' },
+    { value: '24/7', label: 'Post-launch support' },
+  ]
 
   return (
     <>
@@ -58,76 +68,131 @@ export function SuccessStoriesPage() {
         </div>
       </section>
 
+      {/* Summary strip */}
+      <section className="border-b border-white/5 bg-surface/40">
+        <div className="section-container py-8 sm:py-10">
+          <dl className="grid grid-cols-2 gap-y-6 sm:grid-cols-4">
+            {summary.map((item, i) => (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06, duration: 0.45 }}
+                className={cn(
+                  'px-1 sm:px-6 sm:first:pl-0',
+                  i % 2 === 1 && 'border-l border-white/10',
+                  i > 0 && 'sm:border-l sm:border-white/10',
+                )}
+              >
+                <dt className="font-display text-3xl font-bold tracking-tight text-gradient sm:text-4xl">
+                  {item.value}
+                </dt>
+                <dd className="mt-1.5 text-sm text-slate-500">{item.label}</dd>
+              </motion.div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
       <section className="section-padding">
         <div className="section-container">
-          <div className="space-y-16">
-            {stories.map((story, i) => (
-              <motion.article
-                key={story.slug}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.55 }}
-                className="grid gap-8 border-t border-white/10 pt-10 lg:grid-cols-12 lg:gap-12"
-              >
-                <div className="lg:col-span-5">
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-[11px] tracking-[0.14em] text-slate-600">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-400">
-                      {portfolioCategories[story.category]}
-                    </span>
-                  </div>
-                  <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                    {story.name}
-                  </h2>
-                  {story.client && (
-                    <p className="mt-2 text-sm text-slate-500">{story.client}</p>
-                  )}
-                  <Link
-                    to={`/portfolio#${story.slug}`}
-                    className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-300 transition-colors hover:text-brand-200"
-                  >
-                    View project <ArrowUpRight className="h-4 w-4" />
-                  </Link>
-                </div>
-
-                <div className="lg:col-span-7">
-                  <p className="text-lg leading-relaxed text-slate-300">{story.description}</p>
-                  {story.results && (
-                    <dl className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2">
-                      {story.results.map((result) => (
-                        <div key={result} className="border-l border-brand-400/30 pl-4">
-                          <dt className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                            <TrendingUp className="h-3.5 w-3.5 text-brand-400" />
-                            Outcome
-                          </dt>
-                          <dd className="mt-2 font-display text-base font-semibold leading-snug text-white">
-                            {result}
-                          </dd>
-                        </div>
-                      ))}
-                    </dl>
-                  )}
-                  <div className="mt-7 flex flex-wrap gap-x-3 gap-y-2 font-mono text-[11px] uppercase tracking-[0.1em] text-slate-500">
-                    {story.technologies.map((tech, index) => (
-                      <span key={tech} className="inline-flex items-center gap-3">
-                        {tech}
-                        {index < story.technologies.length - 1 && (
-                          <span className="text-slate-700" aria-hidden>
-                            /
-                          </span>
-                        )}
+          <div className="space-y-20 lg:space-y-24">
+            {stories.map((story, i) => {
+              const visual = projectVisual(story)
+              const flip = i % 2 === 1
+              return (
+                <motion.article
+                  key={story.slug}
+                  id={story.slug}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-60px' }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  className="group grid scroll-mt-28 items-center gap-8 lg:grid-cols-12 lg:gap-14"
+                >
+                  <div className={cn('lg:col-span-6', flip && 'lg:order-2')}>
+                    <Link
+                      to={`/portfolio#${story.slug}`}
+                      className={cn(
+                        'relative block overflow-hidden rounded-[1.5rem] border border-white/10',
+                        visual.fit === 'contain' &&
+                          'bg-gradient-to-br from-slate-900 via-surface to-slate-950',
+                      )}
+                    >
+                      <div className="aspect-[16/10]">
+                        <img
+                          src={visual.src}
+                          alt={story.name}
+                          className={cn(
+                            'h-full w-full transition-transform duration-[900ms] ease-out group-hover:scale-[1.04]',
+                            visual.fit === 'contain'
+                              ? 'object-contain p-10'
+                              : 'object-cover object-center',
+                          )}
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                      <span className="absolute bottom-4 left-4 rounded-lg bg-slate-950/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-200 ring-1 ring-white/15 backdrop-blur-md">
+                        {portfolioCategories[story.category]}
                       </span>
-                    ))}
+                    </Link>
                   </div>
-                </div>
-              </motion.article>
-            ))}
+
+                  <div className={cn('lg:col-span-6', flip && 'lg:order-1')}>
+                    <span className="font-mono text-[11px] tracking-[0.14em] text-slate-600">
+                      Case {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-[2.1rem] lg:leading-tight">
+                      {story.name}
+                    </h2>
+                    {story.client && <p className="mt-2 text-sm text-slate-500">{story.client}</p>}
+                    <p className="mt-5 leading-relaxed text-slate-300">{story.description}</p>
+
+                    {story.results && (
+                      <dl className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                        {story.results.map((result) => (
+                          <div key={result} className="border-l border-brand-400/30 pl-4">
+                            <dt className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                              <TrendingUp className="h-3.5 w-3.5 text-brand-400" />
+                              Outcome
+                            </dt>
+                            <dd className="mt-2 font-display text-base font-semibold leading-snug text-white">
+                              {result}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    )}
+
+                    <div className="mt-7 flex flex-wrap gap-x-3 gap-y-2 font-mono text-[11px] uppercase tracking-[0.1em] text-slate-500">
+                      {story.technologies.map((tech, index) => (
+                        <span key={tech} className="inline-flex items-center gap-3">
+                          {tech}
+                          {index < story.technologies.length - 1 && (
+                            <span className="text-slate-700" aria-hidden>
+                              /
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+
+                    <Link
+                      to={`/portfolio#${story.slug}`}
+                      className="mt-7 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-300 transition-colors hover:text-brand-200"
+                    >
+                      View project
+                      <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                    </Link>
+                  </div>
+                </motion.article>
+              )
+            })}
           </div>
 
-          <div className="mt-16 flex flex-col gap-3 border-t border-white/10 pt-10 sm:flex-row">
+          <div className="mt-20 flex flex-col gap-3 border-t border-white/10 pt-10 sm:flex-row">
             <Button href="/portfolio" icon>
               View full portfolio
             </Button>

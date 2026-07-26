@@ -1,8 +1,22 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { ArrowUpRight } from 'lucide-react'
 import { SEO } from '@/components/SEO'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
+import { MediaCard } from '@/components/ui/MediaCard'
+import { SectionHeader } from '@/components/ui/SectionHeader'
 import { industries } from '@/data/industries'
+import { industryImage } from '@/data/imagery'
 import { siteConfig } from '@/data/site'
+import { locationLine } from '@/data/locations'
+
+const proofPoints = [
+  { value: '12', label: 'Sectors served' },
+  { value: '50+', label: 'Systems shipped' },
+  { value: '24/7', label: 'Support coverage' },
+  { value: '2', label: 'Kenyan offices' },
+]
 
 export function IndustriesPage() {
   return (
@@ -15,9 +29,9 @@ export function IndustriesPage() {
 
       <section className="relative overflow-hidden border-b border-white/5">
         <img
-          src={siteConfig.media.scenes.growth}
+          src={siteConfig.media.scenes.industriesHero}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover object-center opacity-40"
+          className="absolute inset-0 h-full w-full object-cover object-center opacity-35"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/92 to-slate-950/55" />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/70" />
@@ -51,43 +65,95 @@ export function IndustriesPage() {
                 View solutions
               </Button>
             </div>
+            <p className="mt-8 text-xs text-slate-500">
+              Built and supported from {locationLine}
+            </p>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Proof strip — quick weight before the grid */}
+      <section className="border-b border-white/5 bg-surface/40">
+        <div className="section-container py-8 sm:py-10">
+          <dl className="grid grid-cols-2 gap-y-6 sm:grid-cols-4">
+            {proofPoints.map((point, i) => (
+              <motion.div
+                key={point.label}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06, duration: 0.45 }}
+                className={cn(
+                  'px-1 sm:px-6 sm:first:pl-0',
+                  i % 2 === 1 && 'border-l border-white/10',
+                  i > 0 && 'sm:border-l sm:border-white/10',
+                )}
+              >
+                <dt className="font-display text-3xl font-bold tracking-tight text-gradient sm:text-4xl">
+                  {point.value}
+                </dt>
+                <dd className="mt-1.5 text-sm text-slate-500">{point.label}</dd>
+              </motion.div>
+            ))}
+          </dl>
         </div>
       </section>
 
       <section className="section-padding">
         <div className="section-container">
-          <div className="grid gap-x-12 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+          <SectionHeader
+            eyebrow="Where we go deep"
+            title="Twelve sectors, one delivery standard"
+            description="Each of these comes with systems we have already built, deployed, and supported — not a capability slide."
+            className="mb-12"
+          />
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {industries.map((industry, i) => (
-              <motion.div
-                key={industry.slug}
-                id={industry.slug}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: (i % 3) * 0.07 }}
-                className="scroll-mt-28 border-t border-white/10 pt-7"
-              >
-                <p className="font-mono text-[11px] tracking-[0.14em] text-slate-600">
-                  {String(i + 1).padStart(2, '0')}
-                </p>
-                <h2 className="mt-3 font-display text-xl font-semibold text-white">
-                  {industry.name}
-                </h2>
-                <p className="mt-3 text-sm leading-relaxed text-slate-400">
-                  {industry.description}
-                </p>
-                <ul className="mt-5 space-y-2">
-                  {industry.solutions.map((solution) => (
-                    <li key={solution} className="flex items-center gap-2.5 text-sm text-slate-300">
-                      <span className="h-1 w-1 shrink-0 rounded-full bg-brand-400" />
-                      {solution}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
+              <div key={industry.slug} id={industry.slug} className="scroll-mt-28">
+                <MediaCard
+                  title={industry.name}
+                  description={industry.description}
+                  image={industryImage(industry.slug)}
+                  aspect="photo"
+                  index={i % 3}
+                  badge={
+                    <span className="rounded-lg bg-slate-950/65 px-2.5 py-1 font-mono text-[11px] tracking-[0.14em] text-brand-200 ring-1 ring-white/15 backdrop-blur-md">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                  }
+                >
+                  <ul className="mt-5 space-y-2 border-t border-white/8 pt-5">
+                    {industry.solutions.map((solution) => (
+                      <li
+                        key={solution}
+                        className="flex items-center gap-2.5 text-sm text-slate-300"
+                      >
+                        <span className="h-1 w-1 shrink-0 rounded-full bg-brand-400" />
+                        {solution}
+                      </li>
+                    ))}
+                  </ul>
+                </MediaCard>
+              </div>
             ))}
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-white/10 pt-8 text-sm text-slate-400"
+          >
+            <span>Working in one of these sectors?</span>
+            <Link
+              to="/success-stories"
+              className="inline-flex items-center gap-1.5 font-semibold text-brand-300 transition-colors hover:text-brand-200"
+            >
+              Read the outcomes we delivered
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </motion.div>
         </div>
       </section>
 

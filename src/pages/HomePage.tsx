@@ -19,12 +19,15 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { MediaBadge, MediaCard } from '@/components/ui/MediaCard'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { SEO } from '@/components/SEO'
 import { HeroVisual } from '@/components/home/HeroVisual'
 import { GroupEcosystem } from '@/components/home/GroupEcosystem'
 import { serviceCategories } from '@/data/services'
 import { industries } from '@/data/industries'
+import { portfolioCategories } from '@/data/portfolio'
+import { industryImage, productVisual, projectVisual } from '@/data/imagery'
 import { homeCopy, testimonials as defaultTestimonials, valueProps as valuePropData } from '@/data/content'
 import { siteConfig } from '@/data/site'
 import { cn } from '@/lib/utils'
@@ -36,6 +39,7 @@ import { NewsletterSignup } from '@/components/NewsletterSignup'
 import { fetchReviews } from '@/lib/cmsApi'
 import {
   loadPublishedServices,
+  serviceImage,
   staticServicesAsCatalog,
   type CatalogService,
 } from '@/lib/servicesCatalog'
@@ -355,17 +359,20 @@ export function HomePage() {
             </Button>
           </div>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProducts.map((product) => (
-              <Card
-                key={product.slug}
-                title={product.name}
-                description={product.tagline}
-                href={`/products/${product.slug}`}
-                tag={product.highlights?.[0]}
-                image={product.image}
-                imageFit={product.imageFit}
-              />
-            ))}
+            {featuredProducts.map((product) => {
+              const visual = productVisual(product)
+              return (
+                <Card
+                  key={product.slug}
+                  title={product.name}
+                  description={product.tagline}
+                  href={`/products/${product.slug}`}
+                  tag={product.highlights?.[0]}
+                  image={visual.src}
+                  imageFit={visual.fit}
+                />
+              )
+            })}
           </div>
         </div>
       </section>
@@ -383,29 +390,26 @@ export function HomePage() {
               View All Services
             </Button>
           </div>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {services.slice(0, 6).map((service) => {
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {services.slice(0, 6).map((service, i) => {
               const cat = serviceCategories[service.category]
               const Icon = iconMap[cat.icon] ?? Code2
               return (
-                <Link
+                <MediaCard
                   key={service.slug}
-                  to={`/services/${service.slug}`}
-                  className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-surface-elevated/25 p-5 transition-all hover:border-brand-500/25 hover:bg-surface-elevated/50"
-                >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-500/10 text-brand-400 transition-colors group-hover:bg-brand-500/20">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                      {cat.label}
-                    </p>
-                    <h3 className="mt-1 font-display font-semibold text-white transition-colors group-hover:text-brand-300">
-                      {service.name}
-                    </h3>
-                    <p className="mt-1 line-clamp-2 text-sm text-slate-400">{service.description}</p>
-                  </div>
-                </Link>
+                  title={service.name}
+                  eyebrow={cat.label}
+                  description={service.description}
+                  image={serviceImage(service)}
+                  href={`/services/${service.slug}`}
+                  index={i % 3}
+                  cta="Explore service"
+                  badge={
+                    <MediaBadge>
+                      <Icon className="h-5 w-5" />
+                    </MediaBadge>
+                  }
+                />
               )
             })}
           </div>
@@ -517,14 +521,54 @@ export function HomePage() {
       {/* Industries */}
       <section className="section-padding border-t border-white/5 bg-surface/40">
         <div className="section-container">
-          <SectionHeader
-            eyebrow="Industries"
-            title="Sectors we serve"
-            description="Deep domain expertise across healthcare, education, finance, and more."
-            className="mb-10"
-          />
-          <div className="flex flex-wrap gap-3">
-            {industries.map((industry) => (
+          <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
+            <SectionHeader
+              eyebrow="Industries"
+              title="Sectors we serve"
+              description="Deep domain expertise across healthcare, education, finance, and more."
+            />
+            <Button href="/industries" variant="ghost" icon>
+              All Industries
+            </Button>
+          </div>
+
+          <div className="mt-10 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
+            {industries.slice(0, 6).map((industry, i) => (
+              <motion.div
+                key={industry.slug}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ delay: (i % 3) * 0.07, duration: 0.5 }}
+              >
+                <Link
+                  to={`/industries#${industry.slug}`}
+                  className="group relative flex aspect-[4/3] items-end overflow-hidden rounded-[1.25rem] border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:border-brand-500/35 sm:aspect-[3/2]"
+                >
+                  <img
+                    src={industryImage(industry.slug)}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-[900ms] ease-out group-hover:scale-[1.06]"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/55 to-slate-950/10" />
+                  <div className="relative w-full p-4 sm:p-5">
+                    <h3 className="font-display text-base font-semibold text-white transition-colors group-hover:text-brand-200 sm:text-lg">
+                      {industry.name}
+                    </h3>
+                    <div className="hidden sm:block">
+                      <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-400">
+                        {industry.description}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="mt-8 flex flex-wrap gap-2.5">
+            {industries.slice(6).map((industry) => (
               <Link
                 key={industry.slug}
                 to={`/industries#${industry.slug}`}
@@ -552,18 +596,16 @@ export function HomePage() {
           </div>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {featuredPortfolio.map((project) => {
-              const image =
-                project.logo ??
-                project.image ??
-                siteConfig.media.rebrandPoster
+              const visual = projectVisual(project)
               return (
                 <Card
                   key={project.slug}
                   title={project.name}
                   description={project.description}
                   href={`/portfolio#${project.slug}`}
-                  tag={project.category}
-                  image={image}
+                  tag={portfolioCategories[project.category] || project.category}
+                  image={visual.src}
+                  imageFit={visual.fit}
                 />
               )
             })}

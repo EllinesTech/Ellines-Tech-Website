@@ -38,6 +38,7 @@ import {
   type AuthUser,
 } from '@/lib/auth'
 import { leadStatusOptions } from '@/data/downloads'
+import { useLockViewportScroll } from '@/hooks/useLockViewportScroll'
 import { cn } from '@/lib/utils'
 
 const staffNav = [
@@ -137,6 +138,8 @@ export function StaffLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const user = loadAuthUser()
 
+  useLockViewportScroll(true)
+
   const activeLabel = useMemo(() => {
     const hit = staffNav.find((n) =>
       n.end ? location.pathname === n.to : location.pathname.startsWith(n.to),
@@ -144,26 +147,32 @@ export function StaffLayout() {
     return hit?.label || 'Overview'
   }, [location.pathname])
 
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [location.pathname])
+
   return (
     <RequireStaff>
-      <div className="flex min-h-screen bg-[#050b14] font-ui text-slate-100">
+      <div className="fixed inset-0 z-0 flex overflow-hidden bg-[#050b14] font-ui text-slate-100">
         <aside
           className={cn(
-            'fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto border-r border-white/10 bg-[#071018] px-3 py-4 transition lg:static lg:translate-x-0',
-            mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+            'fixed inset-y-0 left-0 z-40 flex h-full w-64 shrink-0 flex-col overflow-hidden border-r border-white/10 bg-[#071018] transition-transform duration-200 ease-out lg:static lg:translate-x-0',
+            mobileOpen ? 'translate-x-0 shadow-2xl shadow-black/50' : '-translate-x-full lg:translate-x-0',
           )}
         >
-          <div className="mb-5 px-2">
-            <Logo variant="nav" link={false} />
-            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-400">
-              Staff workspace
-            </p>
-            <p className="mt-2 truncate text-xs text-slate-400">
-              {user?.name}
-              {user?.jobTitle ? ` · ${user.jobTitle}` : ''}
-            </p>
+          <div className="shrink-0 px-3 pb-2 pt-4">
+            <div className="px-2">
+              <Logo variant="nav" link={false} />
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-400">
+                Staff workspace
+              </p>
+              <p className="mt-2 truncate text-xs text-slate-400">
+                {user?.name}
+                {user?.jobTitle ? ` · ${user.jobTitle}` : ''}
+              </p>
+            </div>
           </div>
-          <div className="space-y-0.5">
+          <nav className="min-h-0 flex-1 space-y-0.5 overflow-y-auto overscroll-contain px-3 py-2">
             {staffNav.map((item) => {
               const Icon = item.icon
               return (
@@ -186,7 +195,7 @@ export function StaffLayout() {
                 </NavLink>
               )
             })}
-          </div>
+          </nav>
         </aside>
 
         {mobileOpen && (
@@ -198,8 +207,8 @@ export function StaffLayout() {
           />
         )}
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-white/10 bg-[#071018]/90 px-4 py-3 backdrop-blur">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <header className="z-20 flex shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#071018]/90 px-4 py-3 backdrop-blur">
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -232,7 +241,7 @@ export function StaffLayout() {
               </button>
             </div>
           </header>
-          <main className="flex-1 overflow-auto p-4 sm:p-6">
+          <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">
             <Outlet />
           </main>
         </div>

@@ -107,9 +107,14 @@ export const siteConfig = {
       aiVisual: '/media/scenes/ai.png',
       workspace: '/media/scenes/workspace.png',
       contact: '/media/scenes/growth.png',
-      /** Industries hero — distinct from Contact growth scene */
-      growth: '/media/scenes/about.png',
+      /**
+       * Industries + Knowledge Hub heroes use photography rather than the branded renders:
+       * `about.png` carries burnt-in headline text and ghosts behind hero copy.
+       */
+      industriesHero: '/media/posters/packages/consult_digital_transform.jpg',
+      resourcesHero: '/media/posters/packages/consult_tech_roadmap.jpg',
       portfolio: '/media/scenes/strategy.png',
+      pricingHero: '/media/scenes/ai.png',
       faq: '/media/scenes/workspace.png',
       solutionsHero: '/media/scenes/solutions.png',
     },

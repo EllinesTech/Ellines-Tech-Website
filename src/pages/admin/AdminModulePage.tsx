@@ -254,12 +254,16 @@ function Panel({
   children?: ReactNode
 }) {
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="font-display text-2xl font-bold text-white">{title}</h2>
-        <p className="mt-1 text-sm text-slate-400">{description}</p>
+    <div className="space-y-5">
+      <div className="max-w-3xl">
+        <h2 className="font-display text-xl font-semibold tracking-tight text-white sm:text-2xl">
+          {title}
+        </h2>
+        <p className="mt-1.5 text-sm leading-relaxed text-slate-400">{description}</p>
       </div>
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">{children}</div>
+      <div className="rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.02] p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+        {children}
+      </div>
     </div>
   )
 }

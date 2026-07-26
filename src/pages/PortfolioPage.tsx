@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
+import { MediaCard } from '@/components/ui/MediaCard'
 import { portfolioCategories } from '@/data/portfolio'
+import { projectVisual } from '@/data/imagery'
 import { siteConfig } from '@/data/site'
 import { loadPublishedPortfolio, type CatalogProject } from '@/lib/portfolioCatalog'
 import { cn } from '@/lib/utils'
@@ -80,9 +82,16 @@ export function PortfolioPage() {
 
       <section className="section-padding">
         <div className="section-container">
+          <h2 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            Selected work
+          </h2>
+          <p className="mt-3 max-w-2xl text-slate-400">
+            Filter by discipline — every project below shipped to production and is still running.
+          </p>
+
           {categories.length > 0 && (
             <nav
-              className="mb-12 flex flex-wrap gap-x-1 gap-y-1 border-b border-white/10"
+              className="mb-12 mt-8 flex flex-wrap gap-x-1 gap-y-1 border-b border-white/10"
               aria-label="Filter by category"
             >
               {['All', ...categories].map((cat) => {
@@ -127,82 +136,93 @@ export function PortfolioPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="grid gap-x-12 gap-y-14 lg:grid-cols-2"
+            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
           >
             {visible.map((project, i) => {
-              const mark = project.logo ?? project.image
+              const visual = projectVisual(project)
+              const showMarkChip = visual.fit === 'cover' && Boolean(project.logo)
               return (
-                <article
-                  key={project.slug}
-                  id={project.slug}
-                  className="scroll-mt-28 border-t border-white/10 pt-7"
-                >
-                  <div className="flex items-start gap-4">
-                    {mark ? (
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-slate-900 via-surface to-slate-950 p-2">
-                        <img
-                          src={mark}
-                          alt=""
-                          className="max-h-full w-auto max-w-full object-contain"
-                          loading="lazy"
-                        />
-                      </div>
-                    ) : (
-                      <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-white/8 font-mono text-xs text-slate-600">
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-400">
-                        {portfolioCategories[project.category] || project.category}
-                        {project.client && (
-                          <span className="ml-2 font-normal normal-case tracking-normal text-slate-500">
-                            {project.client}
-                          </span>
-                        )}
-                      </p>
-                      <h2 className="mt-2 font-display text-xl font-bold tracking-tight text-white sm:text-2xl">
-                        {project.name}
-                      </h2>
-                    </div>
-                  </div>
-
-                  <p className="mt-5 leading-relaxed text-slate-400">{project.description}</p>
-
-                  {project.results && project.results.length > 0 && (
-                    <ul className="mt-6 space-y-3">
-                      {project.results.map((result) => (
-                        <li
-                          key={result}
-                          className="border-l border-brand-400/30 pl-4 text-sm font-medium leading-snug text-slate-200"
-                        >
-                          {result}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {project.technologies?.length > 0 && (
-                    <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[11px] uppercase tracking-[0.1em] text-slate-500">
-                      {project.technologies.map((tech, index) => (
-                        <span key={tech} className="inline-flex items-center gap-3">
-                          {tech}
-                          {index < project.technologies.length - 1 && (
-                            <span className="text-slate-700" aria-hidden>
-                              /
-                            </span>
-                          )}
+                <div key={project.slug} id={project.slug} className="scroll-mt-28">
+                  <MediaCard
+                    title={project.name}
+                    eyebrow={portfolioCategories[project.category] || project.category}
+                    description={project.description}
+                    image={visual.src}
+                    imageFit={visual.fit}
+                    index={i % 3}
+                    badge={
+                      showMarkChip ? (
+                        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-950/70 p-1.5 ring-1 ring-white/15 backdrop-blur-md">
+                          <img
+                            src={project.logo}
+                            alt=""
+                            className="max-h-full w-auto max-w-full object-contain"
+                            loading="lazy"
+                          />
                         </span>
-                      ))}
-                    </div>
-                  )}
-                </article>
+                      ) : (
+                        <span className="rounded-lg bg-slate-950/65 px-2.5 py-1 font-mono text-[11px] tracking-[0.14em] text-brand-200 ring-1 ring-white/15 backdrop-blur-md">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                      )
+                    }
+                    overline={
+                      project.client ? (
+                        <span className="rounded-lg bg-slate-950/65 px-2.5 py-1 text-[11px] font-medium text-slate-200 ring-1 ring-white/10 backdrop-blur-md">
+                          {project.client}
+                        </span>
+                      ) : undefined
+                    }
+                  >
+                    {project.results && project.results.length > 0 && (
+                      <ul className="mt-5 space-y-2.5 border-t border-white/8 pt-5">
+                        {project.results.map((result) => (
+                          <li
+                            key={result}
+                            className="border-l border-brand-400/30 pl-3.5 text-sm font-medium leading-snug text-slate-200"
+                          >
+                            {result}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {project.technologies?.length > 0 && (
+                      <div className="mt-5 flex flex-wrap items-center gap-x-2.5 gap-y-2 font-mono text-[10px] uppercase tracking-[0.1em] text-slate-500">
+                        {project.technologies.map((tech, index) => (
+                          <span key={tech} className="inline-flex items-center gap-2.5">
+                            {tech}
+                            {index < project.technologies.length - 1 && (
+                              <span className="text-slate-700" aria-hidden>
+                                /
+                              </span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </MediaCard>
+                </div>
               )
             })}
           </motion.div>
 
           {projects.length === 0 && (
-            <p className="text-sm text-slate-500">Loading projects…</p>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-hidden>
+              {[0, 1, 2, 3, 4, 5].map((n) => (
+                <div
+                  key={n}
+                  className="overflow-hidden rounded-[1.35rem] border border-white/10 bg-surface-elevated/40"
+                >
+                  <div className="aspect-[16/9] animate-pulse bg-white/[0.04]" />
+                  <div className="space-y-3 p-6">
+                    <div className="h-2.5 w-20 animate-pulse rounded-full bg-white/[0.06]" />
+                    <div className="h-4 w-2/3 animate-pulse rounded-full bg-white/[0.06]" />
+                    <div className="h-3 w-full animate-pulse rounded-full bg-white/[0.04]" />
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </section>

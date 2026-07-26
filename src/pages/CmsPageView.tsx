@@ -4,22 +4,24 @@ import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
 import { ArticleShell } from '@/components/layout/ArticleShell'
 import { fetchPage, type CmsPage } from '@/lib/cmsApi'
+import { isAdminAuthed } from '@/lib/engagementStore'
 import { siteConfig } from '@/data/site'
 
 export function CmsPageView() {
   const { slug } = useParams<{ slug: string }>()
   const [page, setPage] = useState<CmsPage | null>(null)
   const [error, setError] = useState('')
+  const canPreview = isAdminAuthed()
 
   useEffect(() => {
     if (!slug) return
-    fetchPage(slug)
+    fetchPage(slug, canPreview)
       .then((p) => {
-        if (p.status !== 'published') throw new Error('Page not published')
+        if (p.status !== 'published' && !canPreview) throw new Error('Page not published')
         setPage(p)
       })
       .catch((e) => setError(e instanceof Error ? e.message : 'Not found'))
-  }, [slug])
+  }, [slug, canPreview])
 
   if (error) {
     return (
@@ -66,7 +68,14 @@ export function CmsPageView() {
         title={page.seoTitle || page.title}
         description={page.seoDescription || page.excerpt}
         path={`/p/${page.slug}`}
+        noindex={page.status !== 'published'}
       />
+
+      {page.status !== 'published' && (
+        <div className="border-b border-amber-400/25 bg-amber-500/10 px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.18em] text-amber-200">
+          Draft preview — not visible to visitors
+        </div>
+      )}
 
       <ArticleShell
         eyebrow={siteConfig.name}

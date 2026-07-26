@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
-import { ArrowUpRight, Layers, Building2, Cpu, CloudCog } from 'lucide-react'
+import { Layers, Building2, Cpu, CloudCog } from 'lucide-react'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
+import { MediaBadge, MediaCard } from '@/components/ui/MediaCard'
+import { ProcessSection } from '@/components/home/ProcessSection'
 import { siteConfig } from '@/data/site'
 import { useSiteCopy } from '@/hooks/useSiteCopy'
 
@@ -19,7 +20,7 @@ const solutionAreas = [
     title: 'Healthcare Technology',
     description: 'Hospital management, clinical AI, pharmacy, lab, and home care platforms.',
     href: '/products#healthcare',
-    image: siteConfig.media.scenes.aboutTeam,
+    image: '/media/posters/packages/shop_ai_automation.jpg',
   },
   {
     icon: Layers,
@@ -90,47 +91,26 @@ export function SolutionsPage() {
         <div className="section-container">
           <div className="grid gap-6 sm:grid-cols-2">
             {solutionAreas.map((area, i) => (
-              <motion.div
+              <MediaCard
                 key={area.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.07, duration: 0.5 }}
-              >
-                <Link
-                  to={area.href}
-                  className="group relative flex h-full flex-col overflow-hidden rounded-[1.35rem] border border-white/10 bg-surface-elevated/30 transition-colors hover:border-brand-500/30"
-                >
-                  <div className="relative aspect-[16/9] overflow-hidden">
-                    <img
-                      src={area.image}
-                      alt=""
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
-                    <div className="absolute bottom-4 left-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-500/25 text-brand-200 ring-1 ring-brand-400/35 backdrop-blur-md">
-                      <area.icon className="h-5 w-5" />
-                    </div>
-                  </div>
-                  <div className="flex flex-1 flex-col p-6">
-                    <h2 className="font-display text-lg font-semibold text-white transition-colors group-hover:text-brand-300">
-                      {area.title}
-                    </h2>
-                    <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-400">
-                      {area.description}
-                    </p>
-                    <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-300">
-                      Explore
-                      <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                    </span>
-                  </div>
-                </Link>
-              </motion.div>
+                title={area.title}
+                description={area.description}
+                image={area.image}
+                href={area.href}
+                index={i % 2}
+                cta="Explore"
+                badge={
+                  <MediaBadge>
+                    <area.icon className="h-5 w-5" />
+                  </MediaBadge>
+                }
+              />
             ))}
           </div>
         </div>
       </section>
+
+      <ProcessSection ctaHref="/contact#quote" />
 
       <section className="section-padding border-t border-white/5">
         <div className="section-container">

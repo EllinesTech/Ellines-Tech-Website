@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
+import { MediaCard } from '@/components/ui/MediaCard'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { clientSectors } from '@/data/clients'
 import { siteConfig } from '@/data/site'
@@ -107,20 +108,21 @@ export function ClientsPage() {
             align="center"
             className="mb-12"
           />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {clientSectors.map((sector, i) => (
-              <motion.div
+              <MediaCard
                 key={sector.name}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                className="rounded-2xl border border-white/10 bg-white/[0.02] p-6"
-              >
-                <p className="font-display text-3xl font-bold text-brand-300">{sector.count}</p>
-                <h3 className="mt-2 font-display text-lg font-semibold text-white">{sector.name}</h3>
-                <p className="mt-2 text-sm text-slate-400">{sector.description}</p>
-              </motion.div>
+                title={sector.name}
+                description={sector.description}
+                image={sector.image}
+                aspect="photo"
+                index={i % 3}
+                badge={
+                  <span className="rounded-xl bg-slate-950/70 px-3 py-1.5 font-display text-lg font-bold tabular-nums text-brand-200 ring-1 ring-brand-400/25 backdrop-blur-md">
+                    {sector.count}
+                  </span>
+                }
+              />
             ))}
           </div>
           <div className="mt-12 text-center">

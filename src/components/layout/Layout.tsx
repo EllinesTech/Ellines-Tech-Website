@@ -6,6 +6,7 @@ import { AnnouncementBar } from '@/components/engagement/AnnouncementBar'
 import { VisitTracker } from '@/components/VisitTracker'
 import { HashScroll } from '@/components/HashScroll'
 import { ConsentBanner } from '@/components/ConsentBanner'
+import { CmsRouteContent } from '@/components/CmsRouteContent'
 
 export function Layout() {
   return (
@@ -16,7 +17,9 @@ export function Layout() {
       <AnnouncementBar />
       <Header />
       <main className="relative flex-1 pt-16 lg:pt-[4.25rem]">
-        <PageTransition />
+        <CmsRouteContent>
+          <PageTransition />
+        </CmsRouteContent>
       </main>
       <Footer />
       <ChatWidget />

@@ -53,6 +53,10 @@ async function cmsFetch(params: string, init?: RequestInit) {
 export type CmsPage = {
   id: string
   slug: string
+  /** Site route this record targets (e.g. `/about`). Empty for custom `/p/:slug` pages. */
+  path?: string
+  /** How route-backed content renders: below the built-in page, or instead of it. */
+  mode?: 'append' | 'replace'
   title: string
   excerpt: string
   body: string
@@ -81,17 +85,44 @@ export async function fetchPages(publishedOnly = false): Promise<CmsPage[]> {
   return data.pages || []
 }
 
-export async function fetchPage(slug: string): Promise<CmsPage> {
-  const data = await cmsFetch(`resource=pages&slug=${encodeURIComponent(slug)}`)
+/**
+ * `preview` sends the elevated credentials so admins/staff can open drafts.
+ * Public visitors keep getting 404 for anything unpublished.
+ */
+export async function fetchPage(slug: string, preview = false): Promise<CmsPage> {
+  const data = await cmsFetch(
+    `resource=pages&slug=${encodeURIComponent(slug)}`,
+    preview ? { headers: elevatedHeaders() } : undefined,
+  )
   return data.page
 }
 
-export async function savePage(page: Partial<CmsPage>) {
+export async function savePage(page: Partial<CmsPage>): Promise<{ page: CmsPage }> {
   return cmsFetch('resource=pages', {
     method: 'POST',
     headers: adminHeaders(true),
     body: JSON.stringify({ action: 'save_page', page }),
   })
+}
+
+/**
+ * Opens a page for editing, creating a draft record when the slug/route has none yet.
+ * This is what makes "edit a page that does not exist" work from the admin UI.
+ */
+export async function ensurePage(input: {
+  path?: string
+  slug?: string
+  title?: string
+  excerpt?: string
+  body?: string
+  mode?: CmsPage['mode']
+}): Promise<{ page: CmsPage; created: boolean }> {
+  const data = await cmsFetch('resource=pages', {
+    method: 'POST',
+    headers: adminHeaders(true),
+    body: JSON.stringify({ action: 'ensure_page', ...input }),
+  })
+  return { page: data.page as CmsPage, created: Boolean(data.created) }
 }
 
 export async function deletePage(id: string, slug?: string) {

@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "preview:full": "wrangler pages dev dist --port 5174 --ip 0.0.0.0 --show-interactive-dev-session=false",
     "lint": "eslint .",
+    "check:media": "node scripts/check-media-refs.mjs",
     "generate:downloads": "node scripts/generate-downloads.mjs"
   },
   "dependencies": {

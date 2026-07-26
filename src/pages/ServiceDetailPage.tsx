@@ -68,8 +68,13 @@ export function ServiceDetailPage() {
         path={`/services/${service.slug}`}
       />
 
+      {/* Hero media slot — the service poster today, founder walkthrough footage later. */}
       <section className="relative overflow-hidden border-b border-white/5">
-        <img src={scene} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <img
+          src={scene}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-center opacity-60"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/85 to-slate-950/55" />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/40 to-transparent" />

@@ -4,6 +4,7 @@ import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { productCategories, type ProductCategory } from '@/data/products'
+import { productVisual } from '@/data/imagery'
 import { siteConfig } from '@/data/site'
 import { loadPublishedProducts, type CatalogProduct } from '@/lib/productsCatalog'
 
@@ -100,17 +101,20 @@ export function ProductsPage() {
                     <p className="mt-2 max-w-2xl text-slate-400">{cat.description}</p>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {categoryProducts.map((product) => (
-                      <Card
-                        key={product.slug}
-                        title={product.name}
-                        description={product.tagline}
-                        href={`/products/${product.slug}`}
-                        tag={product.highlights?.[0]}
-                        image={product.image}
-                        imageFit={product.imageFit}
-                      />
-                    ))}
+                    {categoryProducts.map((product) => {
+                      const visual = productVisual(product)
+                      return (
+                        <Card
+                          key={product.slug}
+                          title={product.name}
+                          description={product.tagline}
+                          href={`/products/${product.slug}`}
+                          tag={product.highlights?.[0]}
+                          image={visual.src}
+                          imageFit={visual.fit}
+                        />
+                      )
+                    })}
                   </div>
                 </div>
               )

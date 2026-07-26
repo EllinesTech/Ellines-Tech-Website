@@ -64,25 +64,30 @@ export const clientSectors = [
     name: 'Healthcare Providers',
     count: '10+',
     description: 'Hospitals and clinics using MedFlow and AfyaVox',
+    image: '/media/posters/packages/shop_ai_automation.jpg',
   },
   {
     name: 'Educational Institutions',
     count: '15+',
     description: 'Schools and universities with management systems',
+    image: '/media/posters/packages/shop_starter_web.jpg',
   },
   {
     name: 'Financial Organizations',
     count: '8+',
     description: 'SACCOs and fintech platforms',
+    image: '/media/posters/packages/shop_cyber_audit.jpg',
   },
   {
     name: 'Businesses & SMEs',
     count: '25+',
     description: 'ERP, POS, brand, and custom software clients',
+    image: '/media/posters/packages/shop_business_web.jpg',
   },
   {
     name: 'NGOs & Government',
     count: '5+',
     description: 'Program management and citizen services',
+    image: '/media/posters/packages/consult_digital_transform.jpg',
   },
 ] as const

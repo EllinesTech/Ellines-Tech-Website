@@ -5,6 +5,7 @@ import { CheckCircle2, ArrowLeft } from 'lucide-react'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
 import { productCategories } from '@/data/products'
+import { productVisual } from '@/data/imagery'
 import { siteConfig } from '@/data/site'
 import { loadProductBySlug, type CatalogProduct } from '@/lib/productsCatalog'
 import { cn } from '@/lib/utils'
@@ -43,6 +44,7 @@ export function ProductDetailPage() {
   }
 
   const category = productCategories[product.category]
+  const visual = productVisual(product)
 
   return (
     <>
@@ -94,27 +96,40 @@ export function ProductDetailPage() {
               </div>
             </motion.div>
 
-            {product.image && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className="relative"
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="relative"
+            >
+              <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-brand-500/20 via-transparent to-sky-700/15 blur-2xl" />
+              <div
+                className={cn(
+                  'relative overflow-hidden rounded-[1.75rem] border border-white/10 shadow-2xl shadow-black/40',
+                  visual.fit === 'contain' &&
+                    'flex items-center justify-center bg-gradient-to-br from-slate-900 via-surface to-slate-950 p-10',
+                )}
               >
-                <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-brand-500/20 via-transparent to-sky-700/15 blur-2xl" />
-                <div className="relative flex items-center justify-center overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-slate-900 via-surface to-slate-950 p-10 shadow-2xl shadow-black/40">
+                {visual.fit === 'contain' ? (
                   <img
-                    src={product.image}
+                    src={visual.src}
                     alt={product.name}
-                    className={cn(
-                      'max-h-64 w-auto',
-                      product.imageFit === 'contain' ? 'object-contain' : 'object-cover',
-                    )}
+                    className="max-h-64 w-auto object-contain"
                     loading="lazy"
                   />
-                </div>
-              </motion.div>
-            )}
+                ) : (
+                  <>
+                    <img
+                      src={visual.src}
+                      alt={product.name}
+                      className="aspect-[4/3] h-full w-full object-cover object-center"
+                      loading="lazy"
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/55 via-transparent to-transparent" />
+                  </>
+                )}
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>

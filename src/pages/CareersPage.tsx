@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Field, fieldClass } from '@/components/ui/Field'
 import { PrivacyConsentField } from '@/components/PrivacyConsentField'
 import { fetchJobs, submitJobApplication, type JobPosting } from '@/lib/cmsApi'
+import { locationLine } from '@/data/locations'
 import { siteConfig } from '@/data/site'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +17,24 @@ const benefits = [
   { icon: GraduationCap, title: 'Learning & Growth', description: 'Training budget, conferences, and certification support.' },
   { icon: Users, title: 'Great Culture', description: 'Collaborative team, flexible hours, and modern workspace.' },
   { icon: Briefcase, title: 'Impactful Work', description: 'Build products that transform African businesses.' },
+]
+
+const culture = [
+  {
+    image: '/media/posters/packages/shop_custom_software.jpg',
+    caption: 'Pairing, not silos',
+    detail: 'Engineers review each other’s work and ship in tight loops.',
+  },
+  {
+    image: '/media/posters/packages/consult_it_fullday.jpg',
+    caption: 'Close to the client',
+    detail: 'You hear the problem first-hand instead of through a spec.',
+  },
+  {
+    image: '/media/scenes/workspace.png',
+    caption: 'Modern stack',
+    detail: 'React, Python, Flutter, and cloud tooling we actually maintain.',
+  },
 ]
 
 const MAX_RESUME_BYTES = 900_000
@@ -464,6 +483,52 @@ function CareersContent() {
                 <h3 className="mt-4 font-display font-semibold text-white">{item.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.description}</p>
               </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Life here — the work, not stock-photo abstractions */}
+      <section className="section-padding border-b border-white/5">
+        <div className="section-container">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-400">
+              Life at Ellines Tech
+            </p>
+            <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+              Small team, real ownership
+            </h2>
+            <p className="mt-4 leading-relaxed text-slate-400">
+              You will not be a ticket-taker here. Engineers and designers sit close to the
+              clients, scope their own work, and see systems all the way from brief to production
+              — across {locationLine} and remote.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-3 sm:gap-5">
+            {culture.map((item, i) => (
+              <motion.figure
+                key={item.caption}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ delay: i * 0.07, duration: 0.5 }}
+                className="group relative overflow-hidden rounded-[1.35rem] border border-white/10"
+              >
+                <div className="aspect-[4/3] sm:aspect-[3/4]">
+                  <img
+                    src={item.image}
+                    alt=""
+                    className="h-full w-full object-cover object-center transition-transform duration-[900ms] ease-out group-hover:scale-[1.05]"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/35 to-transparent" />
+                <figcaption className="absolute inset-x-0 bottom-0 p-5">
+                  <p className="font-display text-base font-semibold text-white">{item.caption}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-400">{item.detail}</p>
+                </figcaption>
+              </motion.figure>
             ))}
           </div>
         </div>

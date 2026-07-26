@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   Activity,
@@ -21,6 +21,7 @@ import {
   Layers,
   LineChart,
   Mail,
+  Menu,
   MessageCircle,
   MessageSquare,
   Package,
@@ -42,6 +43,7 @@ import {
   LogOut,
   ArrowLeft,
   Download,
+  X,
 } from 'lucide-react'
 import { adminNavGroups } from '@/admin/nav'
 import { Button } from '@/components/ui/Button'
@@ -54,6 +56,7 @@ import {
   setAdminApiKey,
   clearAdminApiKey,
 } from '@/lib/engagementStore'
+import { useLockViewportScroll } from '@/hooks/useLockViewportScroll'
 import { cn } from '@/lib/utils'
 
 const iconMap: Record<string, React.ElementType> = {
@@ -163,6 +166,9 @@ export function AdminLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const mainRef = useRef<HTMLElement>(null)
+
+  useLockViewportScroll(true)
 
   const activeLabel = useMemo(() => {
     for (const g of adminNavGroups) {
@@ -173,96 +179,152 @@ export function AdminLayout() {
     return 'Dashboard'
   }, [location.pathname])
 
+  useEffect(() => {
+    setMobileOpen(false)
+    mainRef.current?.scrollTo({ top: 0 })
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (!mobileOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [mobileOpen])
+
   return (
     <RequireAdmin>
-      <div className="flex min-h-screen bg-[#050b14] font-ui text-slate-100">
+      {/* fixed inset-0: shell is viewport-locked even if #root/body lack height */}
+      <div className="fixed inset-0 z-0 flex overflow-hidden bg-[#050b14] font-ui text-slate-100">
         <aside
           className={cn(
-            'fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto border-r border-white/10 bg-[#071018] px-3 py-4 transition lg:static lg:translate-x-0',
-            mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+            'fixed inset-y-0 left-0 z-40 flex h-full min-h-0 w-[17.5rem] shrink-0 flex-col overflow-hidden border-r border-white/[0.08] bg-[#071018] transition-transform duration-200 ease-out lg:static lg:translate-x-0',
+            mobileOpen ? 'translate-x-0 shadow-2xl shadow-black/50' : '-translate-x-full lg:translate-x-0',
           )}
         >
-          <div className="mb-5 px-2">
-            <Logo variant="nav" link={false} />
-            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-400">
-              Admin Panel
-            </p>
-            <span className="mt-3 inline-flex rounded-full bg-brand-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-300">
-              Admin
+          <div className="shrink-0 border-b border-white/[0.08] px-4 pb-4 pt-5">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <Logo variant="nav" link={false} />
+                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-400">
+                  Admin Panel
+                </p>
+              </div>
+              <button
+                type="button"
+                className="rounded-lg border border-white/10 p-1.5 text-slate-400 hover:bg-white/5 hover:text-white lg:hidden"
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close menu"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <span className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-brand-500/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-300 ring-1 ring-inset ring-brand-400/20">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-400" aria-hidden />
+              Super Admin
             </span>
           </div>
 
-          <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Manage
-          </p>
-          {adminNavGroups.map((group) => (
-            <div key={group.title} className="mb-5">
-              {group.title !== 'Manage' && (
-                <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+          <nav
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2.5 py-3 [scrollbar-gutter:stable]"
+            aria-label="Admin navigation"
+          >
+            {adminNavGroups.map((group) => (
+              <div key={group.title} className="mb-4 last:mb-1">
+                <p className="mb-1.5 px-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                   {group.title}
                 </p>
-              )}
-              <div className="space-y-0.5">
-                {group.items.map((item) => {
-                  const Icon = iconMap[item.icon] ?? Settings
-                  return (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      end={item.to === '/admin'}
-                      onClick={() => setMobileOpen(false)}
-                      className={({ isActive }) =>
-                        cn(
-                          'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition',
-                          isActive
-                            ? 'bg-brand-500/15 text-brand-200'
-                            : 'text-slate-400 hover:bg-white/5 hover:text-white',
-                        )
-                      }
-                    >
-                      <Icon className="h-4 w-4 shrink-0 opacity-80" />
-                      <span className="truncate">{item.label}</span>
-                    </NavLink>
-                  )
-                })}
+                <div className="space-y-0.5">
+                  {group.items.map((item) => {
+                    const Icon = iconMap[item.icon] ?? Settings
+                    return (
+                      <NavLink
+                        key={item.to}
+                        to={item.to}
+                        end={item.to === '/admin'}
+                        onClick={() => setMobileOpen(false)}
+                        className={({ isActive }) =>
+                          cn(
+                            'group relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors',
+                            isActive
+                              ? 'bg-brand-500/15 text-brand-100'
+                              : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-100',
+                          )
+                        }
+                      >
+                        {({ isActive }) => (
+                          <>
+                            {isActive && (
+                              <span
+                                className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-brand-400"
+                                aria-hidden
+                              />
+                            )}
+                            <Icon
+                              className={cn(
+                                'h-4 w-4 shrink-0 transition-opacity',
+                                isActive ? 'opacity-100 text-brand-300' : 'opacity-70 group-hover:opacity-100',
+                              )}
+                            />
+                            <span className="truncate">{item.label}</span>
+                          </>
+                        )}
+                      </NavLink>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </nav>
+
+          <div className="shrink-0 border-t border-white/[0.08] px-4 py-3">
+            <p className="text-[10px] font-medium tracking-wide text-slate-500">
+              Ellines Tech · Control Center
+            </p>
+          </div>
         </aside>
 
         {mobileOpen && (
           <button
             type="button"
-            className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+            className="fixed inset-0 z-30 bg-black/60 backdrop-blur-[2px] lg:hidden"
             onClick={() => setMobileOpen(false)}
             aria-label="Close menu"
           />
         )}
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-white/10 bg-[#071018]/90 px-4 py-3 backdrop-blur">
-            <div className="flex items-center gap-3">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <header className="z-20 flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.08] bg-[#071018]/95 px-4 py-3 backdrop-blur-md sm:px-5">
+            <div className="flex min-w-0 items-center gap-3">
               <button
                 type="button"
-                className="rounded-lg border border-white/10 px-2 py-1 text-xs lg:hidden"
+                className="inline-flex items-center justify-center rounded-lg border border-white/10 p-2 text-slate-300 hover:bg-white/5 hover:text-white lg:hidden"
                 onClick={() => setMobileOpen(true)}
+                aria-label="Open menu"
               >
-                Menu
+                <Menu className="h-4 w-4" />
               </button>
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Dashboard</p>
-                <h1 className="font-display text-lg font-semibold text-white">{activeLabel}</h1>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Dashboard
+                </p>
+                <h1 className="truncate font-display text-lg font-semibold tracking-tight text-white">
+                  {activeLabel}
+                </h1>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="hidden rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 sm:inline">
-                ⚡ Admin
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="hidden items-center gap-1.5 rounded-md bg-emerald-500/12 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 ring-1 ring-inset ring-emerald-400/20 sm:inline-flex">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" aria-hidden />
+                Admin
               </span>
               <Link
                 to="/"
-                className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-300 hover:bg-white/5"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:border-white/20 hover:bg-white/[0.04] hover:text-white"
               >
-                <ArrowLeft className="h-3.5 w-3.5" /> Site
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Site</span>
               </Link>
               <button
                 type="button"
@@ -271,14 +333,21 @@ export function AdminLayout() {
                   clearAdminApiKey()
                   navigate('/admin/login')
                 }}
-                className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-300 hover:bg-white/5"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:border-rose-400/30 hover:bg-rose-500/10 hover:text-rose-200"
               >
-                <LogOut className="h-3.5 w-3.5" /> Logout
+                <LogOut className="h-3.5 w-3.5" />
+                Logout
               </button>
             </div>
           </header>
-          <main className="flex-1 overflow-auto p-4 sm:p-6">
-            <Outlet />
+
+          <main
+            ref={mainRef}
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain scroll-smooth [scrollbar-gutter:stable]"
+          >
+            <div className="mx-auto w-full max-w-[1600px] p-4 sm:p-6 lg:p-7">
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>
