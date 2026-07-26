@@ -126,15 +126,114 @@ function normalize(text: string) {
   return text.toLowerCase().replace(/[^a-z0-9\s+/]/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
+/**
+ * Grounded answers for reasonable technical / commercial questions when no FAQ
+ * row matches and Workers AI is unavailable. Prefer this over a dead-end
+ * "no stored answer" line — Ellenia should still sound capable.
+ */
+export function capabilityFallback(input: string): {
+  answer: string
+  links?: { label: string; href: string }[]
+  wantsHuman: boolean
+} {
+  const q = normalize(input)
+  const payment =
+    /\b(m\s?pesa|mpesa|paystack|stripe|paypal|payment|payments|mobile money|paybill|till|checkout|gateway)\b/.test(
+      q,
+    )
+  const integrate = /\b(integrat|api|apis|webhook|webhooks|crm|erp|third party|connect)\b/.test(q)
+  const timeline =
+    /\b(mvp|timeline|how fast|how long|how soon|turnaround|delivery|ship|when can|start date)\b/.test(
+      q,
+    )
+  const pricing = /\b(price|pricing|cost|quote|budget|how much|kes|fee)\b/.test(q)
+  const custom =
+    /\b(custom|build|software|app|apps|website|booking|ecommerce|e commerce|platform|system|flutter|mobile|offline|react|node)\b/.test(
+      q,
+    )
+
+  if (payment || (integrate && /\b(pay|money|card|checkout)\b/.test(q))) {
+    return {
+      answer:
+        'Yes — we integrate M-Pesa (STK Push, Paybill, Till) and Paystack (card, mobile money, deposits) into websites, apps, stores, and invoicing. Scope usually covers checkout UX, webhooks, reconciliation, and receipts; we can run one gateway or both. Timeline and cost depend on your stack and edge cases (refunds, partials, multi-currency). Send a brief via /request and we’ll outline a concrete integration plan.',
+      links: [
+        { label: 'Request a quote', href: '/request' },
+        { label: 'Pricing', href: '/pricing' },
+      ],
+      wantsHuman: false,
+    }
+  }
+
+  if (integrate) {
+    return {
+      answer:
+        'Integrations are a core part of our delivery — payment gateways, CRMs, ERPs, SMS/WhatsApp, hospital and SACCO systems, and custom APIs. We map auth, data flows, webhooks, and go-live cutover with you. Tell me which systems you need linked, or open /request for a scoped plan.',
+      links: [
+        { label: 'Services', href: '/services' },
+        { label: 'Request a quote', href: '/request' },
+      ],
+      wantsHuman: false,
+    }
+  }
+
+  if (timeline) {
+    return {
+      answer:
+        'Timelines depend on scope. Focused websites often ship in weeks; a Mobile App MVP or payment-ready storefront is typically a few weeks to a couple of months once requirements are clear; larger multi-module systems are phased. We always start with a written plan — deliverables, timeline, and investment. Share your target date on /request and we’ll say what’s realistic.',
+      links: [
+        { label: 'Request a quote', href: '/request' },
+        { label: 'Pricing packages', href: '/pricing' },
+      ],
+      wantsHuman: false,
+    }
+  }
+
+  if (pricing) {
+    return {
+      answer:
+        'Pricing depends on scope — features, integrations, data migration, and timeline. Published package starting points are on /pricing; custom work is quoted after a short brief, usually within a day. Tell me what you’re building and I’ll outline the cost drivers, or use /request for a formal quote.',
+      links: [
+        { label: 'View pricing', href: '/pricing' },
+        { label: 'Request a quote', href: '/request' },
+      ],
+      wantsHuman: false,
+    }
+  }
+
+  if (custom) {
+    return {
+      answer:
+        'Ellines Tech builds custom software, websites, AI assistants, brand systems, and digital platforms for businesses across Kenya and Africa — including payments, APIs, and staged MVPs. Share the outcome you need (users, must-have features, timeline) and I’ll map a sensible approach, or send a brief via /request.',
+      links: [
+        { label: 'Services', href: '/services' },
+        { label: 'Request a quote', href: '/request' },
+      ],
+      wantsHuman: false,
+    }
+  }
+
+  return {
+    answer:
+      'I can help with Ellines Tech services, products, integrations, timelines, and pricing. Tell me a bit more about what you need — stack, users, or deadline — and I’ll give a concrete answer. You can also open /request for a quote, switch to Live Agent, or WhatsApp us; we’re online 24/7.',
+    links: [
+      { label: 'Services', href: '/services' },
+      { label: 'Request a quote', href: '/request' },
+      { label: 'Contact', href: '/contact' },
+    ],
+    wantsHuman: false,
+  }
+}
+
 export function answerQuestion(input: string, faqs: ChatFaq[] = loadFaqs()): {
   answer: string
   links?: { label: string; href: string }[]
   matched: boolean
+  score: number
   wantsHuman: boolean
 } {
   const q = normalize(input)
   const wantsHuman =
-    /\b(human|agent|person|whatsapp|call me|talk to|speak to|real person|support)\b/.test(q)
+    /\b(human|agent|person|whatsapp|call me|talk to|speak to|real person)\b/.test(q)
 
   let best: { score: number; faq: ChatFaq } | null = null
   for (const faq of faqs) {
@@ -158,14 +257,17 @@ export function answerQuestion(input: string, faqs: ChatFaq[] = loadFaqs()): {
       answer: best.faq.answer,
       links: best.faq.links,
       matched: true,
+      score: best.score,
       wantsHuman: wantsHuman || best.faq.id === 'human',
     }
   }
 
+  const capability = capabilityFallback(input)
   return {
-    answer:
-      "I don't have a stored answer for that yet — let me think it through, or tap “Live Agent” to reach a human on our team right away.",
+    answer: capability.answer,
+    links: capability.links,
     matched: false,
-    wantsHuman: true,
+    score: 0,
+    wantsHuman: wantsHuman || capability.wantsHuman,
   }
 }

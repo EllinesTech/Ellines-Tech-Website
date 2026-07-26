@@ -29,6 +29,7 @@ import {
   visitorContext,
 } from '../_shared/security'
 import { deliverResetCode, sendEmail } from '../_shared/notify'
+import { defaultElleniaFaqs, mergeElleniaFaqs } from '../_shared/elleniaFaqs'
 
 /**
  * Origin reflection and security headers are applied centrally in
@@ -302,32 +303,16 @@ function visitorLogView(entry, actor) {
 }
 
 function defaultChatFaqs() {
-  return [
-    {
-      id: 'welcome',
-      questions: ['hi', 'hello', 'hey'],
-      answer:
-        'Hello — I’m Ellenia, the Ellines Tech assistant. I can help with products, services, pricing, and technical questions, or connect you to a human agent or WhatsApp.',
-      links: [
-        { label: 'Services', href: '/services' },
-        { label: 'Pricing', href: '/pricing' },
-      ],
-    },
-    {
-      id: 'pricing',
-      questions: ['pricing', 'how much', 'cost', 'price'],
-      answer: 'Transparent package pricing is on our Pricing page. Custom projects are quoted after a short brief.',
-      links: [{ label: 'View pricing', href: '/pricing' }],
-    },
-  ]
+  return defaultElleniaFaqs()
 }
 
 async function loadChatFaqs(env) {
   const list = await getJson(env, 'cms:chat-faqs', null)
-  if (Array.isArray(list) && list.length) return list
-  const seed = defaultChatFaqs()
-  await putJson(env, 'cms:chat-faqs', seed)
-  return seed
+  const merged = mergeElleniaFaqs(Array.isArray(list) ? list : [])
+  if (!Array.isArray(list) || !list.length || merged.length !== list.length) {
+    await putJson(env, 'cms:chat-faqs', merged)
+  }
+  return merged
 }
 
 function defaultJobs() {

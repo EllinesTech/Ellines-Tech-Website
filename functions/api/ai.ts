@@ -4,6 +4,7 @@ import {
   rateLimitByIp,
   resolveActor,
 } from '../_shared/security'
+import { mergeElleniaFaqs } from '../_shared/elleniaFaqs'
 
 const cors = {
   'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
@@ -44,6 +45,16 @@ transformation for businesses across Kenya and Africa. Motto: "Your Idea. Our Co
 Parent: Ellines Group — Ellines Tech (technology), Ellines Haven (publishing), Ellines Rattan
 (furniture).
 
+CAPABILITIES (answer yes when asked — then explain scope drivers)
+- Payments: M-Pesa (STK Push, Paybill, Till) and Paystack (card, mobile money, deposits) are
+  routine integrations for websites, apps, e-commerce, and invoicing. Also Stripe/PayPal when needed.
+  Scope usually includes checkout UX, webhooks, reconciliation, receipts, refunds/partials as required.
+- Integrations: CRMs, ERPs, SMS/WhatsApp channels, hospital/SACCO systems, and custom REST/GraphQL APIs.
+- Delivery: focused websites in weeks; Mobile App MVP / payment-ready storefronts often weeks to a few
+  months; larger multi-module systems are phased. Always start with a written plan before build.
+- Pricing: package starting points on /pricing; custom work quoted after a short brief (usually ≤1 day).
+  Never invent a firm price — explain cost drivers and route to /request.
+
 LOCATIONS (both are real and equally important)
 - Head office: Square2 Street, Skt, Nyeri, Kenya.
 - Nairobi: client meetings, on-site delivery, and regional work.
@@ -62,6 +73,8 @@ const STYLE_RULES = `STYLE
 - Be specific and useful. Prefer concrete steps, numbers, and named routes over vague reassurance.
 - Answer complex questions properly: break down architecture, integration, cost drivers, and
   trade-offs when asked. Do not deflect a hard question to "talk to a human" if you can answer it.
+- Never say you lack a stored answer, or that you can only answer FAQs. Reason from CAPABILITIES
+  and LIVE SITE DATA instead.
 - Keep to roughly 120 words unless the question genuinely needs more.
 - Never invent prices, delivery dates, client names, or credentials. If a number is not in your
   context, explain what it depends on and offer the quote route.
@@ -108,7 +121,7 @@ function audienceBrief(actor) {
 
 /** Public catalogue + FAQ grounding, trimmed to keep the prompt affordable. */
 async function loadPublicContext(env) {
-  const [services, products, faqs, profile, settings, knowledge] = await Promise.all([
+  const [services, products, faqsRaw, profile, settings, knowledge] = await Promise.all([
     getJson(env, 'cms:services', []),
     getJson(env, 'cms:products', []),
     getJson(env, 'cms:chat-faqs', []),
@@ -116,6 +129,7 @@ async function loadPublicContext(env) {
     getJson(env, 'cms:settings', null),
     getJson(env, 'cms:knowledge', []),
   ])
+  const faqs = mergeElleniaFaqs(faqsRaw)
 
   const lines = []
   const publishedServices = (services || [])
@@ -246,13 +260,28 @@ function fallbackAnswer(question, actor, faqs, services, products) {
   if (actor) {
     return 'The AI model is not reachable right now, so I can only answer from stored data. Check /admin/analytics for live metrics, /admin/leads for the pipeline, and /admin/live-chat for the visitor queue. Retry in a moment for a full answer.'
   }
+
+  const payment =
+    /\b(m-?pesa|mpesa|paystack|stripe|paypal|payment|mobile money|paybill|till|checkout|gateway)\b/.test(
+      q,
+    )
+  const integrate = /\b(integrat|api|webhook|crm|erp|third[- ]party|connect)\b/.test(q)
+  if (payment || (integrate && /\b(pay|money|card|checkout)\b/.test(q))) {
+    return 'Yes — we regularly integrate M-Pesa (STK Push, Paybill, Till) and Paystack (card, mobile money, deposits) into websites, apps, e-commerce, and invoicing. Scope usually covers checkout UX, webhooks, reconciliation, and receipting. Timeline and cost depend on your stack and edge cases. Share a brief on /request and we’ll propose a clear integration plan.'
+  }
+  if (integrate) {
+    return 'Yes — integrations are core to how we ship: payment gateways, CRMs, ERPs, SMS/WhatsApp, hospital and SACCO systems, and custom APIs. Tell me which systems you need linked, or send a brief via /request.'
+  }
+  if (/\b(mvp|timeline|how fast|how long|how soon|turnaround|ship|delivery)\b/.test(q)) {
+    return 'Timelines depend on scope. Focused websites often ship in weeks; a Mobile App MVP or payment-ready storefront is typically a few weeks to a couple of months once requirements are clear; larger systems are phased. We start with a written plan on /request.'
+  }
   if (q.includes('price') || q.includes('cost') || q.includes('quote') || q.includes('budget')) {
     return 'Pricing depends on scope — features, integrations, data migration, and timeline. Published package pricing is on /pricing, and /request gets you a tailored quote, usually within a day.'
   }
   if (q.includes('where') || q.includes('location') || q.includes('office')) {
     return 'We work from two Kenyan locations: our head office at Square2 Street, Skt, Nyeri, and a Nairobi presence for client meetings and on-site delivery. We deliver remotely across Africa too.'
   }
-  return 'I can help with Ellines Tech services, products, pricing, timelines, and technical fit. Tell me a bit about your project, or switch to the Live Agent tab for a human engineer — we are online 24/7.'
+  return 'I can help with Ellines Tech services, products, integrations (including M-Pesa and Paystack), timelines, and pricing. Tell me a bit about your project, or switch to the Live Agent tab for a human engineer — we are online 24/7. /request is the fastest path to a scoped quote.'
 }
 
 export async function onRequestOptions() {
@@ -319,13 +348,14 @@ export async function onRequestPost(context) {
     }
   }
 
-  const [faqs, services, products] = env.ET_STORE
+  const [faqsRaw, services, products] = env.ET_STORE
     ? await Promise.all([
         getJson(env, 'cms:chat-faqs', []),
         getJson(env, 'cms:services', []),
         getJson(env, 'cms:products', []),
       ])
     : [[], [], []]
+  const faqs = mergeElleniaFaqs(faqsRaw)
 
   return json({
     answer: fallbackAnswer(question, actor, faqs, services, products),

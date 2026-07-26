@@ -111,6 +111,98 @@ export const defaultChatFaqs: ChatFaq[] = [
       'Security is built into how we design and ship. Read our Privacy Policy for how we handle data, or ask a human for a security discussion.',
     links: [{ label: 'Privacy', href: '/privacy' }],
   },
+  {
+    id: 'payments',
+    questions: [
+      'm-pesa',
+      'mpesa',
+      'm pesa',
+      'paystack',
+      'stripe',
+      'paypal',
+      'payment',
+      'payments',
+      'mobile money',
+      'paybill',
+      'till number',
+      'integrate m-pesa',
+      'integrate paystack',
+      'payment gateway',
+      'checkout',
+      'can you integrate m-pesa and paystack',
+    ],
+    answer:
+      'Yes — we regularly integrate M-Pesa (STK Push, Paybill, Till) and Paystack (card, mobile money, deposits) into websites, apps, e-commerce, and invoicing. Typical scope covers checkout UX, webhooks, reconciliation, and receipting. Whether you need one gateway or both, we design around your stack and compliance needs. Cost and timeline depend on existing systems and edge cases (refunds, partial payments, multi-currency). Share a short brief on /request and we’ll propose a clear integration plan.',
+    links: [
+      { label: 'Request a quote', href: '/request' },
+      { label: 'Pricing', href: '/pricing' },
+      { label: 'Contact', href: '/contact' },
+    ],
+  },
+  {
+    id: 'integrations',
+    questions: [
+      'integrate',
+      'integration',
+      'integrations',
+      'api',
+      'apis',
+      'webhook',
+      'webhooks',
+      'third party',
+      'crm',
+      'erp',
+      'sms gateway',
+      'connect to',
+    ],
+    answer:
+      'Yes — integrations are core to how we ship. We connect payment gateways, CRMs, ERPs, SMS/WhatsApp channels, hospital and SACCO systems, and custom APIs into websites, mobile apps, and back-office tools. We map auth, data flows, webhooks, error handling, and go-live cutover as part of delivery. Tell me which systems you need linked, or send a brief via /request.',
+    links: [
+      { label: 'Services', href: '/services' },
+      { label: 'Request a quote', href: '/request' },
+    ],
+  },
+  {
+    id: 'timeline',
+    questions: [
+      'mvp',
+      'timeline',
+      'how fast',
+      'how long',
+      'how soon',
+      'turnaround',
+      'delivery time',
+      'ship an mvp',
+      'when can you start',
+      'how fast can you ship',
+    ],
+    answer:
+      'Speed depends on scope. A focused website or landing build can move in weeks; a Mobile App MVP or payment-ready storefront is often a few weeks to a couple of months once requirements are clear; larger hospital, AI, or multi-module systems are phased. We start with a written plan — deliverables, timeline, and investment — before build. Share your target launch date on /request and we’ll say what’s realistic.',
+    links: [
+      { label: 'Request a quote', href: '/request' },
+      { label: 'Pricing packages', href: '/pricing' },
+    ],
+  },
+  {
+    id: 'custom-software',
+    questions: [
+      'custom software',
+      'custom app',
+      'build an app',
+      'build a system',
+      'booking system',
+      'custom booking',
+      'web app',
+      'mobile app',
+    ],
+    answer:
+      'We design and build custom software — web apps, mobile MVPs, booking systems, ERP/POS modules, and industry platforms (healthcare, finance, hospitality). Engagements usually run discovery → written proposal → staged delivery with demos. Package starting points are on /pricing; bespoke work is quoted after a short brief.',
+    links: [
+      { label: 'Services', href: '/services' },
+      { label: 'Pricing', href: '/pricing' },
+      { label: 'Request', href: '/request' },
+    ],
+  },
 ]
 
 export const chatQuickReplies = [

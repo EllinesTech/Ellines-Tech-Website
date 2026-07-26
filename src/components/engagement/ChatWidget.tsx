@@ -13,6 +13,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { siteConfig } from '@/data/site'
 import { answerQuestion, loadFaqs, saveFaqs } from '@/lib/engagementStore'
+import { defaultChatFaqs } from '@/data/chatKnowledge'
 import { useSiteFeatures } from '@/context/SiteFeaturesContext'
 import { useSiteProfile } from '@/context/SiteProfileContext'
 import {
@@ -95,21 +96,32 @@ export function ChatWidget() {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, open, session?.messages.length])
 
-  // Hydrate chat knowledge from CMS (falls back to localStorage / defaults)
+  // Hydrate chat knowledge from CMS, then fill any gaps from shipped defaults
+  // so newer capability FAQs (payments, integrations, timelines) land even when
+  // KV still holds an older shorter seed.
   useEffect(() => {
     let cancelled = false
     void fetchChatFaqs()
       .then((list) => {
-        if (cancelled || !Array.isArray(list) || !list.length) return
-        const mapped = list.map((f) => ({
-          id: f.id,
-          questions: f.questions,
-          answer: f.answer,
-          links: f.links,
-        }))
-        saveFaqs(mapped)
+        if (cancelled) return
+        const fromCms = Array.isArray(list)
+          ? list.map((f) => ({
+              id: f.id,
+              questions: f.questions,
+              answer: f.answer,
+              links: f.links,
+            }))
+          : []
+        const byId = new Map<string, (typeof defaultChatFaqs)[number]>()
+        for (const faq of defaultChatFaqs) byId.set(faq.id, faq)
+        for (const faq of fromCms) {
+          if (faq?.id) byId.set(faq.id, faq)
+        }
+        saveFaqs([...byId.values()])
       })
-      .catch(() => undefined)
+      .catch(() => {
+        if (!cancelled) saveFaqs(defaultChatFaqs)
+      })
     return () => {
       cancelled = true
     }
@@ -154,27 +166,23 @@ export function ChatWidget() {
     setMessages((prev) => [...prev, { id: uid(), role: 'user', text }])
     try {
       const local = answerQuestion(text, loadFaqs())
-      // Signed-in team members always get the model — their questions are
-      // operational and the canned public FAQ answers would be wrong for them.
-      const preferModel = actor.staff || !local.matched || text.split(' ').length > 6
+      // Always ask Workers AI so complex / novel questions get a real answer.
+      // FAQ and capabilityFallback stay as the offline (or empty-model) path.
       let answer = local.answer
       let links = local.links
-      if (preferModel) {
-        try {
-          const history = messages
-            .filter((m) => m.role === 'user' || m.role === 'assistant')
-            .slice(-6)
-            .map((m) => ({ role: m.role, text: m.text }))
-          const result = await askAi(text, history)
-          if (result.answer) {
-            answer = result.answer
-            if (!local.matched) links = undefined
-          }
-        } catch {
-          if (!local.matched) {
-            answer = `${local.answer} You can also switch to Live Agent for a human, or WhatsApp us.`
-          }
+      try {
+        const history = messages
+          .filter((m) => m.role === 'user' || m.role === 'assistant')
+          .slice(-6)
+          .map((m) => ({ role: m.role, text: m.text }))
+        const result = await askAi(text, history)
+        if (result.answer?.trim()) {
+          answer = result.answer.trim()
+          // Model copy stands alone; keep FAQ/capability deep-links on offline answers.
+          links = result.source === 'workers-ai' ? undefined : local.links
         }
+      } catch {
+        // Keep local FAQ or capabilityFallback answer as-is.
       }
       setMessages((prev) => [...prev, { id: uid(), role: 'assistant', text: answer, links }])
     } finally {
