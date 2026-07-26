@@ -1,10 +1,15 @@
-# SPA fallback for client routes. Explicit static SEO/security assets are listed
-# first so Cloudflare Pages never rewrites them to index.html (splat rules are
-# otherwise applied even when a matching file exists).
-/llms.txt                  /llms.txt                  200
-/.well-known/security.txt  /.well-known/security.txt  200
-/robots.txt                /robots.txt                200
-/sitemap.xml               /sitemap.xml               200
-/manifest.webmanifest      /manifest.webmanifest      200
-/sw.js                     /sw.js                     200
-/*                         /index.html                200
+# Cloudflare Pages SPA routing note
+# ---------------------------------
+# Do NOT use a Netlify-style catch-all here:
+#   /*    /index.html   200
+# On Pages, _redirects proxy rules are always applied even when a matching
+# static file exists, which can shadow crawl assets like /llms.txt.
+#
+# Built-in SPA mode (no top-level 404.html) already serves index.html for
+# unmatched client routes while leaving real files in `dist/` alone:
+#   public/llms.txt
+#   public/.well-known/security.txt
+#   public/robots.txt
+#   public/sitemap.xml
+#
+# Functions stay scoped via public/_routes.json (include: /api/*, /pay/* only).
