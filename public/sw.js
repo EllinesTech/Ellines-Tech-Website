@@ -43,8 +43,11 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone()
-          void caches.open(CACHE).then((cache) => cache.put('/', copy)).catch(() => undefined)
+          // Only cache successful shells — a transient 5xx must not poison offline fallback.
+          if (response.ok) {
+            const copy = response.clone()
+            void caches.open(CACHE).then((cache) => cache.put('/', copy)).catch(() => undefined)
+          }
           return response
         })
         .catch(() => caches.match('/') || caches.match(request)),

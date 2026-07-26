@@ -227,18 +227,33 @@ export function AdminPaymentsModule() {
             value={cfg.mpesa.consumerKey}
             onChange={(v) => setCfg({ ...cfg, mpesa: { ...cfg.mpesa, consumerKey: v } })}
             type="password"
+            hint={
+              cfg.mpesa.consumerKeySet
+                ? 'Saved — leave blank to keep.'
+                : 'Leave blank to keep existing.'
+            }
           />
           <Field
             label="Consumer secret"
             value={cfg.mpesa.consumerSecret}
             onChange={(v) => setCfg({ ...cfg, mpesa: { ...cfg.mpesa, consumerSecret: v } })}
             type="password"
+            hint={
+              cfg.mpesa.consumerSecretSet
+                ? 'Saved — leave blank to keep.'
+                : 'Leave blank to keep existing.'
+            }
           />
           <Field
             label="Passkey"
             value={cfg.mpesa.passkey}
             onChange={(v) => setCfg({ ...cfg, mpesa: { ...cfg.mpesa, passkey: v } })}
             type="password"
+            hint={
+              cfg.mpesa.passkeySet
+                ? 'Saved — leave blank to keep.'
+                : 'Leave blank to keep existing.'
+            }
           />
         </div>
       </section>

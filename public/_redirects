@@ -1,1 +1,10 @@
-/*    /index.html   200
+# SPA fallback for client routes. Explicit static SEO/security assets are listed
+# first so Cloudflare Pages never rewrites them to index.html (splat rules are
+# otherwise applied even when a matching file exists).
+/llms.txt                  /llms.txt                  200
+/.well-known/security.txt  /.well-known/security.txt  200
+/robots.txt                /robots.txt                200
+/sitemap.xml               /sitemap.xml               200
+/manifest.webmanifest      /manifest.webmanifest      200
+/sw.js                     /sw.js                     200
+/*                         /index.html                200

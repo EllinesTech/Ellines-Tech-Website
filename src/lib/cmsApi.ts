@@ -1046,18 +1046,25 @@ export type PaymentMethodsConfig = {
     consumerSecret: string
     passkey: string
     shortcode: string
+    /** Present on GET/save responses — secret is write-only. */
+    consumerKeySet?: boolean
+    consumerSecretSet?: boolean
+    passkeySet?: boolean
   }
   paypal: {
     enabled: boolean
     clientId: string
     clientSecret: string
     merchantEmail: string
+    clientSecretSet?: boolean
   }
   paystack: {
     enabled: boolean
     publicKey: string
     secretKey: string
     webhookSecret?: string
+    secretKeySet?: boolean
+    webhookSecretSet?: boolean
     merchantEmail: string
   }
   notes: string

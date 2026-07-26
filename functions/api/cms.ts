@@ -263,8 +263,10 @@ function maskPaymentSecrets(cfg) {
     ...cfg,
     mpesa: {
       ...cfg.mpesa,
+      consumerKey: '',
       consumerSecret: '',
       passkey: '',
+      consumerKeySet: Boolean(cfg.mpesa?.consumerKey),
       consumerSecretSet: Boolean(cfg.mpesa?.consumerSecret),
       passkeySet: Boolean(cfg.mpesa?.passkey),
     },
@@ -1401,7 +1403,21 @@ export async function onRequestPost(context) {
       }
     }
 
-    return json({ ok: true, lead, invoice, email: emailResult })
+    // Never echo edge visitor context (IP/geo) back to the public submitter.
+    const { visitor: _visitor, ...publicLead } = lead
+    return json({
+      ok: true,
+      lead: publicLead,
+      invoice: invoice
+        ? {
+            id: invoice.id,
+            number: invoice.number,
+            publicToken: invoice.publicToken,
+            status: invoice.status,
+          }
+        : null,
+      email: emailResult,
+    })
   }
 
   if (action === 'newsletter_subscribe') {
@@ -2433,14 +2449,25 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     const incoming = body.payments || {}
     const base = defaultPaymentMethods()
     const existing = await loadPaymentMethods(env)
-    const nextSecret =
-      incoming.paystack?.secretKey != null && String(incoming.paystack.secretKey).trim()
-        ? String(incoming.paystack.secretKey).trim()
-        : String(existing.paystack?.secretKey || '')
-    const nextWebhook =
-      incoming.paystack?.webhookSecret != null && String(incoming.paystack.webhookSecret).trim()
-        ? String(incoming.paystack.webhookSecret).trim()
-        : String(existing.paystack?.webhookSecret || '')
+    const keepSecret = (incomingVal, existingVal) =>
+      incomingVal != null && String(incomingVal).trim()
+        ? String(incomingVal).trim()
+        : String(existingVal || '')
+    const nextSecret = keepSecret(incoming.paystack?.secretKey, existing.paystack?.secretKey)
+    const nextWebhook = keepSecret(
+      incoming.paystack?.webhookSecret,
+      existing.paystack?.webhookSecret,
+    )
+    const nextMpesaKey = keepSecret(incoming.mpesa?.consumerKey, existing.mpesa?.consumerKey)
+    const nextMpesaSecret = keepSecret(
+      incoming.mpesa?.consumerSecret,
+      existing.mpesa?.consumerSecret,
+    )
+    const nextMpesaPasskey = keepSecret(incoming.mpesa?.passkey, existing.mpesa?.passkey)
+    const nextPaypalSecret = keepSecret(
+      incoming.paypal?.clientSecret,
+      existing.paypal?.clientSecret,
+    )
     const next = {
       ...base,
       currency: String(incoming.currency || base.currency).slice(0, 8),
@@ -2453,9 +2480,9 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
         paybill: String(incoming.mpesa?.paybill || '').trim().slice(0, 40),
         accountName: String(incoming.mpesa?.accountName || '').trim().slice(0, 80),
         tillNumber: String(incoming.mpesa?.tillNumber || '').trim().slice(0, 40),
-        consumerKey: String(incoming.mpesa?.consumerKey || '').trim().slice(0, 200),
-        consumerSecret: String(incoming.mpesa?.consumerSecret || '').trim().slice(0, 200),
-        passkey: String(incoming.mpesa?.passkey || '').trim().slice(0, 200),
+        consumerKey: nextMpesaKey.slice(0, 200),
+        consumerSecret: nextMpesaSecret.slice(0, 200),
+        passkey: nextMpesaPasskey.slice(0, 200),
         shortcode: String(incoming.mpesa?.shortcode || '').trim().slice(0, 40),
       },
       paypal: {
@@ -2463,7 +2490,7 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
         ...(incoming.paypal || {}),
         enabled: Boolean(incoming.paypal?.enabled),
         clientId: String(incoming.paypal?.clientId || '').trim().slice(0, 200),
-        clientSecret: String(incoming.paypal?.clientSecret || '').trim().slice(0, 200),
+        clientSecret: nextPaypalSecret.slice(0, 200),
         merchantEmail: String(incoming.paypal?.merchantEmail || base.paypal.merchantEmail)
           .trim()
           .slice(0, 120),
@@ -2486,7 +2513,7 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     }
     await putJson(env, 'cms:payments', next)
     await logActivity(env, { type: 'payments', message: 'Updated payment method settings' })
-    return json({ ok: true, payments: next })
+    return json({ ok: true, payments: maskPaymentSecrets(next) })
   }
 
   if (action === 'save_job') {

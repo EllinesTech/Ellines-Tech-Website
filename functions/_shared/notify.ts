@@ -135,8 +135,9 @@ export async function deliverResetCode(env, { email, phone, code, name }) {
   const sms = Boolean(channels.find((c) => c.channel === 'sms' && c.sent))
   // Local / misconfigured deploys: never fake "sent", but print the OTP so
   // developers can finish a reset when Resend / SMS keys are absent.
+  // Never log plaintext OTPs on Cloudflare Pages (CF_PAGES=1).
   let devLogged = false
-  if (!emailed && !sms) {
+  if (!emailed && !sms && String(env?.CF_PAGES ?? '') !== '1') {
     console.info(
       `[ellines-tech] Password reset code for ${email || '(no email)'}: ${code}` +
         ' (not emailed/SMS — set RESEND_API_KEY and/or AT_* / TWILIO_* to deliver)',

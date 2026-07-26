@@ -85,7 +85,7 @@ export async function listLiveSessions(): Promise<LiveSessionSummary[]> {
 export async function postLiveMessage(
   sessionId: string,
   text: string,
-  role: 'visitor' | 'admin' | 'assistant' | 'ai',
+  role: 'visitor' | 'admin',
   requestHuman = false,
 ): Promise<LiveSession> {
   const headers =

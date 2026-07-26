@@ -30,7 +30,7 @@ export function FeatureGate({
   if (!enabled) {
     return (
       <>
-        <SEO title={title} description={description} />
+        <SEO title={title} description={description} noindex />
         <section className="relative overflow-hidden">
           <div className="pointer-events-none absolute inset-0 mesh-bg opacity-50" />
           <div className="pointer-events-none absolute inset-0 hero-grid" />

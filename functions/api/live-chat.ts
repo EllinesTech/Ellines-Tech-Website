@@ -171,13 +171,14 @@ export async function onRequestPost(context) {
   if (action === 'message') {
     const session = await getSession(env, body.sessionId)
     if (!session) return json({ error: 'not found' }, 404)
-    let role = body.role || 'visitor'
+    // Only visitors may post unauthenticated. Admin/agent roles require a
+    // verified staff/god session — never accept client-supplied "assistant"/"ai"
+    // labels (that would let anyone inject fake Ellenia / system bubbles).
+    let role = body.role === 'admin' ? 'admin' : 'visitor'
     let agent = null
     if (role === 'admin') {
       agent = await agentOk(request, env)
       if (!agent) return json({ error: 'unauthorized' }, 401)
-    } else if (role !== 'visitor' && role !== 'assistant' && role !== 'ai') {
-      role = 'visitor'
     }
     if (role !== 'admin') {
       const limited = await rateLimitByIp(env, request, 'chat-message', {
