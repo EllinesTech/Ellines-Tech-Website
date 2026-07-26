@@ -1,4 +1,4 @@
-Contact: mailto:info@tech.ellines.co.ke
+Contact: mailto:info@ellines.co.ke
 Contact: https://tech.ellines.co.ke/contact
 Expires: 2027-07-26T00:00:00.000Z
 Preferred-Languages: en

@@ -173,7 +173,7 @@ async function loadPortfolioCatalog(env) {
 
 function defaultSiteProfile() {
   return {
-    email: 'info@tech.ellines.co.ke',
+    email: 'info@ellines.co.ke',
     phone: '+254 728 807 213',
     whatsapp: '+254748255466',
     address: 'Nyeri & Nairobi, Kenya',

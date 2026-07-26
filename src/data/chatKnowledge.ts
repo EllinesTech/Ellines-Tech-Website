@@ -88,7 +88,7 @@ export const defaultChatFaqs: ChatFaq[] = [
     id: 'contact',
     questions: ['contact', 'phone', 'email', 'whatsapp', 'call', 'reach'],
     answer:
-      'Reach us on WhatsApp +254 748 255 466, call +254 728 807 213, or email info@tech.ellines.co.ke / info@ellines.co.ke.',
+      'Reach us on WhatsApp +254 748 255 466, call +254 728 807 213, or email info@ellines.co.ke.',
     links: [{ label: 'Contact page', href: '/contact' }],
   },
   {
