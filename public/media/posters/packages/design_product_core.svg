@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500" role="img" aria-label="Product Design">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="55%" stop-color="#070f1c"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="70%" cy="20%" r="50%">
+      <stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#7dd3fc" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <rect width="800" height="500" fill="url(#glow)"/>
+  <circle cx="80" cy="420" r="120" fill="#7dd3fc" fill-opacity="0.06"/>
+  <circle cx="720" cy="60" r="90" fill="#7dd3fc" fill-opacity="0.08"/>
+  
+      <circle cx="300" cy="200" r="55" fill="#7dd3fc" fill-opacity="0.85"/>
+      <circle cx="380" cy="170" r="45" fill="#38bdf8" fill-opacity="0.75"/>
+      <circle cx="440" cy="220" r="50" fill="#2dd4bf" fill-opacity="0.7"/>
+      <circle cx="360" cy="280" r="48" fill="#67e8f9" fill-opacity="0.55"/>
+      <rect x="500" y="160" width="120" height="180" rx="14" fill="#0b1526" stroke="#7dd3fc" stroke-opacity="0.4"/>
+      <rect x="520" y="185" width="80" height="10" rx="3" fill="#94a3b8" fill-opacity="0.4"/>
+      <rect x="520" y="210" width="60" height="10" rx="3" fill="#7dd3fc" fill-opacity="0.6"/>
+      <rect x="520" y="235" width="70" height="10" rx="3" fill="#94a3b8" fill-opacity="0.3"/>
+    
+  <rect x="0" y="420" width="800" height="80" fill="#030712" fill-opacity="0.55"/>
+  <text x="40" y="468" fill="#7dd3fc" font-family="Outfit, DM Sans, system-ui, sans-serif" font-size="22" font-weight="700" letter-spacing="0.04em">Product Design</text>
+  <text x="760" y="468" text-anchor="end" fill="#94a3b8" font-family="Outfit, system-ui, sans-serif" font-size="13" font-weight="500">Ellines Tech</text>
+</svg>

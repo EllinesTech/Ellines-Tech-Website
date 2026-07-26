@@ -77,40 +77,33 @@ const docs = [
       {
         h: 'Web & software',
         p: [
-          'Business Website Starter — KES 45,000',
-          'Business Website Pro — KES 85,000',
-          'E-commerce Starter — KES 150,000',
-          'Mobile App MVP — KES 250,000',
-          'Custom Software Starter — KES 180,000',
-          'AI Automation Starter — KES 120,000',
+          'Landing Page Website — from KES 15,000 · Business Website Starter — KES 25,000 · Business Website Pro — KES 55,000 · E-commerce Storefront — KES 95,000',
+          'Mobile App MVP — KES 180,000 · Custom Software Starter — from KES 95,000 · AI Automation Starter — from KES 65,000',
         ],
       },
       {
         h: 'Design, brand & marketing',
         p: [
-          'Logo Identity Pack — KES 15,000',
-          'Brand Identity Kit — KES 35,000',
-          'UI/UX Design Package — KES 60,000',
-          'Digital Marketing Starter — KES 40,000',
-          'Campaign posters, flyers, stationery, and merch design — see live /pricing for current rates.',
+          'Logo Identity Pack — from KES 8,000 · Brand Identity Kit — from KES 22,000 · UI/UX Design — from KES 45,000',
+          'Web Design (design-only) — from KES 12,000 · Product Design — from KES 35,000',
+          'Digital Marketing Starter — from KES 25,000 · Marketing Strategy Session — from KES 15,000',
+          'Campaign posters, flyers, stationery, and merch — see live /pricing for current tiers.',
         ],
       },
       {
         h: 'Consulting & security',
         p: [
-          'IT Consulting (half day) — KES 25,000',
-          'IT Consulting (full day) — KES 45,000',
-          'Technology Roadmap Package — KES 120,000',
-          'Digital Transformation Starter — KES 150,000',
-          'Cyber Security Review — KES 55,000',
+          'IT Consulting (half day) — KES 25,000 · Full day — KES 45,000 · Technology Roadmap — KES 120,000 · Digital Transformation — KES 180,000',
+          'Cloud Readiness Review — from KES 35,000 · Cloud Migration Plan — KES 75,000 · Infrastructure Programme — KES 150,000',
+          'Cyber Security Review — from KES 35,000',
         ],
       },
       {
         h: 'Career, tax & tech support',
         p: [
-          'Resume / CV packages from KES 3,500 (revamp) to KES 14,000 (executive); cover letter KES 1,500; LinkedIn optimisation KES 3,500; Career Docs Bundle KES 8,500.',
-          'Kenya Tax Return Filing — KES 200; KRA PIN / iTax Assist — KES 500.',
-          'OS Installation and application testing packages listed on /pricing.',
+          'Resume / CV packages from KES 1,000 (student) to KES 12,000 (executive); cover letter from KES 300; LinkedIn from KES 2,200; Career Docs Bundle from KES 3,500.',
+          'Kenya Tax Return Filing — KES 200; KRA PIN / iTax Assist — KES 500; SME Tax Filing Assist — KES 3,500.',
+          'OS Installation from KES 2,500; App Testing from KES 15,000 — full tiers on /pricing.',
           'MedFlow / RV22 / custom enterprise: request a written estimate via /request.',
         ],
       },
@@ -190,9 +183,9 @@ const docs = [
       {
         h: 'Design & marketing production',
         p: [
-          'Brand identity, logo systems, and rebrand kits.',
+          'Brand identity, logo systems, web design, product design, and rebrand kits.',
           'Campaign posters, flyers, stationery, and merchandise artwork.',
-          'UI/UX for products and marketing sites.',
+          'UI/UX for products and marketing sites · Marketing strategy and digital campaign packages.',
         ],
       },
       {

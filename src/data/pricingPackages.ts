@@ -502,6 +502,94 @@ export const starterPricingPackages: PricingPackage[] = [
     image: '/media/posters/packages/shop_uiux.jpg',
   }),
 
+  // ── Web Design (design-only — build is under Business Website) ──────────
+  pkg({
+    id: 'design_web_landing',
+    groupId: 'design_web',
+    groupName: 'Web Design',
+    tierLabel: 'Landing page',
+    experienceBand: 'Design files · no build',
+    name: 'Landing Page Design',
+    price: 12000,
+    category: 'Design',
+    level: 'Starter',
+    description:
+      'Single-page website design — hero, offers, and contact — delivered as design files ready for build.',
+    image: '/media/posters/packages/shop_starter_web.jpg',
+  }),
+  pkg({
+    id: 'design_web_multipage',
+    groupId: 'design_web',
+    groupName: 'Web Design',
+    tierLabel: 'Multi-page site',
+    experienceBand: 'Brand-aligned layouts',
+    name: 'Multi-Page Web Design',
+    price: 28000,
+    category: 'Design',
+    level: 'Business',
+    description:
+      'Multi-page website design with responsive layouts and brand-aligned visuals — design handoff for development.',
+    image: '/media/posters/packages/shop_business_web.jpg',
+  }),
+  pkg({
+    id: 'design_web_system',
+    groupId: 'design_web',
+    groupName: 'Web Design',
+    tierLabel: 'Design system',
+    experienceBand: 'Components · patterns · specs',
+    name: 'Web Design System',
+    price: 55000,
+    category: 'Design',
+    level: 'Professional',
+    description:
+      'Website design system — key templates, components, and specs so engineering can ship consistently.',
+    image: '/media/posters/packages/shop_uiux.jpg',
+  }),
+
+  // ── Product Design ─────────────────────────────────────────────────────
+  pkg({
+    id: 'design_product_discovery',
+    groupId: 'design_product',
+    groupName: 'Product Design',
+    tierLabel: 'Discovery sprint',
+    experienceBand: 'Flows · IA · priorities',
+    name: 'Product Discovery Sprint',
+    price: 35000,
+    category: 'Design',
+    level: 'Starter',
+    description:
+      'Product discovery workshop — problem framing, user flows, information architecture, and prioritised backlog.',
+    image: '/media/posters/packages/shop_uiux.jpg',
+  }),
+  pkg({
+    id: 'design_product_core',
+    groupId: 'design_product',
+    groupName: 'Product Design',
+    tierLabel: 'Core product',
+    experienceBand: 'Concept → polished screens',
+    name: 'Product Design Package',
+    price: 65000,
+    category: 'Design',
+    level: 'Professional',
+    description:
+      'End-to-end product design for a scoped feature set — interaction design through shippable hi-fi screens.',
+    image: '/media/posters/packages/shop_uiux.jpg',
+  }),
+  pkg({
+    id: 'design_product_full',
+    groupId: 'design_product',
+    groupName: 'Product Design',
+    tierLabel: 'Full product system',
+    experienceBand: 'Discovery → handoff',
+    name: 'End-to-End Product Design',
+    price: 120000,
+    category: 'Design',
+    level: 'Enterprise',
+    description:
+      'Full product design engagement — discovery, flows, UI system, and developer-ready handoff.',
+    image: '/media/posters/packages/shop_uiux.jpg',
+  }),
+
   // ── Software ───────────────────────────────────────────────────────────
   pkg({
     id: 'shop_custom_software',
@@ -653,6 +741,50 @@ export const starterPricingPackages: PricingPackage[] = [
     image: '/media/posters/packages/shop_digital_marketing_growth.jpg',
   }),
 
+  // ── Marketing Strategy (advisory — execution is Digital Marketing) ─────
+  pkg({
+    id: 'marketing_strategy_session',
+    groupId: 'marketing_strategy',
+    groupName: 'Marketing Strategy',
+    tierLabel: 'Strategy session',
+    experienceBand: 'Positioning workshop',
+    name: 'Marketing Strategy Session',
+    price: 15000,
+    category: 'Marketing',
+    level: 'Starter',
+    description:
+      'Focused strategy workshop — audience, positioning, and campaign priorities for your next push.',
+    image: '/media/posters/packages/shop_digital_marketing.jpg',
+  }),
+  pkg({
+    id: 'marketing_strategy_gtm',
+    groupId: 'marketing_strategy',
+    groupName: 'Marketing Strategy',
+    tierLabel: 'Go-to-market plan',
+    experienceBand: 'Launch & channel map',
+    name: 'Go-to-Market Plan',
+    price: 35000,
+    category: 'Marketing',
+    level: 'Business',
+    description:
+      'Go-to-market plan — brand positioning, channel mix, messaging, and a 90-day campaign roadmap.',
+    image: '/media/posters/packages/shop_digital_marketing.jpg',
+  }),
+  pkg({
+    id: 'marketing_strategy_roadmap',
+    groupId: 'marketing_strategy',
+    groupName: 'Marketing Strategy',
+    tierLabel: 'Growth roadmap',
+    experienceBand: 'Multi-quarter plan',
+    name: 'Growth Strategy Roadmap',
+    price: 65000,
+    category: 'Marketing',
+    level: 'Professional',
+    description:
+      'Multi-quarter growth roadmap — funnel strategy, content pillars, paid/organic mix, and KPI cadence.',
+    image: '/media/posters/packages/shop_digital_marketing_growth.jpg',
+  }),
+
   // ── Security ───────────────────────────────────────────────────────────
   pkg({
     id: 'shop_cyber_audit',
@@ -747,6 +879,50 @@ export const starterPricingPackages: PricingPackage[] = [
     level: 'Enterprise',
     description: 'Current-state audit, initiative backlog, and change-ready transformation plan.',
     image: '/media/posters/packages/consult_digital_transform.jpg',
+  }),
+
+  // ── Cloud & Infrastructure Consulting ──────────────────────────────────
+  pkg({
+    id: 'consult_cloud_readiness',
+    groupId: 'consulting_cloud',
+    groupName: 'Cloud & Infrastructure',
+    tierLabel: 'Readiness review',
+    experienceBand: 'Cloud fit & risks',
+    name: 'Cloud Readiness Review',
+    price: 35000,
+    category: 'Consulting',
+    level: 'Starter',
+    description:
+      'Cloud readiness assessment — current stack, migration risks, cost posture, and recommended next steps.',
+    image: '/media/posters/packages/consult_tech_roadmap.jpg',
+  }),
+  pkg({
+    id: 'consult_cloud_migration',
+    groupId: 'consulting_cloud',
+    groupName: 'Cloud & Infrastructure',
+    tierLabel: 'Migration plan',
+    experienceBand: 'Phased cutover design',
+    name: 'Cloud Migration Plan',
+    price: 75000,
+    category: 'Consulting',
+    level: 'Business',
+    description:
+      'Migration planning package — target architecture, phased cutover, backup/DR notes, and cost estimate bands.',
+    image: '/media/posters/packages/consult_tech_roadmap.jpg',
+  }),
+  pkg({
+    id: 'consult_cloud_programme',
+    groupId: 'consulting_cloud',
+    groupName: 'Cloud & Infrastructure',
+    tierLabel: 'Infra programme',
+    experienceBand: 'Reliability · cost · scale',
+    name: 'Infrastructure Programme',
+    price: 150000,
+    category: 'Consulting',
+    level: 'Enterprise',
+    description:
+      'Multi-week infrastructure advisory — reliability, cost/performance tuning, and operating model for scale.',
+    image: '/media/posters/packages/consult_it_fullday.jpg',
   }),
 
   // ── Tax ────────────────────────────────────────────────────────────────
