@@ -27,7 +27,7 @@ export function getNavLinks(item: NavItem): NavLink[] {
   return item.children ?? []
 }
 
-/** Primary desktop nav — keep short to avoid logo collision */
+/** Primary desktop row: Home · About · Services · Products · Pricing (+ Contact, then More) */
 export const primaryNavigation: NavItem[] = [
   { label: 'Home', href: '/' },
   { label: 'About', href: '/about' },
@@ -100,13 +100,17 @@ export const primaryNavigation: NavItem[] = [
       { label: 'Digital Products', href: '/products#digital', description: 'Websites, apps & e-commerce' },
     ],
   },
-  { label: 'Portfolio', href: '/portfolio' },
   { label: 'Pricing', href: '/pricing' },
-  { label: 'Request', href: '/request' },
+]
+
+/** After Pricing on desktop — Contact stays visible; More follows */
+export const trailingNavigation: NavItem[] = [
+  { label: 'Contact', href: '/contact' },
 ]
 
 /** Secondary items — shown under “More” on desktop */
 export const moreNavigation: NavItem[] = [
+  { label: 'Portfolio', href: '/portfolio' },
   { label: 'Solutions', href: '/solutions' },
   { label: 'Industries', href: '/industries' },
   { label: 'Resources', href: '/resources' },
@@ -116,11 +120,14 @@ export const moreNavigation: NavItem[] = [
   { label: 'Success Stories', href: '/success-stories' },
   { label: 'Client account', href: '/account' },
   { label: 'Staff login', href: '/staff/login' },
-  { label: 'Contact', href: '/contact' },
 ]
 
 /** Full list for mobile drawer */
-export const mainNavigation: NavItem[] = [...primaryNavigation, ...moreNavigation]
+export const mainNavigation: NavItem[] = [
+  ...primaryNavigation,
+  ...moreNavigation,
+  ...trailingNavigation,
+]
 
 export const footerNavigation = {
   company: [

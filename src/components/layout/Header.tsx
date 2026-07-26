@@ -4,6 +4,7 @@ import { Menu, X, ChevronDown, ArrowRight } from 'lucide-react'
 import {
   primaryNavigation,
   moreNavigation,
+  trailingNavigation,
   mainNavigation,
   getNavLinks,
   filterNavItems,
@@ -113,9 +114,9 @@ function NavDropdown({
       <Link
         to={item.href}
         className={cn(
-          'relative flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+          'relative flex items-center gap-0.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors',
           active
-            ? 'bg-white/[0.06] text-brand-300 after:absolute after:inset-x-3 after:bottom-1 after:h-px after:rounded-full after:bg-brand-400/70'
+            ? 'bg-white/[0.06] text-brand-300 after:absolute after:inset-x-2.5 after:bottom-1 after:h-px after:rounded-full after:bg-brand-400/70'
             : 'text-slate-300 hover:bg-white/[0.04] hover:text-white',
         )}
         aria-expanded={open}
@@ -239,6 +240,7 @@ export function Header() {
   const { settings } = useSiteFeatures()
   const primary = useMemo(() => filterNavItems(primaryNavigation, settings), [settings])
   const more = useMemo(() => filterNavItems(moreNavigation, settings), [settings])
+  const trailing = useMemo(() => filterNavItems(trailingNavigation, settings), [settings])
   const mobile = useMemo(() => filterNavItems(mainNavigation, settings), [settings])
 
   useEffect(() => {
@@ -249,11 +251,11 @@ export function Header() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.08] bg-slate-950/80 shadow-[0_1px_0_0_rgba(34,211,238,0.1)] backdrop-blur-2xl supports-[backdrop-filter]:bg-slate-950/65">
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-brand-400/40 to-transparent" />
-      <div className="section-container flex h-16 items-center gap-5 lg:h-[4.25rem] lg:gap-6">
-        <Logo onClick={() => setMobileOpen(false)} className="mr-auto lg:mr-1" />
+      <div className="section-container flex h-16 items-center gap-4 xl:h-[4.25rem] xl:gap-8">
+        <Logo onClick={() => setMobileOpen(false)} className="mr-auto xl:mr-0" />
 
         <nav
-          className="ml-auto hidden min-w-0 items-center gap-1 lg:flex"
+          className="ml-auto hidden min-w-0 items-center gap-1.5 xl:flex"
           aria-label="Main navigation"
         >
           {primary.map((item) =>
@@ -270,9 +272,9 @@ export function Header() {
                 key={item.label}
                 to={item.href}
                 className={cn(
-                  'relative rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  'relative rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors',
                   location.pathname === item.href
-                    ? 'bg-white/[0.06] text-brand-300 after:absolute after:inset-x-3 after:bottom-1 after:h-px after:rounded-full after:bg-brand-400/70'
+                    ? 'bg-white/[0.06] text-brand-300 after:absolute after:inset-x-2.5 after:bottom-1 after:h-px after:rounded-full after:bg-brand-400/70'
                     : 'text-slate-300 hover:bg-white/[0.04] hover:text-white',
                 )}
               >
@@ -280,6 +282,21 @@ export function Header() {
               </Link>
             ),
           )}
+
+          {trailing.map((item) => (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={cn(
+                'relative rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors',
+                location.pathname === item.href || location.pathname.startsWith(`${item.href}/`)
+                  ? 'bg-white/[0.06] text-brand-300 after:absolute after:inset-x-2.5 after:bottom-1 after:h-px after:rounded-full after:bg-brand-400/70'
+                  : 'text-slate-300 hover:bg-white/[0.04] hover:text-white',
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
 
           {more.length > 0 && (
             <div
@@ -290,12 +307,14 @@ export function Header() {
               <button
                 type="button"
                 className={cn(
-                  'relative flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  'relative flex items-center gap-0.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors',
                   more.some((i) => location.pathname.startsWith(i.href) && i.href !== '/')
-                    ? 'bg-white/[0.06] text-brand-300 after:absolute after:inset-x-3 after:bottom-1 after:h-px after:rounded-full after:bg-brand-400/70'
+                    ? 'bg-white/[0.06] text-brand-300 after:absolute after:inset-x-2.5 after:bottom-1 after:h-px after:rounded-full after:bg-brand-400/70'
                     : 'text-slate-300 hover:bg-white/[0.04] hover:text-white',
                 )}
                 aria-expanded={openDropdown === 'More'}
+                aria-haspopup="true"
+                onFocus={() => setOpenDropdown('More')}
               >
                 More
                 <ChevronDown
@@ -306,12 +325,13 @@ export function Header() {
                 />
               </button>
               {openDropdown === 'More' && (
-                <div className="absolute right-0 top-full z-50 pt-2">
+                <div className="absolute right-0 top-full z-50 pt-2" role="menu">
                   <div className="w-56 rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-black/50 backdrop-blur-xl">
                     {more.map((item) => (
                       <Link
                         key={item.href}
                         to={item.href}
+                        role="menuitem"
                         className="block rounded-xl px-3 py-2.5 text-sm font-medium text-slate-200 transition-colors hover:bg-white/5 hover:text-white"
                         onClick={() => setOpenDropdown(null)}
                       >
@@ -325,24 +345,28 @@ export function Header() {
           )}
         </nav>
 
-        <div className="hidden shrink-0 items-center gap-1.5 xl:flex">
-          <InstallAppButton />
+        <div className="hidden shrink-0 items-center gap-2 xl:flex">
           <Link
             to="/account"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.04] hover:text-white"
+            className="rounded-lg px-2.5 py-2 text-[13px] font-medium text-slate-300 transition-colors hover:bg-white/[0.04] hover:text-white"
           >
             Client login
           </Link>
           {settings.requestEnabled && (
-            <Button href="/request" size="sm" icon>
-              Request a service
+            <Button
+              href="/request"
+              size="sm"
+              icon
+              className="gap-1 rounded-lg px-2.5 py-1.5 text-[12px] font-semibold leading-none shadow-[0_0_0_1px_rgba(34,211,238,0.3),0_8px_24px_-10px_rgba(6,182,212,0.45)] [&_svg]:h-3 [&_svg]:w-3"
+            >
+              Request
             </Button>
           )}
         </div>
 
         <button
           type="button"
-          className="shrink-0 rounded-lg p-2 text-slate-300 hover:bg-white/5 hover:text-white lg:hidden"
+          className="shrink-0 rounded-lg p-2 text-slate-300 hover:bg-white/5 hover:text-white xl:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
         >
@@ -351,13 +375,20 @@ export function Header() {
       </div>
 
       {mobileOpen && (
-        <div className="max-h-[calc(100vh-4.25rem)] overflow-y-auto border-t border-white/5 bg-slate-950/98 backdrop-blur-2xl lg:hidden">
+        <div className="max-h-[calc(100vh-4.25rem)] overflow-y-auto border-t border-white/5 bg-slate-950/98 backdrop-blur-2xl xl:hidden">
           <nav className="section-container space-y-1 py-4" aria-label="Mobile navigation">
             {mobile.map((item) => (
               <MobileNavItem key={item.label} item={item} onNavigate={() => setMobileOpen(false)} />
             ))}
             <div className="flex flex-col gap-2 pt-4">
               <InstallAppButton variant="chip" className="w-full [&_button]:w-full [&_button]:justify-center" />
+              <Link
+                to="/account"
+                className="block rounded-lg px-3 py-2.5 text-center text-base font-medium text-slate-200 hover:bg-white/5"
+                onClick={() => setMobileOpen(false)}
+              >
+                Client login
+              </Link>
               {settings.contactEnabled && (
                 <Button href="/contact" variant="secondary" className="w-full">
                   Get in Touch

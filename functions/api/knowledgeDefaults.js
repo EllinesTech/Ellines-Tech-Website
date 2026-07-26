@@ -294,6 +294,48 @@ export function defaultKnowledge() {
     "createdAt": "2026-07-25T10:00:00.000Z"
   },
   {
+    "id": "kh_company_brochure",
+    "slug": "company-brochure",
+    "title": "Company Brochure",
+    "excerpt": "Sales brochure — problem, solution, products, Kenya presence, and CTA.",
+    "body": "Share our company brochure with prospects and partners. It follows a problem → solution → products → presence narrative, with Nyeri & Nairobi context and Ellines Group brands.\n\nDownload the PDF or open the printable HTML version.",
+    "category": "downloads",
+    "tags": ["download", "brochure"],
+    "status": "published",
+    "downloadUrl": "/downloads/ellines-tech-company-brochure.pdf",
+    "htmlUrl": "/downloads/ellines-tech-company-brochure.html",
+    "updatedAt": "2026-07-26T12:00:00.000Z",
+    "createdAt": "2026-07-26T12:00:00.000Z"
+  },
+  {
+    "id": "kh_engagement_guide",
+    "slug": "client-engagement-guide",
+    "title": "Client Engagement Guide",
+    "excerpt": "Discovery through care — how projects run with Ellines Tech.",
+    "body": "The engagement guide explains discovery, proposal, build, launch, and optional care retainers — plus what we need from sponsors and what you can expect from us.\n\nUse it alongside the Company Profile when onboarding a new stakeholder.",
+    "category": "downloads",
+    "tags": ["download", "engagement"],
+    "status": "published",
+    "downloadUrl": "/downloads/ellines-tech-engagement-guide.pdf",
+    "htmlUrl": "/downloads/ellines-tech-engagement-guide.html",
+    "updatedAt": "2026-07-26T12:00:00.000Z",
+    "createdAt": "2026-07-26T12:00:00.000Z"
+  },
+  {
+    "id": "kh_intro_flyer",
+    "slug": "intro-flyer",
+    "title": "Intro Flyer",
+    "excerpt": "One-page intro with motto, services snapshot, and contact CTAs.",
+    "body": "A single-page flyer for events, meetings, and quick handoffs — Your Idea. Our Code., services snapshot, Nyeri & Nairobi, and links to /request and /pricing.",
+    "category": "downloads",
+    "tags": ["download", "flyer"],
+    "status": "published",
+    "downloadUrl": "/downloads/ellines-tech-intro-flyer.pdf",
+    "htmlUrl": "/downloads/ellines-tech-intro-flyer.html",
+    "updatedAt": "2026-07-26T12:00:00.000Z",
+    "createdAt": "2026-07-26T12:00:00.000Z"
+  },
+  {
     "id": "kh_medflow_sheet",
     "slug": "medflow-product-sheet",
     "title": "MedFlow Product Sheet",

@@ -15,7 +15,8 @@ type Props = {
 export function CompanyMaterials({
   className,
   title = 'Company materials',
-  description = 'Download our company profile, pricing rate card, capabilities one-pager, and service catalogue.',
+  description =
+    'Download our company profile, brochure, pricing rate card, capabilities one-pager, service catalogue, engagement guide, and intro flyer.',
   compact = false,
 }: Props) {
   const { settings } = useSiteFeatures()
