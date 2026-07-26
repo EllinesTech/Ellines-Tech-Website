@@ -55,7 +55,12 @@ async function sendViaAfricasTalking(env, to, message) {
     message,
   })
   if (sender) body.set('from', sender)
-  const res = await fetch('https://api.africastalking.com/version1/messaging', {
+  // Sandbox credentials only work on the sandbox host; live apps use api.africastalking.com.
+  const isSandbox = username.toLowerCase() === 'sandbox'
+  const endpoint = isSandbox
+    ? 'https://api.sandbox.africastalking.com/version1/messaging'
+    : 'https://api.africastalking.com/version1/messaging'
+  const res = await fetch(endpoint, {
     method: 'POST',
     headers: {
       ApiKey: apiKey,
@@ -68,7 +73,7 @@ async function sendViaAfricasTalking(env, to, message) {
     const err = await res.text().catch(() => '')
     return { sent: false, channel: 'sms', reason: err || 'at_failed', provider: 'africastalking' }
   }
-  return { sent: true, channel: 'sms', provider: 'africastalking' }
+  return { sent: true, channel: 'sms', provider: 'africastalking', sandbox: isSandbox }
 }
 
 async function sendViaTwilio(env, to, message) {
