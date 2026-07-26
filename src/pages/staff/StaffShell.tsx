@@ -56,7 +56,7 @@ const staffNav = [
   { to: '/staff/pricing', label: 'Pricing packages', icon: ShoppingBag },
   { to: '/staff/materials', label: 'Company materials', icon: Download },
   { to: '/staff/notifications', label: 'Notifications', icon: Bell },
-  { to: '/staff/profile', label: 'Profile', icon: User },
+  { to: '/staff/profile', label: 'Profile & Password', icon: User },
 ]
 
 export function StaffLoginPage() {
@@ -688,7 +688,7 @@ export function StaffProfilePage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h2 className="font-display text-2xl font-bold text-white">Profile</h2>
+        <h2 className="font-display text-2xl font-bold text-white">Profile &amp; Password</h2>
         <p className="mt-1 text-sm text-slate-400">
           {user.email} · {user.jobTitle || user.role}
         </p>

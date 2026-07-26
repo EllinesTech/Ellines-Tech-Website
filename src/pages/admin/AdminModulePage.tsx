@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { adminNavGroups } from '@/admin/nav'
 import { testimonials as defaultTestimonials } from '@/data/content'
@@ -28,6 +28,7 @@ import {
 } from '@/pages/admin/AdminCatalogEditors'
 import {
   backupCms,
+  bootstrapSuperAdmin,
   createAdminUser,
   fetchActivity,
   fetchAnalytics,
@@ -41,6 +42,7 @@ import {
   fetchMediaExtras,
   fetchShop,
   fetchSiteCopy,
+  fetchSuperAdminStatus,
   fetchUsers,
   restoreCms,
   saveMediaItem,
@@ -1700,6 +1702,158 @@ function MessagesModule() {
   )
 }
 
+function SecurityPasswordModule() {
+  const actor = currentActor()
+  const authUser = loadAuthUser()
+  const [statusEmail, setStatusEmail] = useState('ellines.tech@gmail.com')
+  const [exists, setExists] = useState<boolean | null>(null)
+  const [bootstrapPassword, setBootstrapPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    fetchSuperAdminStatus()
+      .then((s) => {
+        if (cancelled) return
+        setStatusEmail(s.email)
+        setExists(s.exists)
+      })
+      .catch(() => {
+        if (!cancelled) setExists(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  async function onBootstrap(e: FormEvent) {
+    e.preventDefault()
+    setError('')
+    setMessage('')
+    if (bootstrapPassword !== confirm) {
+      setError('Passwords do not match')
+      return
+    }
+    if (bootstrapPassword.length < 12) {
+      setError('Super Admin password must be at least 12 characters')
+      return
+    }
+    setBusy(true)
+    try {
+      const res = await bootstrapSuperAdmin(bootstrapPassword)
+      setMessage(res.message)
+      setStatusEmail(res.email)
+      setExists(true)
+      setBootstrapPassword('')
+      setConfirm('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Bootstrap failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Panel title="Security & Password" description="Three separate access lanes — do not mix them.">
+      <ul className="list-disc space-y-2 pl-5 text-sm text-slate-300">
+        <li>
+          <strong className="text-white">Owner key</strong> — server secret{' '}
+          <code className="text-brand-300">ADMIN_API_KEY</code> (Cloudflare Pages /{' '}
+          <code className="text-brand-300">.dev.vars</code>). Verified at the edge and exchanged for
+          a 12-hour session token; never shipped in the browser bundle.
+        </li>
+        <li>
+          <strong className="text-white">Super Admin</strong> — email + password for{' '}
+          <code className="text-brand-300">{statusEmail}</code>. Also grants God Mode. Different
+          from the Owner key.
+        </li>
+        <li>Staff (/staff) — employee accounts created under Users. Own email/password login.</li>
+        <li>Clients (/account) — customers for pricing & packages. Public register/login.</li>
+        <li>Roles: super_admin | admin | staff | customer · passwords PBKDF2-hashed in KV</li>
+        <li>
+          Password reset sends a one-time code by email (Resend) and SMS (Africa&apos;s Talking or
+          Twilio) when a phone number is on the account.
+        </li>
+      </ul>
+
+      <div id="change-password" className="mt-6 space-y-6">
+        {authUser && actor.role !== 'owner' ? (
+          <ChangePasswordForm user={authUser} />
+        ) : (
+          <p className="text-sm text-slate-500">
+            Owner-key sessions have no account password. Use the bootstrap form below to set the
+            Super Admin password, then sign in on the Super Admin tab — or use{' '}
+            <Link to="/account/reset" className="text-brand-300">
+              Forgot password
+            </Link>{' '}
+            once that account exists.
+          </p>
+        )}
+
+        {(actor.role === 'owner' || actor.role === 'super_admin') && (
+          <form
+            onSubmit={onBootstrap}
+            className="space-y-4 rounded-2xl border border-brand-400/20 bg-brand-500/[0.04] p-5"
+          >
+            <div>
+              <h3 className="font-display text-lg font-semibold text-white">
+                Bootstrap Super Admin
+              </h3>
+              <p className="mt-1 text-xs text-slate-400">
+                {exists === false
+                  ? `Create ${statusEmail} and set its first password (min 12 characters).`
+                  : exists
+                    ? `Reset the password for ${statusEmail}.`
+                    : `Create or reset the password for ${statusEmail}.`}{' '}
+                Optional env seed: <code className="text-brand-300">SUPER_ADMIN_BOOTSTRAP_PASSWORD</code>{' '}
+                (remove after first use).
+              </p>
+            </div>
+            <PasswordInput
+              required
+              minLength={12}
+              value={bootstrapPassword}
+              onChange={(e) => setBootstrapPassword(e.target.value)}
+              placeholder="New Super Admin password"
+              className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
+              autoComplete="new-password"
+            />
+            <PasswordInput
+              required
+              minLength={12}
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder="Confirm password"
+              className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
+              autoComplete="new-password"
+            />
+            {error && <p className="text-sm text-rose-300">{error}</p>}
+            {message && <p className="text-sm text-emerald-300">{message}</p>}
+            <Button type="submit" size="sm" disabled={busy}>
+              {busy ? 'Saving…' : exists ? 'Reset Super Admin password' : 'Create Super Admin'}
+            </Button>
+          </form>
+        )}
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-3 text-sm">
+        <Link to="/admin/users" className="text-brand-300">
+          → Users & roles
+        </Link>
+        <Link to="/admin/permissions" className="text-brand-300">
+          → Permissions matrix
+        </Link>
+        <Link to="/account/reset" className="text-brand-300">
+          → Forgot password
+        </Link>
+      </div>
+    </Panel>
+  )
+}
+
 export function AdminModulePage({ module }: { module: string }) {
   if (module === 'chat-settings') return <AdminChatPage />
   if (module === 'settings' || module === 'site-controls') return <AdminSettingsPage />
@@ -1804,56 +1958,7 @@ export function AdminModulePage({ module }: { module: string }) {
   }
 
   if (module === 'security') {
-    const actor = currentActor()
-    const authUser = loadAuthUser()
-    return (
-      <Panel title="Security" description="Three separate access lanes — do not mix them.">
-        <ul className="list-disc space-y-2 pl-5 text-sm text-slate-300">
-          <li>
-            God Mode (/admin) — the owner key lives only in `ADMIN_API_KEY` (Cloudflare Pages).
-            It is verified at the edge and exchanged for a 12-hour session token, so it is never
-            shipped in the browser bundle. A `super_admin` account also grants God Mode.
-          </li>
-          <li>Staff (/staff) — employee accounts created under Users. Own email/password login.</li>
-          <li>Clients (/account) — customers for pricing & packages. Public register/login.</li>
-          <li>Roles: super_admin | admin | staff | customer · passwords PBKDF2-hashed in KV</li>
-          <li>
-            Abuse control: per-IP rate limits on sign-in, leads, newsletter, applications, chat and
-            AI; honeypot fields on public forms; cross-origin writes rejected at the edge.
-          </li>
-          <li>
-            Password reset sends a one-time code by email (Resend) and SMS (Africa&apos;s Talking or
-            Twilio) when a phone number is on the account.
-          </li>
-          <li>
-            Payment secrets are write-only — the editor shows whether a key is set and blank fields
-            keep the stored value. Rotate keys in Cloudflare Pages environment variables.
-          </li>
-        </ul>
-        {authUser && actor.role !== 'owner' ? (
-          <div className="mt-6">
-            <ChangePasswordForm user={authUser} />
-          </div>
-        ) : (
-          <p className="mt-6 text-sm text-slate-500">
-            Owner-key sessions have no account password. Sign in with a Super Admin email to change
-            that account&apos;s password, or use{' '}
-            <Link to="/account/reset" className="text-brand-300">
-              Forgot password
-            </Link>
-            .
-          </p>
-        )}
-        <div className="mt-4 flex flex-wrap gap-3 text-sm">
-          <Link to="/admin/users" className="text-brand-300">
-            → Users & roles
-          </Link>
-          <Link to="/admin/permissions" className="text-brand-300">
-            → Permissions matrix
-          </Link>
-        </div>
-      </Panel>
-    )
+    return <SecurityPasswordModule />
   }
 
   if (module === 'god-mode') {

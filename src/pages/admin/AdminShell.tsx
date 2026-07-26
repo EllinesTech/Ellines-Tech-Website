@@ -98,10 +98,12 @@ const iconMap: Record<string, React.ElementType> = {
   Download,
 }
 
+const SUPER_ADMIN_EMAIL_HINT = 'ellines.tech@gmail.com'
+
 export function AdminLoginPage() {
   const navigate = useNavigate()
   const [mode, setMode] = useState<'owner' | 'account'>('owner')
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(SUPER_ADMIN_EMAIL_HINT)
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -149,11 +151,11 @@ export function AdminLoginPage() {
         </p>
         <h1 className="mt-2 font-display text-2xl font-bold text-white">Admin access</h1>
         <p className="mt-3 text-sm text-slate-400">
-          Owner key or a Super Admin account. Employees use{' '}
+          Two separate ways in — do not mix them. Employees use{' '}
           <a href="/staff/login" className="text-brand-300">
             Staff login
           </a>
-          . Clients use{' '}
+          ; clients use{' '}
           <a href="/account" className="text-brand-300">
             Client account
           </a>
@@ -173,6 +175,7 @@ export function AdminLoginPage() {
               onClick={() => {
                 setMode(tab.id)
                 setError('')
+                setPassword('')
               }}
               className={cn(
                 'rounded-lg px-3 py-2 text-xs font-semibold transition',
@@ -186,24 +189,50 @@ export function AdminLoginPage() {
           ))}
         </div>
 
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.02] px-3.5 py-3 text-xs leading-relaxed text-slate-400">
+          {mode === 'owner' ? (
+            <>
+              <p className="font-semibold text-slate-200">Owner key</p>
+              <p className="mt-1">
+                The server secret <code className="text-brand-300">ADMIN_API_KEY</code> from
+                Cloudflare Pages → Environment variables (or local{' '}
+                <code className="text-brand-300">.dev.vars</code>). Not an email login — paste the
+                key alone below.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-semibold text-slate-200">Super Admin email + password</p>
+              <p className="mt-1">
+                Account login for <span className="text-slate-200">{SUPER_ADMIN_EMAIL_HINT}</span>.
+                This is a different password from the Owner key. If the account is not set up yet,
+                sign in with the Owner key first, then open{' '}
+                <span className="text-slate-200">Security &amp; Password</span> to set it.
+              </p>
+            </>
+          )}
+        </div>
+
         {mode === 'account' && (
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Super Admin email"
+            placeholder={SUPER_ADMIN_EMAIL_HINT}
             className="mt-4 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
             autoFocus
+            autoComplete="username"
           />
         )}
         <PasswordInput
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder={mode === 'owner' ? 'Owner key' : 'Account password'}
+          placeholder={mode === 'owner' ? 'Paste ADMIN_API_KEY' : 'Super Admin account password'}
           className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
           autoFocus={mode === 'owner'}
+          autoComplete={mode === 'owner' ? 'off' : 'current-password'}
         />
         {error && <p className="mt-2 text-sm text-rose-300">{error}</p>}
         <Button type="submit" className="mt-5 w-full" icon disabled={busy}>

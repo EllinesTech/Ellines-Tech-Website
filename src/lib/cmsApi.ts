@@ -642,6 +642,49 @@ export async function adminLogout() {
   }
 }
 
+/** Canonical Super Admin email status (God Mode only). */
+export async function fetchSuperAdminStatus(): Promise<{
+  email: string
+  exists: boolean
+  active: boolean
+  role: string | null
+}> {
+  const data = await cmsFetch('resource=users', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'super_admin_status' }),
+  })
+  return {
+    email: String(data.email || 'ellines.tech@gmail.com'),
+    exists: Boolean(data.exists),
+    active: Boolean(data.active),
+    role: (data.role as string) || null,
+  }
+}
+
+/**
+ * Owner / God Mode: create or reset the canonical Super Admin password.
+ * Password is sent to the edge only — never stored in the client bundle.
+ */
+export async function bootstrapSuperAdmin(password: string): Promise<{
+  email: string
+  created: boolean
+  updated: boolean
+  message: string
+}> {
+  const data = await cmsFetch('resource=users', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'bootstrap_super_admin', password }),
+  })
+  return {
+    email: String(data.email || 'ellines.tech@gmail.com'),
+    created: Boolean(data.created),
+    updated: Boolean(data.updated),
+    message: String(data.message || 'Super Admin ready.'),
+  }
+}
+
 export async function trackVisit(path: string) {
   try {
     let sessionId = ''

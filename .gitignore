@@ -12,6 +12,7 @@ npm-debug.log*
 # Env
 .env
 .env.*
+.dev.vars
 
 # Live site scrape scratch
 _live_fetch

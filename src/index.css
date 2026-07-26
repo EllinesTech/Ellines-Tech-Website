@@ -46,7 +46,9 @@
 
     .animate-float,
     .animate-pulse-slow,
-    .animate-marquee {
+    .animate-marquee,
+    .animate-bounce,
+    .animate-pulse {
       animation: none !important;
     }
   }

@@ -130,9 +130,19 @@ export async function deliverResetCode(env, { email, phone, code, name }) {
     const smsResult = await sendSms(env, { to: phone, message: smsBody })
     channels.push(smsResult)
   }
-  return {
-    emailed: Boolean(emailResult.sent),
-    sms: Boolean(channels.find((c) => c.channel === 'sms' && c.sent)),
-    channels,
+
+  const emailed = Boolean(emailResult.sent)
+  const sms = Boolean(channels.find((c) => c.channel === 'sms' && c.sent))
+  // Local / misconfigured deploys: never fake "sent", but print the OTP so
+  // developers can finish a reset when Resend / SMS keys are absent.
+  let devLogged = false
+  if (!emailed && !sms) {
+    console.info(
+      `[ellines-tech] Password reset code for ${email || '(no email)'}: ${code}` +
+        ' (not emailed/SMS — set RESEND_API_KEY and/or AT_* / TWILIO_* to deliver)',
+    )
+    devLogged = true
   }
+
+  return { emailed, sms, devLogged, channels }
 }

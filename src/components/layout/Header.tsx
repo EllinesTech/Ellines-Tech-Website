@@ -12,6 +12,7 @@ import {
 } from '@/data/navigation'
 import { Button } from '@/components/ui/Button'
 import { Logo } from '@/components/ui/Logo'
+import { InstallAppButton } from '@/components/engagement/InstallApp'
 import { cn } from '@/lib/utils'
 import { useSiteFeatures } from '@/context/SiteFeaturesContext'
 
@@ -324,7 +325,8 @@ export function Header() {
           )}
         </nav>
 
-        <div className="hidden shrink-0 items-center gap-2 xl:flex">
+        <div className="hidden shrink-0 items-center gap-1.5 xl:flex">
+          <InstallAppButton />
           <Link
             to="/account"
             className="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.04] hover:text-white"
@@ -355,6 +357,7 @@ export function Header() {
               <MobileNavItem key={item.label} item={item} onNavigate={() => setMobileOpen(false)} />
             ))}
             <div className="flex flex-col gap-2 pt-4">
+              <InstallAppButton variant="chip" className="w-full [&_button]:w-full [&_button]:justify-center" />
               {settings.contactEnabled && (
                 <Button href="/contact" variant="secondary" className="w-full">
                   Get in Touch

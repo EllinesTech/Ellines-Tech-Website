@@ -590,6 +590,115 @@ async function hashPassword(password, saltB64) {
   return { hash, salt: saltOut }
 }
 
+/** Canonical Super Admin email — override with SUPER_ADMIN_EMAIL in Pages / .dev.vars. */
+const DEFAULT_SUPER_ADMIN_EMAIL = 'ellines.tech@gmail.com'
+
+function resolveSuperAdminEmail(env) {
+  return cleanEmail(env?.SUPER_ADMIN_EMAIL) || DEFAULT_SUPER_ADMIN_EMAIL
+}
+
+/**
+ * Create or update the canonical Super Admin account.
+ * - Env seed: SUPER_ADMIN_BOOTSTRAP_PASSWORD creates the account only when missing.
+ * - Explicit password (Owner-key bootstrap action) creates or resets the password.
+ * Never hardcodes a production password into the repo or client bundle.
+ */
+async function upsertCanonicalSuperAdmin(env, { password, forceReset = false } = {}) {
+  const email = resolveSuperAdminEmail(env)
+  const users = await getJson(env, 'cms:users', [])
+  const idx = users.findIndex((u) => u.email === email)
+  const envPassword = String(env?.SUPER_ADMIN_BOOTSTRAP_PASSWORD || '').trim()
+  const nextPassword = String(password || '').trim() || (idx < 0 ? envPassword : '')
+
+  if (!nextPassword) {
+    return {
+      ok: false,
+      email,
+      reason: idx < 0 ? 'missing_password' : 'noop',
+      created: false,
+      updated: false,
+    }
+  }
+
+  if (nextPassword.length < 12) {
+    return {
+      ok: false,
+      email,
+      reason: 'Password must be at least 12 characters for Super Admin',
+      created: false,
+      updated: false,
+    }
+  }
+  const pwdError = validatePassword(nextPassword)
+  if (pwdError) {
+    return { ok: false, email, reason: pwdError, created: false, updated: false }
+  }
+
+  if (idx < 0) {
+    const { hash, salt } = await hashPassword(nextPassword)
+    users.unshift({
+      id: id('user'),
+      email,
+      name: 'Super Admin',
+      phone: '',
+      role: 'super_admin',
+      jobTitle: 'Owner',
+      active: true,
+      passwordHash: hash,
+      salt,
+      passwordVersion: 0,
+      createdAt: new Date().toISOString(),
+      bootstrappedAt: new Date().toISOString(),
+    })
+    await putJson(env, 'cms:users', users)
+    await logActivity(env, {
+      type: 'security',
+      message: `Super Admin account created: ${email}`,
+    })
+    return { ok: true, email, created: true, updated: false }
+  }
+
+  let changed = false
+  if (users[idx].role !== 'super_admin') {
+    users[idx].role = 'super_admin'
+    changed = true
+  }
+  if (users[idx].active === false) {
+    users[idx].active = true
+    changed = true
+  }
+
+  if (forceReset || password) {
+    const { hash, salt } = await hashPassword(nextPassword)
+    users[idx].passwordHash = hash
+    users[idx].salt = salt
+    users[idx].passwordVersion = (users[idx].passwordVersion || 0) + 1
+    users[idx].passwordChangedAt = new Date().toISOString()
+    changed = true
+  }
+
+  if (!changed) {
+    return { ok: true, email, created: false, updated: false }
+  }
+
+  await putJson(env, 'cms:users', users)
+  await logActivity(env, {
+    type: 'security',
+    message: `Super Admin account updated: ${email}`,
+  })
+  return { ok: true, email, created: false, updated: true }
+}
+
+/** Lazy env seed — only creates when the account is missing. */
+async function ensureSuperAdminFromEnv(env) {
+  const email = resolveSuperAdminEmail(env)
+  const users = await getJson(env, 'cms:users', [])
+  if (users.some((u) => u.email === email)) {
+    return { ok: true, email, created: false, updated: false }
+  }
+  return upsertCanonicalSuperAdmin(env, { forceReset: false })
+}
+
 export async function onRequestOptions() {
   return new Response(null, { headers: cors })
 }
@@ -1029,6 +1138,49 @@ export async function onRequestPost(context) {
     return json({ ok: true })
   }
 
+  /**
+   * Owner / God Mode bootstrap for the canonical Super Admin email.
+   * Sets (or resets) the account password without shipping secrets in the client.
+   */
+  if (action === 'bootstrap_super_admin') {
+    const actor = await resolveActor(request, env)
+    if (actor?.kind !== 'god') return json({ error: 'unauthorized' }, 401)
+    const limited = await rateLimitByIp(env, request, 'bootstrap-super-admin', {
+      limit: 8,
+      windowSeconds: 600,
+    })
+    if (!limited.ok) return json({ error: 'Too many attempts. Try again shortly.' }, 429)
+    const password = String(body.password || '').trim()
+    const result = await upsertCanonicalSuperAdmin(env, { password, forceReset: true })
+    if (!result.ok) {
+      return json({ error: result.reason || 'Could not bootstrap Super Admin' }, 400)
+    }
+    return json({
+      ok: true,
+      email: result.email,
+      created: result.created,
+      updated: result.updated,
+      message: result.created
+        ? `Super Admin account created for ${result.email}. Sign in on the Super Admin tab.`
+        : `Password updated for ${result.email}. Sign in on the Super Admin tab.`,
+    })
+  }
+
+  if (action === 'super_admin_status') {
+    const actor = await resolveActor(request, env)
+    if (actor?.kind !== 'god') return json({ error: 'unauthorized' }, 401)
+    const email = resolveSuperAdminEmail(env)
+    const users = await getJson(env, 'cms:users', [])
+    const user = users.find((u) => u.email === email)
+    return json({
+      ok: true,
+      email,
+      exists: Boolean(user),
+      active: user ? user.active !== false : false,
+      role: user?.role || null,
+    })
+  }
+
   // Public lead capture / newsletter
   if (action === 'lead') {
     const limited = await rateLimitByIp(env, request, 'lead', { limit: 8, windowSeconds: 600 })
@@ -1397,6 +1549,10 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
       return json({ error: message }, status)
     }
     const password = String(body.password || '')
+    // Seed canonical Super Admin from env when the account is still missing.
+    if (email && email === resolveSuperAdminEmail(env)) {
+      await ensureSuperAdminFromEnv(env)
+    }
     const users = await getJson(env, 'cms:users', [])
     const user = users.find((u) => u.email === email)
     if (!user) return failed('Invalid credentials')
@@ -1569,7 +1725,7 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
       type: 'security',
       message: `Password reset code issued: ${email} (email=${delivery.emailed ? 'yes' : 'no'}, sms=${
         delivery.sms ? 'yes' : 'no'
-      })`,
+      }${delivery.devLogged ? ', console_fallback=yes' : ''})`,
     })
     return json({
       ...generic,

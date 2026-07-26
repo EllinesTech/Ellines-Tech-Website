@@ -3,6 +3,7 @@ import { Footer } from './Footer'
 import { PageTransition } from './PageTransition'
 import { ChatWidget } from '@/components/engagement/ChatWidget'
 import { AnnouncementBar } from '@/components/engagement/AnnouncementBar'
+import { InstallAppBanner } from '@/components/engagement/InstallApp'
 import { VisitTracker } from '@/components/VisitTracker'
 import { HashScroll } from '@/components/HashScroll'
 import { ConsentBanner } from '@/components/ConsentBanner'
@@ -28,6 +29,7 @@ export function Layout() {
         </CmsRouteContent>
       </main>
       <Footer />
+      <InstallAppBanner />
       <ChatWidget />
       <ConsentBanner />
     </div>

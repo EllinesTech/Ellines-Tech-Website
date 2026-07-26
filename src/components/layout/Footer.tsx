@@ -6,6 +6,7 @@ import { siteConfig, technologies } from '@/data/site'
 import { directionsUrl, locations } from '@/data/locations'
 import { Logo } from '@/components/ui/Logo'
 import { SocialLinks } from '@/components/engagement/SocialLinks'
+import { InstallAppButton } from '@/components/engagement/InstallApp'
 import { NewsletterSignup } from '@/components/NewsletterSignup'
 import { useSiteFeatures } from '@/context/SiteFeaturesContext'
 import { useSiteProfile } from '@/context/SiteProfileContext'
@@ -98,6 +99,7 @@ export function Footer() {
               >
                 Send a brief
               </Link>
+              <InstallAppButton variant="chip" />
             </div>
 
             <div className="mt-5 flex items-start gap-2.5 text-xs leading-relaxed text-slate-500">

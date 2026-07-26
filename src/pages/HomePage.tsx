@@ -9,6 +9,7 @@ import {
   Palette,
   Megaphone,
   ArrowRight,
+  ChevronDown,
   FileText,
   Briefcase,
   FileCheck,
@@ -19,6 +20,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { CtaPanel } from '@/components/ui/CtaPanel'
 import { MediaBadge, MediaCard } from '@/components/ui/MediaCard'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { SEO } from '@/components/SEO'
@@ -180,45 +182,66 @@ export function HomePage() {
                   'Software applications, mobile apps, and digital solutions — executed from start to finish for businesses that need technology built to last.'}
               </p>
 
-              <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.28, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center"
+              >
                 <Button href="/request" size="lg" icon>
                   Request a service
                 </Button>
                 <Button href="/pricing" variant="secondary" size="lg">
                   View pricing
                 </Button>
-              </div>
+              </motion.div>
 
-              <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500">
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-500"
+              >
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                  24/7 support
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                  Online 24/7 · Nyeri &amp; Nairobi
                 </span>
-                <span>Kenya · Africa · Global</span>
-                <span>Resume · Software · AI</span>
-              </div>
+              </motion.p>
             </motion.div>
 
             <HeroVisual />
           </div>
+
+          <motion.a
+            href="#home-continue"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.1, duration: 0.6 }}
+            className="group mx-auto mt-10 flex flex-col items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 transition-colors hover:text-brand-300 lg:mt-14"
+            aria-label="Continue reading"
+          >
+            Explore
+            <ChevronDown className="h-4 w-4 animate-bounce text-brand-400/70 transition-colors group-hover:text-brand-300" />
+          </motion.a>
         </div>
       </section>
 
       {/* Tech trust marquee */}
-      <TechMarquee />
+      <div id="home-continue">
+        <TechMarquee />
+      </div>
 
       {/* Stats */}
-      <section className="border-b border-white/5 py-12 sm:py-14">
+      <section className="border-b border-white/5 py-14 sm:py-16">
         <div className="section-container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="grid grid-cols-2 gap-y-8 sm:grid-cols-4"
-          >
+          <div className="grid grid-cols-2 gap-y-10 sm:grid-cols-4">
             {stats.map((stat, i) => (
-              <div
+              <motion.div
                 key={stat.label}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ delay: i * 0.07, duration: 0.45 }}
                 className={cn(
                   'text-center sm:px-6 sm:text-left sm:first:pl-0',
                   i % 2 === 1 && 'border-l border-white/10',
@@ -229,22 +252,26 @@ export function HomePage() {
                   {stat.value}
                 </p>
                 <p className="mt-2 text-sm text-slate-500">{stat.label}</p>
-              </div>
+              </motion.div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Storytelling — real workplace / team imagery from Ellines Tech */}
-      <section className="relative min-h-[70vh] overflow-hidden">
-        <img
+      <section className="relative min-h-[72vh] overflow-hidden">
+        <motion.img
           src={siteConfig.media.banners.homeStory}
           alt="Ellines Tech — Your Idea. Our Code."
           className="absolute inset-0 h-full w-full object-cover object-center"
+          initial={{ scale: 1.06 }}
+          whileInView={{ scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/88 to-slate-950/45" />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/55" />
-        <div className="section-container relative flex min-h-[70vh] items-center py-20">
+        <div className="section-container relative flex min-h-[72vh] items-center py-20">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -263,8 +290,8 @@ export function HomePage() {
               <Button href="/about" icon>
                 Our Story
               </Button>
-              <Button href="/contact#quote" variant="secondary">
-                Schedule a Demo
+              <Button href="/request" variant="secondary">
+                Start a project
               </Button>
             </div>
           </motion.div>
@@ -478,25 +505,60 @@ export function HomePage() {
             />
             <div className="absolute inset-0 bg-gradient-to-r from-transparent to-slate-950/40 lg:to-slate-950/80" />
           </div>
-          <div className="flex flex-col justify-center bg-surface/80 px-6 py-14 sm:px-10 lg:px-14 lg:py-16">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col justify-center bg-surface/80 px-6 py-14 sm:px-10 lg:px-14 lg:py-16"
+          >
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-400">
               Brand & craft
             </p>
             <h2 className="mt-3 font-display text-3xl font-bold text-white sm:text-4xl">
               Built for serious work
             </h2>
-            <p className="mt-4 max-w-md text-slate-400 leading-relaxed">
+            <p className="mt-4 max-w-md leading-relaxed text-slate-400">
               From healthcare platforms to AI assistants, we design and ship systems that teams rely
               on every day — with the polish of a modern product company and the pragmatism of an
               African-built engineering partner.
             </p>
             <Link
               to="/portfolio"
-              className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-brand-300 hover:text-brand-200"
+              className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-brand-300 transition-colors hover:text-brand-200"
             >
               See work that ships <ArrowRight className="h-4 w-4" />
             </Link>
-          </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Mid-page bridge — keep scroll momentum toward proof + CTA */}
+      <section className="border-b border-white/5 py-10 sm:py-12">
+        <div className="section-container">
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex flex-col items-start justify-between gap-5 rounded-2xl border border-white/8 bg-white/[0.02] px-5 py-5 sm:flex-row sm:items-center sm:px-7"
+          >
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-400">
+                Next step
+              </p>
+              <p className="mt-1.5 font-display text-lg font-semibold text-white sm:text-xl">
+                Pick a package — or send a brief and we&apos;ll scope it.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              <Button href="/pricing" size="sm" icon>
+                View pricing
+              </Button>
+              <Button href="/request" size="sm" variant="secondary">
+                Request a service
+              </Button>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -674,52 +736,32 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* CTA — gradient + brand mark (not founder) */}
+      {/* CTA — clear close with secondary contact paths */}
       <section className="section-padding border-t border-white/5">
-        <div className="section-container">
-          <div className="relative overflow-hidden rounded-[2rem] border border-brand-500/20">
-            <div className="absolute inset-0 bg-gradient-to-br from-brand-900/80 via-slate-950 to-sky-950/90" />
-            <div className="pointer-events-none absolute -right-16 top-1/2 h-64 w-64 -translate-y-1/2 opacity-20">
-              <img
-                src={siteConfig.logos.mark}
-                alt=""
-                className="h-full w-full object-contain"
-                loading="lazy"
-              />
+        <div className="section-container space-y-8">
+          <CtaPanel
+            eyebrow="Start today"
+            title="Ready to transform your business?"
+            description={`We're here 24/7 for demos and services. Request a quote or WhatsApp us at ${profile.whatsapp || siteConfig.phones[1]}.`}
+            primary={{ label: 'Request a service', href: '/request' }}
+            secondary={{ label: 'WhatsApp us', href: waHref, external: true, variant: 'secondary' }}
+            className="border-brand-500/25 from-brand-900/80 to-sky-950/90 p-8 sm:p-12 lg:p-14 [&_h2]:text-3xl sm:[&_h2]:text-4xl lg:[&_h2]:text-5xl"
+          />
+          <div className="grid gap-8 sm:grid-cols-2 sm:items-end">
+            <div className="max-w-md">
+              <p className="mb-3 text-sm font-medium text-slate-300">Product & delivery notes</p>
+              <NewsletterSignup />
             </div>
-            <div className="relative p-8 sm:p-12 lg:p-16">
-              <div className="max-w-2xl">
-                <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
-                  Ready to transform your business?
-                </h2>
-                <p className="mt-4 text-lg text-slate-300">
-                  We&apos;re here 24/7 for demos and services. Request a quote or WhatsApp us at{' '}
-                  {profile.whatsapp || siteConfig.phones[1]}.
-                </p>
-                <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                  <Button href="/request" size="lg" icon>
-                    Request a service
-                  </Button>
-                  <Button href={waHref} variant="secondary" size="lg" external>
-                    WhatsApp Us
-                  </Button>
-                </div>
-                <div className="mt-10 max-w-md">
-                  <p className="mb-3 text-sm font-medium text-slate-300">Product & delivery notes</p>
-                  <NewsletterSignup />
-                </div>
-                <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
-                  {siteConfig.emails.map((email) => (
-                    <a
-                      key={email}
-                      href={`mailto:${email}`}
-                      className="transition-colors hover:text-brand-300"
-                    >
-                      {email}
-                    </a>
-                  ))}
-                </div>
-              </div>
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400 sm:justify-end">
+              {siteConfig.emails.map((email) => (
+                <a
+                  key={email}
+                  href={`mailto:${email}`}
+                  className="transition-colors hover:text-brand-300"
+                >
+                  {email}
+                </a>
+              ))}
             </div>
           </div>
         </div>

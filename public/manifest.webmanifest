@@ -1,0 +1,54 @@
+{
+  "name": "Ellines Tech",
+  "short_name": "Ellines Tech",
+  "description": "Software, web design, AI, and IT consulting from Ellines Tech — Kenya.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#030712",
+  "theme_color": "#030712",
+  "lang": "en-KE",
+  "categories": ["business", "productivity", "technology"],
+  "icons": [
+    {
+      "src": "/logos/logo-square.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logos/logo-square.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logos/logo-mark-nav.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logos/logo-mark.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Request a service",
+      "short_name": "Request",
+      "url": "/request?source=pwa",
+      "description": "Start a service request with Ellines Tech"
+    },
+    {
+      "name": "Pricing",
+      "short_name": "Pricing",
+      "url": "/pricing?source=pwa",
+      "description": "Browse Ellines Tech packages"
+    }
+  ]
+}

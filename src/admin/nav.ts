@@ -57,7 +57,7 @@ export const adminNavGroups: AdminNavGroup[] = [
     title: 'Power Tools',
     items: [
       { to: '/admin/design', label: 'Design Studio', icon: 'Palette' },
-      { to: '/admin/security', label: 'Security', icon: 'Shield' },
+      { to: '/admin/security', label: 'Security & Password', icon: 'Shield' },
       { to: '/admin/integrations', label: 'Integrations', icon: 'Puzzle' },
       { to: '/admin/payments', label: 'Payment methods', icon: 'CreditCard' },
       { to: '/admin/logs', label: 'System Logs', icon: 'ScrollText' },

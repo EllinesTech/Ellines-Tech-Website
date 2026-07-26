@@ -60,13 +60,13 @@ function ServicePricingCard({
   const multi = group.variants.length > 1
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/12 bg-gradient-to-b from-white/[0.08] to-surface-elevated/95 shadow-[0_22px_55px_-28px_rgba(0,0,0,0.9)] ring-1 ring-inset ring-white/[0.04] transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-400/40 hover:shadow-[0_28px_60px_-22px_rgba(34,211,238,0.28)]">
-      <div className="relative aspect-[16/10] shrink-0 overflow-hidden bg-slate-950">
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-surface-elevated/90 ring-1 ring-inset ring-white/[0.03] transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-400/35 hover:shadow-[0_20px_40px_-24px_rgba(34,211,238,0.22)]">
+      <div className="relative aspect-[2/1] shrink-0 overflow-hidden bg-slate-950">
         <img
           key={poster}
           src={poster}
           alt={`${group.groupName} — package preview`}
-          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
           loading="lazy"
           onError={(e) => {
             const el = e.currentTarget
@@ -81,39 +81,29 @@ function ServicePricingCard({
             }
           }}
         />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/25 to-slate-950/10" />
-        <img
-          src="/logos/logo-mark-nav.png"
-          alt=""
-          width={36}
-          height={36}
-          className="absolute right-3 top-3 h-9 w-9 rounded-lg border border-white/15 bg-slate-950/75 object-contain p-1 shadow-lg backdrop-blur-md sm:right-4 sm:top-4"
-        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
         {multi && (
-          <span className="absolute bottom-3 left-3 rounded-md border border-brand-400/35 bg-slate-950/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-200 backdrop-blur-md sm:left-4">
+          <span className="absolute bottom-2 left-2.5 rounded border border-brand-400/30 bg-slate-950/80 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-brand-200 backdrop-blur-md">
             {group.variants.length} options
           </span>
         )}
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col p-5 sm:p-6">
+      <div className="flex min-h-0 flex-1 flex-col px-4 pb-4 pt-3.5">
         {showCategory && (
-          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+          <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
             {group.category}
           </p>
         )}
-        <h3 className="font-display text-lg font-bold leading-snug text-white transition-colors group-hover:text-brand-200 sm:text-xl">
+        <h3 className="font-display text-base font-bold leading-snug tracking-tight text-white transition-colors group-hover:text-brand-200">
           {group.groupName}
         </h3>
 
         {multi ? (
-          <fieldset className="mt-4">
+          <fieldset className="mt-2.5">
             <legend className="sr-only">Choose a package option</legend>
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-              Choose your option
-            </p>
             <div
-              className="h-[11.5rem] space-y-1 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-width:thin]"
+              className="max-h-[7.5rem] space-y-1 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-width:thin]"
               role="radiogroup"
               aria-label={`${group.groupName} tiers`}
             >
@@ -123,10 +113,10 @@ function ServicePricingCard({
                   <label
                     key={v.id}
                     className={cn(
-                      'flex cursor-pointer items-start gap-2.5 rounded-lg border px-2.5 py-2 transition',
+                      'flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1.5 transition',
                       active
-                        ? 'border-brand-400/50 bg-brand-500/[0.12] shadow-[inset_0_0_0_1px_rgba(34,211,238,0.12)]'
-                        : 'border-white/[0.08] bg-white/[0.015] hover:border-white/18',
+                        ? 'border-brand-400/45 bg-brand-500/[0.1]'
+                        : 'border-transparent bg-white/[0.02] hover:border-white/12',
                     )}
                   >
                     <input
@@ -135,22 +125,17 @@ function ServicePricingCard({
                       value={v.id}
                       checked={active}
                       onChange={() => setSelectedId(v.id)}
-                      className="mt-1 h-3.5 w-3.5 shrink-0 accent-cyan-400"
+                      className="h-3 w-3 shrink-0 accent-cyan-400"
                     />
                     <span className="min-w-0 flex-1">
-                      <span className="flex items-baseline justify-between gap-3">
-                        <span className="truncate text-sm font-semibold leading-tight text-white">
+                      <span className="flex items-baseline justify-between gap-2">
+                        <span className="truncate text-[13px] font-semibold leading-tight text-white">
                           {v.tierLabel}
                         </span>
-                        <span className="shrink-0 font-display text-sm font-semibold tabular-nums leading-tight text-brand-200">
+                        <span className="shrink-0 font-display text-[12px] font-semibold tabular-nums text-brand-200">
                           {v.currency} {Number(v.price).toLocaleString()}
                         </span>
                       </span>
-                      {(v.experienceBand || v.level) && (
-                        <span className="mt-0.5 block truncate text-[11px] leading-snug text-slate-500">
-                          {v.experienceBand || v.level}
-                        </span>
-                      )}
                     </span>
                   </label>
                 )
@@ -159,41 +144,63 @@ function ServicePricingCard({
           </fieldset>
         ) : null}
 
-        <p className="mt-3 line-clamp-3 min-h-[3.75rem] text-sm leading-relaxed text-slate-300">
+        <p className="mt-2.5 line-clamp-2 text-[13px] leading-relaxed text-slate-400">
           {selected?.description || group.description}
         </p>
 
-        <div className="mt-auto border-t border-white/10 pt-4">
-          <div className="flex items-baseline justify-between gap-3">
-            <p className="font-display text-2xl font-semibold tracking-tight text-white sm:text-[1.65rem]">
-              <span className="text-brand-200">{selected?.currency || group.currency}</span>{' '}
+        <div className="mt-auto border-t border-white/8 pt-3">
+          <div className="flex items-baseline justify-between gap-2">
+            <p className="font-display text-xl font-semibold tracking-tight text-white">
+              <span className="text-sm font-medium text-brand-200">
+                {selected?.currency || group.currency}
+              </span>{' '}
               {Number(selected?.price ?? group.fromPrice).toLocaleString()}
             </p>
             {multi && (
-              <p className="shrink-0 text-right text-[11px] leading-snug text-slate-500">
-                From {group.currency} {group.fromPrice.toLocaleString()}
+              <p className="shrink-0 text-[10px] tabular-nums text-slate-500">
+                from {group.fromPrice.toLocaleString()}
               </p>
             )}
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-col gap-1.5">
             {selected && isInstantCheckoutPackage(selected) ? (
               <Button
                 href={`/request?intent=buy&package=${encodeURIComponent(selected.id)}&pay=1`}
                 size="sm"
+                className="w-full justify-center"
               >
                 Pay now
               </Button>
-            ) : null}
-            <Button
-              href={`/request?intent=buy&package=${encodeURIComponent(selected?.id || '')}`}
-              size="sm"
-              variant={selected && isInstantCheckoutPackage(selected) ? 'secondary' : 'primary'}
-            >
-              Buy / request
-            </Button>
-            <Button href="/contact#quote" size="sm" variant="ghost">
-              Ask a question
-            </Button>
+            ) : (
+              <Button
+                href={`/request?intent=buy&package=${encodeURIComponent(selected?.id || '')}`}
+                size="sm"
+                className="w-full justify-center"
+                icon
+              >
+                Buy / request
+              </Button>
+            )}
+            <div className="flex gap-1.5">
+              {selected && isInstantCheckoutPackage(selected) ? (
+                <Button
+                  href={`/request?intent=buy&package=${encodeURIComponent(selected.id)}`}
+                  size="sm"
+                  variant="secondary"
+                  className="min-w-0 flex-1 justify-center"
+                >
+                  Request
+                </Button>
+              ) : null}
+              <Button
+                href="/contact#quote"
+                size="sm"
+                variant="ghost"
+                className="min-w-0 flex-1 justify-center"
+              >
+                Ask
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -278,8 +285,8 @@ export function PricingPage() {
               <span className="mt-1 block text-gradient">options that fit</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300/95">
-              Every card holds multiple tiers — pick by experience band, scope, or pocket. We
-              confirm your selection, then share payment details.
+              Compact packages with clear tiers — choose by scope or budget, then buy or request.
+              We confirm selection and share payment details.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Button href="/request?intent=buy" size="lg" icon>
@@ -311,7 +318,7 @@ export function PricingPage() {
 
           {categories.length > 0 && (
             <nav
-              className="mb-10 flex flex-wrap gap-x-1 gap-y-1 border-b border-white/10"
+              className="mb-12 flex flex-wrap gap-x-1 gap-y-1 border-b border-white/10"
               aria-label="Filter by category"
             >
               {['All', ...categories].map((cat) => {
@@ -352,8 +359,8 @@ export function PricingPage() {
           )}
 
           {activeCategory !== 'All' && (
-            <div className="mb-6 flex items-end justify-between gap-4">
-              <h2 className="font-display text-xl font-semibold tracking-tight text-white sm:text-2xl">
+            <div className="mb-8 flex items-end justify-between gap-4">
+              <h2 className="font-display text-lg font-semibold tracking-tight text-white sm:text-xl">
                 {activeCategory}
               </h2>
               <p className="text-sm text-slate-500">
@@ -363,18 +370,26 @@ export function PricingPage() {
             </div>
           )}
 
-          <div className="grid auto-rows-fr grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
-            {visibleGroups.map((g) => (
-              <ServicePricingCard
+          <div className="grid auto-rows-fr grid-cols-1 items-stretch gap-8 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-10 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-9 xl:gap-y-11">
+            {visibleGroups.map((g, i) => (
+              <motion.div
                 key={g.groupId}
-                group={g}
-                showCategory={activeCategory === 'All'}
-                initialVariantId={
-                  preselect && g.variants.some((v) => v.id === preselect)
-                    ? preselect
-                    : undefined
-                }
-              />
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ delay: (i % 4) * 0.05, duration: 0.4 }}
+                className="h-full"
+              >
+                <ServicePricingCard
+                  group={g}
+                  showCategory={activeCategory === 'All'}
+                  initialVariantId={
+                    preselect && g.variants.some((v) => v.id === preselect)
+                      ? preselect
+                      : undefined
+                  }
+                />
+              </motion.div>
             ))}
           </div>
 
@@ -409,8 +424,8 @@ export function PricingPage() {
                   you&apos;ll get a written quote with timeline and deliverables.
                 </p>
               </div>
-              <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
-                <Button href="/contact#quote" size="lg" icon>
+              <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row">
+                <Button href="/request?intent=quote" size="lg" icon>
                   Get a custom quote
                 </Button>
                 <Button href="/services" variant="secondary" size="lg">

@@ -34,7 +34,7 @@ const tabs: { id: PortalTab; label: string }[] = [
   { id: 'requests', label: 'Requests' },
   { id: 'invoices', label: 'Invoices' },
   { id: 'support', label: 'Support' },
-  { id: 'profile', label: 'Profile' },
+  { id: 'profile', label: 'Profile & Password' },
 ]
 
 function statusTone(status?: string) {
@@ -419,7 +419,7 @@ export function AccountPage() {
                 <div className="space-y-8">
                   <div>
                     <h2 className="font-display text-xl font-bold tracking-tight text-white">
-                      Profile
+                      Profile &amp; Password
                     </h2>
                     <p className="mt-2 text-sm text-slate-500">{user.email}</p>
                     <div className="mt-6 space-y-4 border-t border-white/10 pt-6">
