@@ -1204,7 +1204,8 @@ export async function onRequestPost(context) {
       return json({ error: 'Too many attempts. Try again in a few minutes.' }, 429)
     }
     const password = String(body.password || '')
-    if (!timingSafeEqual(password.trim(), resolveAdminKey(env))) {
+    const expectedKey = resolveAdminKey(env)
+    if (!expectedKey || !timingSafeEqual(password.trim(), expectedKey)) {
       await rateLimitBump(env, bucket, limits)
       await logActivity(env, { type: 'security', message: 'Failed admin panel sign-in' })
       return json({ error: 'Invalid password' }, 401)
@@ -1918,7 +1919,8 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
       if (!ownerTotp.enabled || !ownerTotp.secret) {
         return json({ error: 'Owner 2FA is not enabled.' }, 400)
       }
-      if (!timingSafeEqual(password.trim(), resolveAdminKey(env))) {
+      const expectedKey = resolveAdminKey(env)
+      if (!expectedKey || !timingSafeEqual(password.trim(), expectedKey)) {
         return json({ error: 'Owner key is incorrect' }, 401)
       }
       let ok = await verifyTotpCode(ownerTotp.secret, code)

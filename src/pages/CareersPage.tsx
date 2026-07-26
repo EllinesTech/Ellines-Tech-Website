@@ -7,6 +7,7 @@ import { FeatureGate } from '@/components/FeatureGate'
 import { Button } from '@/components/ui/Button'
 import { Field, fieldClass } from '@/components/ui/Field'
 import { PrivacyConsentField } from '@/components/PrivacyConsentField'
+import { useHoneypot } from '@/components/HoneypotField'
 import { fetchJobs, submitJobApplication, type JobPosting } from '@/lib/cmsApi'
 import { locationLine } from '@/data/locations'
 import { siteConfig } from '@/data/site'
@@ -82,6 +83,7 @@ function ApplyForm({
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+  const { website, honeypot } = useHoneypot()
 
   async function onFile(file: File | null) {
     setError('')
@@ -132,6 +134,7 @@ function ApplyForm({
         resumeFileName: resumeName,
         resumeMime,
         resumeData,
+        website,
       })
       onSuccess()
     } catch (err) {
@@ -167,6 +170,7 @@ function ApplyForm({
       </div>
 
       <form onSubmit={submit} className="mt-7 grid gap-5 sm:grid-cols-2">
+        {honeypot}
         <Field label="Full name" htmlFor="applicant-name">
           <input
             id="applicant-name"
@@ -236,11 +240,12 @@ function ApplyForm({
           />
         </Field>
         <div className="sm:col-span-2">
-          <p className="text-[13px] font-medium text-slate-300">
+          <label htmlFor="applicant-resume" className="text-[13px] font-medium text-slate-300">
             Resume / CV{' '}
-            <span className="text-slate-600">— optional, max 900KB</span>
-          </p>
+            <span className="text-slate-500">— optional, max 900KB</span>
+          </label>
           <input
+            id="applicant-resume"
             ref={fileRef}
             type="file"
             accept=".pdf,.doc,.docx,.txt,application/pdf"
@@ -252,7 +257,7 @@ function ApplyForm({
             onClick={() => fileRef.current?.click()}
             className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-4 py-4 text-sm text-slate-300 transition hover:border-brand-400/40 hover:text-white"
           >
-            <Upload className="h-4 w-4 text-brand-400" />
+            <Upload className="h-4 w-4 text-brand-400" aria-hidden />
             {resumeName || 'Upload PDF, DOC, or TXT'}
           </button>
           {resumeName && (
@@ -267,7 +272,10 @@ function ApplyForm({
         </div>
 
         {error && (
-          <p className="sm:col-span-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+          <p
+            role="alert"
+            className="sm:col-span-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200"
+          >
             {error}
           </p>
         )}

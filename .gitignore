@@ -12,6 +12,7 @@ npm-debug.log*
 # Env
 .env
 .env.*
+!.env.example
 .dev.vars
 
 # Live site scrape scratch

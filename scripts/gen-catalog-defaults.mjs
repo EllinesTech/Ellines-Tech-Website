@@ -25,7 +25,6 @@ function extractArray(src, name) {
   }
   if (end < 0) throw new Error(`unclosed ${name}`)
   // Evaluate as JS expression (data files only use string/array literals)
-  // eslint-disable-next-line no-new-func
   return Function(`"use strict"; return (${src.slice(bracket, end)});`)()
 }
 

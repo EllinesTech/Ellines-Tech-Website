@@ -1,0 +1,30 @@
+# Ellines Tech
+
+> Kenya-based IT company — software development, web design, AI, IT consulting, digital marketing, and career documents. Offices in Nyeri and Nairobi. Motto: Your Idea. Our Code.
+
+Site: https://tech.ellines.co.ke
+Parent: Ellines Group (Ellines Tech, Ellines Haven, Ellines Rattan)
+
+## Key pages
+
+- [Home](https://tech.ellines.co.ke/): Company overview and primary CTAs
+- [About](https://tech.ellines.co.ke/about): Team, founder, group story
+- [Services](https://tech.ellines.co.ke/services): Full service catalogue
+- [Products](https://tech.ellines.co.ke/products): MedFlow, RV22, Juno4, LMAR, and platforms
+- [Solutions](https://tech.ellines.co.ke/solutions): Solution themes
+- [Industries](https://tech.ellines.co.ke/industries): Sector focus
+- [Portfolio](https://tech.ellines.co.ke/portfolio): Selected work
+- [Success stories](https://tech.ellines.co.ke/success-stories): Case outcomes
+- [Pricing](https://tech.ellines.co.ke/pricing): Packages and shop
+- [Resources](https://tech.ellines.co.ke/resources): Knowledge hub
+- [Careers](https://tech.ellines.co.ke/careers): Open roles
+- [Contact](https://tech.ellines.co.ke/contact): Briefs and inquiries
+- [FAQ](https://tech.ellines.co.ke/faq): Common questions
+- [Privacy](https://tech.ellines.co.ke/privacy) · [Terms](https://tech.ellines.co.ke/terms) · [Cookies](https://tech.ellines.co.ke/cookies)
+
+## Contact
+
+- Email: info@tech.ellines.co.ke
+- Phone: +254 728 807 213
+- WhatsApp: +254 748 255 466
+- Hours: 24/7

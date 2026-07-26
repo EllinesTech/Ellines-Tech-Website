@@ -274,18 +274,28 @@ export function AdminLoginPage() {
             </div>
 
             {mode === 'account' && (
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={SUPER_ADMIN_EMAIL_HINT}
-                className="mt-4 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
-                autoFocus
-                autoComplete="username"
-              />
+              <>
+                <label htmlFor="admin-login-email" className="sr-only">
+                  Super Admin email
+                </label>
+                <input
+                  id="admin-login-email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={SUPER_ADMIN_EMAIL_HINT}
+                  className="mt-4 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
+                  autoFocus
+                  autoComplete="username"
+                />
+              </>
             )}
+            <label htmlFor="admin-login-password" className="sr-only">
+              {mode === 'owner' ? 'Owner key' : 'Super Admin password'}
+            </label>
             <PasswordInput
+              id="admin-login-password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -294,7 +304,11 @@ export function AdminLoginPage() {
               autoFocus={mode === 'owner'}
               autoComplete={mode === 'owner' ? 'off' : 'current-password'}
             />
-            {error && <p className="mt-2 text-sm text-rose-300">{error}</p>}
+            {error && (
+              <p role="alert" className="mt-2 text-sm text-rose-300">
+                {error}
+              </p>
+            )}
             <Button type="submit" className="mt-5 w-full" icon disabled={busy}>
               {busy ? 'Verifying…' : 'Enter Admin Panel'}
             </Button>

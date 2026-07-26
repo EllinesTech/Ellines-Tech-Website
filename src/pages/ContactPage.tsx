@@ -397,7 +397,10 @@ export function ContactPage() {
                     <div className="space-y-5 border-t border-white/8 pt-6">
                       <PrivacyConsentField />
                       {error && (
-                        <p className="rounded-xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                        <p
+                          role="alert"
+                          className="rounded-xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200"
+                        >
                           {error}
                         </p>
                       )}

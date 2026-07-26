@@ -150,24 +150,38 @@ export function StaffLoginPage() {
             <p className="mt-3 text-sm text-slate-400">
               Employee workspace for Marketing, Sales, Support, and Finance.
             </p>
+            <label htmlFor="staff-login-email" className="sr-only">
+              Work email
+            </label>
             <input
+              id="staff-login-email"
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Work email"
+              autoComplete="username"
               className="mt-6 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
               autoFocus
             />
+            <label htmlFor="staff-login-password" className="sr-only">
+              Password
+            </label>
             <PasswordInput
+              id="staff-login-password"
               required
               minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
+              autoComplete="current-password"
               className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
             />
-            {error && <p className="mt-2 text-sm text-rose-300">{error}</p>}
+            {error && (
+              <p role="alert" className="mt-2 text-sm text-rose-300">
+                {error}
+              </p>
+            )}
             <Button type="submit" className="mt-5 w-full" icon disabled={busy}>
               {busy ? 'Verifying…' : 'Enter staff workspace'}
             </Button>

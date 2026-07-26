@@ -25,7 +25,7 @@ export function Field({ label, htmlFor, hint, optional, className, children }: F
       >
         <span>{label}</span>
         {optional && (
-          <span className="text-[11px] font-normal uppercase tracking-[0.14em] text-slate-600">
+          <span className="text-[11px] font-normal uppercase tracking-[0.14em] text-slate-500">
             Optional
           </span>
         )}

@@ -61,6 +61,7 @@ npm run preview:full
 2. Build command: `npm run build`
 3. Output directory: `dist`
 4. Custom domain: `tech.ellines.co.ke`
+5. Set server secrets (at minimum `ADMIN_API_KEY`) — see `.env.example`. There is no production fallback for the owner key.
 
 SPA routing is handled via `public/_redirects`.
 

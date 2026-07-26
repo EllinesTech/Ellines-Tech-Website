@@ -1,0 +1,7 @@
+Contact: mailto:info@tech.ellines.co.ke
+Contact: https://tech.ellines.co.ke/contact
+Expires: 2027-07-26T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://tech.ellines.co.ke/.well-known/security.txt
+Policy: https://tech.ellines.co.ke/privacy
+Acknowledgments: https://tech.ellines.co.ke/about

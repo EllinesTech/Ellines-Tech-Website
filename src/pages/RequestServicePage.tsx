@@ -330,6 +330,8 @@ export function RequestServicePage() {
                             <button
                               key={p.id}
                               type="button"
+                              role="radio"
+                              aria-checked={packageId === p.id}
                               onClick={() => {
                                 setPackageId(p.id)
                                 setServiceSlug('')
@@ -711,7 +713,10 @@ export function RequestServicePage() {
             )}
 
             {error && (
-              <p className="mt-5 rounded-xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+              <p
+                role="alert"
+                className="mt-5 rounded-xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200"
+              >
                 {error}
               </p>
             )}

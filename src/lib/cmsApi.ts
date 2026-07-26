@@ -1126,6 +1126,8 @@ export async function submitJobApplication(input: {
   resumeFileName?: string
   resumeMime?: string
   resumeData?: string
+  /** Honeypot value from `useHoneypot` — must stay empty for real submissions. */
+  website?: string
 }) {
   return cmsFetch('resource=jobs', {
     method: 'POST',

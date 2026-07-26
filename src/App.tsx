@@ -1,8 +1,10 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { SiteFeaturesProvider } from '@/context/SiteFeaturesContext'
 import { SiteProfileProvider } from '@/context/SiteProfileContext'
 import { FeatureGate } from '@/components/FeatureGate'
+import { PageLoading } from '@/components/ui/PageLoading'
 import { HomePage } from '@/pages/HomePage'
 import { AboutPage } from '@/pages/AboutPage'
 import { ServicesPage } from '@/pages/ServicesPage'
@@ -27,24 +29,59 @@ import { PasswordResetPage } from '@/pages/PasswordResetPage'
 import { RequestServicePage } from '@/pages/RequestServicePage'
 import { InvoicePublicPage } from '@/pages/InvoicePublicPage'
 import { PayResultPage } from '@/pages/PayResultPage'
-import { AdminLoginPage, AdminLayout } from '@/pages/admin/AdminShell'
-import { AdminOverviewPage } from '@/pages/admin/AdminOverviewPage'
-import { AdminLiveChatPage } from '@/pages/admin/AdminLiveChatPage'
-import { AdminModulePage } from '@/pages/admin/AdminModulePage'
-import { AdminInvoicesModule } from '@/pages/admin/AdminInvoicesModule'
-import { AdminCareersModule } from '@/pages/admin/AdminCareersModule'
-import {
-  StaffLoginPage,
-  StaffLayout,
-  StaffOverviewPage,
-  StaffLeadsPage,
-  StaffClientsPage,
-  StaffPricingPage,
-  StaffMaterialsPage,
-  StaffProfilePage,
-  StaffNotificationsPage,
-  StaffLiveChatPage,
-} from '@/pages/staff/StaffShell'
+
+const AdminLoginPage = lazy(() =>
+  import('@/pages/admin/AdminShell').then((m) => ({ default: m.AdminLoginPage })),
+)
+const AdminLayout = lazy(() =>
+  import('@/pages/admin/AdminShell').then((m) => ({ default: m.AdminLayout })),
+)
+const AdminOverviewPage = lazy(() =>
+  import('@/pages/admin/AdminOverviewPage').then((m) => ({ default: m.AdminOverviewPage })),
+)
+const AdminLiveChatPage = lazy(() =>
+  import('@/pages/admin/AdminLiveChatPage').then((m) => ({ default: m.AdminLiveChatPage })),
+)
+const AdminModulePage = lazy(() =>
+  import('@/pages/admin/AdminModulePage').then((m) => ({ default: m.AdminModulePage })),
+)
+const AdminInvoicesModule = lazy(() =>
+  import('@/pages/admin/AdminInvoicesModule').then((m) => ({ default: m.AdminInvoicesModule })),
+)
+const AdminCareersModule = lazy(() =>
+  import('@/pages/admin/AdminCareersModule').then((m) => ({ default: m.AdminCareersModule })),
+)
+
+const StaffLoginPage = lazy(() =>
+  import('@/pages/staff/StaffShell').then((m) => ({ default: m.StaffLoginPage })),
+)
+const StaffLayout = lazy(() =>
+  import('@/pages/staff/StaffShell').then((m) => ({ default: m.StaffLayout })),
+)
+const StaffOverviewPage = lazy(() =>
+  import('@/pages/staff/StaffShell').then((m) => ({ default: m.StaffOverviewPage })),
+)
+const StaffLeadsPage = lazy(() =>
+  import('@/pages/staff/StaffShell').then((m) => ({ default: m.StaffLeadsPage })),
+)
+const StaffClientsPage = lazy(() =>
+  import('@/pages/staff/StaffShell').then((m) => ({ default: m.StaffClientsPage })),
+)
+const StaffPricingPage = lazy(() =>
+  import('@/pages/staff/StaffShell').then((m) => ({ default: m.StaffPricingPage })),
+)
+const StaffMaterialsPage = lazy(() =>
+  import('@/pages/staff/StaffShell').then((m) => ({ default: m.StaffMaterialsPage })),
+)
+const StaffProfilePage = lazy(() =>
+  import('@/pages/staff/StaffShell').then((m) => ({ default: m.StaffProfilePage })),
+)
+const StaffNotificationsPage = lazy(() =>
+  import('@/pages/staff/StaffShell').then((m) => ({ default: m.StaffNotificationsPage })),
+)
+const StaffLiveChatPage = lazy(() =>
+  import('@/pages/staff/StaffShell').then((m) => ({ default: m.StaffLiveChatPage })),
+)
 
 function Module({ name }: { name: string }) {
   return <AdminModulePage module={name} />
@@ -73,14 +110,32 @@ function Gated({
   )
 }
 
+function ConsoleFallback() {
+  return <PageLoading label="Loading workspace…" />
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <SiteFeaturesProvider>
         <SiteProfileProvider>
         <Routes>
-          <Route path="admin/login" element={<AdminLoginPage />} />
-          <Route path="admin" element={<AdminLayout />}>
+          <Route
+            path="admin/login"
+            element={
+              <Suspense fallback={<ConsoleFallback />}>
+                <AdminLoginPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="admin"
+            element={
+              <Suspense fallback={<ConsoleFallback />}>
+                <AdminLayout />
+              </Suspense>
+            }
+          >
             <Route index element={<AdminOverviewPage />} />
             <Route path="live-chat" element={<AdminLiveChatPage />} />
             <Route path="activity" element={<Module name="activity" />} />
@@ -123,8 +178,22 @@ export default function App() {
             <Route path="profile" element={<Module name="profile" />} />
           </Route>
 
-          <Route path="staff/login" element={<StaffLoginPage />} />
-          <Route path="staff" element={<StaffLayout />}>
+          <Route
+            path="staff/login"
+            element={
+              <Suspense fallback={<ConsoleFallback />}>
+                <StaffLoginPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="staff"
+            element={
+              <Suspense fallback={<ConsoleFallback />}>
+                <StaffLayout />
+              </Suspense>
+            }
+          >
             <Route index element={<StaffOverviewPage />} />
             <Route path="leads" element={<StaffLeadsPage />} />
             <Route path="clients" element={<StaffClientsPage />} />

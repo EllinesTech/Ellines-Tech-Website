@@ -432,6 +432,9 @@ export function ChatWidget() {
                       ? 'Ask Ellenia about leads, admin, or draft a reply…'
                       : 'Ask Ellenia anything…'
                 }
+                aria-label={
+                  mode === 'human' ? 'Message the human agent' : 'Message Ellenia'
+                }
                 disabled={busy || mode === 'whatsapp'}
                 className="h-10 flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-brand-400/40 disabled:opacity-50"
               />

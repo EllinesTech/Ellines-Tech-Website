@@ -8,7 +8,11 @@
  *   staff — signed-in CMS user with role `staff` or `admin`.
  */
 
-/** Fallback owner key used only when ADMIN_API_KEY is unset (local dev). */
+/**
+ * Fallback owner key used only when ADMIN_API_KEY is unset in local Wrangler.
+ * Never accepted on Cloudflare Pages (CF_PAGES=1) — a missing production secret
+ * must fail closed instead of unlocking with a known source-committed string.
+ */
 const DEV_ADMIN_KEY = 'EllinesGodMode2026'
 
 const STAFF_ROLES = new Set(['staff', 'admin', 'super_admin'])
@@ -62,7 +66,11 @@ export function timingSafeEqual(a, b) {
 }
 
 export function resolveAdminKey(env) {
-  return String(env?.ADMIN_API_KEY ?? '').trim() || DEV_ADMIN_KEY
+  const configured = String(env?.ADMIN_API_KEY ?? '').trim()
+  if (configured) return configured
+  // Cloudflare Pages injects CF_PAGES=1 at runtime.
+  if (String(env?.CF_PAGES ?? '') === '1') return ''
+  return DEV_ADMIN_KEY
 }
 
 /* ------------------------------------------------------------------ *
@@ -377,7 +385,8 @@ export async function resolveActor(request, env) {
   const adminHeader = (request.headers.get('X-Admin-Key') || '').trim()
 
   if (adminHeader) {
-    if (timingSafeEqual(adminHeader, resolveAdminKey(env))) {
+    const expectedKey = resolveAdminKey(env)
+    if (expectedKey && timingSafeEqual(adminHeader, expectedKey)) {
       return { kind: 'god', role: 'owner', name: 'Owner', user: null, via: 'owner_key' }
     }
     if (adminHeader.startsWith('god_')) {

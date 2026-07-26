@@ -33,12 +33,15 @@ export function TotpChallengeForm({
   return (
     <form onSubmit={(e) => void onSubmit(e)} className="space-y-4">
       <div>
-        <p className="text-sm font-medium text-slate-200">Authenticator code</p>
-        <p className="mt-1 text-xs text-slate-500">
+        <label htmlFor="totp-challenge-code" className="text-sm font-medium text-slate-200">
+          Authenticator code
+        </label>
+        <p id="totp-challenge-hint" className="mt-1 text-xs text-slate-500">
           Open your authenticator app, or use a one-time recovery code.
         </p>
       </div>
       <input
+        id="totp-challenge-code"
         type="text"
         inputMode="text"
         autoComplete="one-time-code"
@@ -47,11 +50,14 @@ export function TotpChallengeForm({
         value={code}
         onChange={(e) => setCode(e.target.value)}
         placeholder="123456 or recovery code"
+        aria-describedby="totp-challenge-hint"
         className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 font-mono text-lg tracking-widest text-white outline-none focus:border-brand-400/40"
         autoFocus
       />
       {(error || localError) && (
-        <p className="text-sm text-rose-300">{error || localError}</p>
+        <p role="alert" className="text-sm text-rose-300">
+          {error || localError}
+        </p>
       )}
       <Button type="submit" className="w-full" icon disabled={busy}>
         {busy ? 'Verifying…' : 'Verify and continue'}

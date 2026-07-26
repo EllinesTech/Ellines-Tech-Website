@@ -155,8 +155,16 @@ export function PasswordResetPage() {
                   autoFocus
                 />
               </Field>
-              {error && <p className="text-sm text-rose-300">{error}</p>}
-              {message && <p className="text-sm text-emerald-300">{message}</p>}
+              {error && (
+                <p role="alert" className="text-sm text-rose-300">
+                  {error}
+                </p>
+              )}
+              {message && (
+                <p role="status" className="text-sm text-emerald-300">
+                  {message}
+                </p>
+              )}
               <Button type="submit" className="w-full" disabled={busy}>
                 {busy ? 'Sending…' : 'Send reset code'}
               </Button>
@@ -185,8 +193,16 @@ export function PasswordResetPage() {
                   autoFocus
                 />
               </Field>
-              {error && <p className="text-sm text-rose-300">{error}</p>}
-              {message && <p className="text-sm text-emerald-300">{message}</p>}
+              {error && (
+                <p role="alert" className="text-sm text-rose-300">
+                  {error}
+                </p>
+              )}
+              {message && (
+                <p role="status" className="text-sm text-emerald-300">
+                  {message}
+                </p>
+              )}
               <div className="flex flex-wrap gap-3">
                 <Button type="submit" disabled={busy}>
                   {busy ? 'Checking…' : 'Verify code'}
@@ -196,12 +212,26 @@ export function PasswordResetPage() {
                   variant="ghost"
                   disabled={busy}
                   onClick={() => {
-                    setStep('request')
-                    setCode('')
-                    setError('')
+                    void (async () => {
+                      setError('')
+                      setMessage('')
+                      setBusy(true)
+                      try {
+                        const res = await requestPasswordReset(email.trim())
+                        setCode('')
+                        setMessage(
+                          res.message ||
+                            'If an account exists for that email, a new reset code has been sent.',
+                        )
+                      } catch (err) {
+                        setError(err instanceof Error ? err.message : 'Could not resend code')
+                      } finally {
+                        setBusy(false)
+                      }
+                    })()
                   }}
                 >
-                  Resend
+                  Resend code
                 </Button>
               </div>
             </form>
@@ -235,7 +265,11 @@ export function PasswordResetPage() {
                   autoComplete="new-password"
                 />
               </Field>
-              {error && <p className="text-sm text-rose-300">{error}</p>}
+              {error && (
+                <p role="alert" className="text-sm text-rose-300">
+                  {error}
+                </p>
+              )}
               <Button type="submit" className="w-full" disabled={busy}>
                 {busy ? 'Saving…' : 'Set new password'}
               </Button>
