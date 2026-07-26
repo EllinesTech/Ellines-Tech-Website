@@ -86,15 +86,28 @@ export function setAdminAuthed(value: boolean) {
   else sessionStorage.removeItem(ADMIN_SESSION_KEY)
 }
 
+/**
+ * Default owner / Super Admin password when env is unset or blank.
+ * Frontend: `VITE_ADMIN_PASSWORD` (build-time). Backend: `ADMIN_API_KEY` (Pages/Workers).
+ * Keep both in sync in production. Vite may bake `""` for empty vars — never use
+ * `??` alone; trim and fall through to this default.
+ */
+export const DEFAULT_ADMIN_PASSWORD = 'EllinesGodMode2026'
+
+/** Resolve configured admin password; empty / whitespace Vite env → default. */
+export function resolveConfiguredAdminPassword(): string {
+  const fromEnv = String(import.meta.env.VITE_ADMIN_PASSWORD ?? '').trim()
+  return fromEnv || DEFAULT_ADMIN_PASSWORD
+}
+
 export function verifyAdminPassword(password: string): boolean {
-  const expected = import.meta.env.VITE_ADMIN_PASSWORD || 'EllinesGodMode2026'
-  return password === expected
+  return password.trim() === resolveConfiguredAdminPassword()
 }
 
 const ADMIN_API_KEY = 'et_admin_api_key'
 
 export function setAdminApiKey(key: string) {
-  localStorage.setItem(ADMIN_API_KEY, key)
+  localStorage.setItem(ADMIN_API_KEY, key.trim())
 }
 
 export function clearAdminApiKey() {
@@ -102,11 +115,9 @@ export function clearAdminApiKey() {
 }
 
 export function getAdminApiKey(): string {
-  return (
-    (typeof localStorage !== 'undefined' && localStorage.getItem(ADMIN_API_KEY)) ||
-    import.meta.env.VITE_ADMIN_PASSWORD ||
-    'EllinesGodMode2026'
-  )
+  const stored =
+    typeof localStorage !== 'undefined' ? (localStorage.getItem(ADMIN_API_KEY) || '').trim() : ''
+  return stored || resolveConfiguredAdminPassword()
 }
 
 function normalize(text: string) {

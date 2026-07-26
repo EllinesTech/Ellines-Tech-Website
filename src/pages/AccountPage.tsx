@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 import { CompanyMaterials } from '@/components/downloads/CompanyMaterials'
 import {
   fetchMyInvoices,
@@ -249,14 +250,14 @@ export function AccountPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white"
               />
-              <input
+              <PasswordInput
                 required
-                type="password"
                 minLength={6}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white"
+                autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
               />
               {error && <p className="text-sm text-amber-200">{error}</p>}
               {message && <p className="text-sm text-emerald-300">{message}</p>}

@@ -45,6 +45,7 @@ import {
 import { adminNavGroups } from '@/admin/nav'
 import { Button } from '@/components/ui/Button'
 import { Logo } from '@/components/ui/Logo'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 import {
   isAdminAuthed,
   setAdminAuthed,
@@ -106,9 +107,10 @@ export function AdminLoginPage() {
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (verifyAdminPassword(password)) {
+    const trimmed = password.trim()
+    if (verifyAdminPassword(trimmed)) {
       setAdminAuthed(true)
-      setAdminApiKey(password)
+      setAdminApiKey(trimmed)
       navigate('/admin', { replace: true })
     } else setError('Invalid password')
   }
@@ -134,8 +136,7 @@ export function AdminLoginPage() {
           </a>
           .
         </p>
-        <input
-          type="password"
+        <PasswordInput
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Admin password"

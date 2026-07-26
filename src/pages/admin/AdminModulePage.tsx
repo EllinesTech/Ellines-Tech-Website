@@ -9,6 +9,7 @@ import { siteConfig } from '@/data/site'
 import { testimonials as defaultTestimonials } from '@/data/content'
 import { SocialLinks } from '@/components/engagement/SocialLinks'
 import { Button } from '@/components/ui/Button'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 import { AdminChatPage } from '@/pages/admin/AdminChatPage'
 import { AdminSettingsPage } from '@/pages/admin/AdminSettingsPage'
 import { AdminPagesEditor } from '@/pages/admin/AdminPagesEditor'
@@ -303,12 +304,12 @@ function UsersModule() {
           onChange={(e) => setEmail(e.target.value)}
           className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white"
         />
-        <input
+        <PasswordInput
           placeholder="Password (6+)"
-          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white"
+          autoComplete="new-password"
         />
         <select
           value={jobTitle}
@@ -1224,7 +1225,8 @@ export function AdminModulePage({ module }: { module: string }) {
       <Panel title="Security" description="Three separate access lanes — do not mix them.">
         <ul className="list-disc space-y-2 pl-5 text-sm text-slate-300">
           <li>
-            Admin panel — owner password / ADMIN_API_KEY. Keep private.
+            Admin panel — owner password (`EllinesGodMode2026` default). Override with matching
+            `VITE_ADMIN_PASSWORD` (frontend build) and `ADMIN_API_KEY` (Pages Functions). Keep private.
           </li>
           <li>
             Staff (/staff) — employee accounts created here under Users. Own login.

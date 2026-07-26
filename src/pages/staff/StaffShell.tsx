@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Logo } from '@/components/ui/Logo'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 import { CompanyMaterials } from '@/components/downloads/CompanyMaterials'
 import {
   loginCustomer,
@@ -95,8 +96,7 @@ export function StaffLoginPage() {
           className="mt-6 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
           autoFocus
         />
-        <input
-          type="password"
+        <PasswordInput
           required
           minLength={6}
           value={password}

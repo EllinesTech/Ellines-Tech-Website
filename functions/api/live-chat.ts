@@ -16,8 +16,8 @@ function id() {
 }
 
 function adminOk(request, env) {
-  const key = request.headers.get('X-Admin-Key') || ''
-  const expected = env.ADMIN_API_KEY || 'EllinesGodMode2026'
+  const key = (request.headers.get('X-Admin-Key') || '').trim()
+  const expected = String(env.ADMIN_API_KEY ?? '').trim() || 'EllinesGodMode2026'
   return key === expected
 }
 

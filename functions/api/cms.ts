@@ -187,8 +187,10 @@ function id(prefix = 'id') {
 }
 
 function adminOk(request, env) {
-  const key = request.headers.get('X-Admin-Key') || ''
-  const expected = env.ADMIN_API_KEY || 'EllinesGodMode2026'
+  // Align with client DEFAULT_ADMIN_PASSWORD / VITE_ADMIN_PASSWORD resolution:
+  // empty or whitespace ADMIN_API_KEY must fall back (not compare as "").
+  const key = (request.headers.get('X-Admin-Key') || '').trim()
+  const expected = String(env.ADMIN_API_KEY ?? '').trim() || 'EllinesGodMode2026'
   return key === expected
 }
 
