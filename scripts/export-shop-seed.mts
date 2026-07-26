@@ -14,6 +14,10 @@ const body = starterPricingPackages.map((p) => ({
   description: p.description,
   status: p.status,
   image: p.image,
+  groupId: p.groupId,
+  groupName: p.groupName,
+  tierLabel: p.tierLabel,
+  experienceBand: p.experienceBand,
 }))
 const out = join(__dirname, '_shop-seed.json')
 writeFileSync(out, JSON.stringify(body, null, 2))

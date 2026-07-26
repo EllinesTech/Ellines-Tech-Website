@@ -4,9 +4,24 @@ import { Check, ChevronRight } from 'lucide-react'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
 import { services } from '@/data/services'
-import { starterPricingPackages } from '@/data/pricingPackages'
+import {
+  starterPricingPackages,
+  groupPricingPackages,
+  type PricingPackage,
+} from '@/data/pricingPackages'
 import { fetchShop, submitServiceRequest } from '@/lib/cmsApi'
 import { siteConfig } from '@/data/site'
+
+function withGroupDefaults(list: PricingPackage[]): PricingPackage[] {
+  return list
+    .filter((p) => p.status === 'published')
+    .map((p) => ({
+      ...p,
+      groupId: p.groupId || p.id,
+      groupName: p.groupName || p.name,
+      tierLabel: p.tierLabel || p.level || p.name,
+    }))
+}
 
 const steps = ['Intent', 'Package', 'Details', 'Confirm'] as const
 
@@ -31,7 +46,7 @@ export function RequestServicePage() {
   )
   const [packageId, setPackageId] = useState(params.get('package') || '')
   const [serviceSlug, setServiceSlug] = useState(params.get('service') || '')
-  const [packages, setPackages] = useState(starterPricingPackages)
+  const [packages, setPackages] = useState(() => withGroupDefaults(starterPricingPackages))
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -47,13 +62,13 @@ export function RequestServicePage() {
   useEffect(() => {
     fetchShop()
       .then((list) => {
-        const published = (list as typeof starterPricingPackages).filter(
-          (p) => p.status === 'published',
-        )
+        const published = withGroupDefaults(list as PricingPackage[])
         if (published.length) setPackages(published)
       })
       .catch(() => undefined)
   }, [])
+
+  const serviceGroups = useMemo(() => groupPricingPackages(packages), [packages])
 
   const selectedPackage = useMemo(
     () => packages.find((p) => p.id === packageId),
@@ -81,7 +96,9 @@ export function RequestServicePage() {
         timeline,
         intent,
         packageId: selectedPackage?.id,
-        packageName: selectedPackage?.name,
+        packageName: selectedPackage
+          ? `${selectedPackage.groupName || selectedPackage.name} — ${selectedPackage.tierLabel || selectedPackage.name}`
+          : undefined,
         packagePrice: selectedPackage
           ? `${selectedPackage.currency} ${selectedPackage.price.toLocaleString()}`
           : undefined,
@@ -212,33 +229,59 @@ export function RequestServicePage() {
                 <h2 className="font-display text-xl font-semibold text-white">
                   {intent === 'buy' ? 'Choose a package' : 'Select a starting point'}
                 </h2>
-                <div className="max-h-72 space-y-2 overflow-auto pr-1">
-                  {packages.map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => {
-                        setPackageId(p.id)
-                        setServiceSlug('')
-                      }}
-                      className={`flex w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left ${
-                        packageId === p.id
-                          ? 'border-brand-400/50 bg-brand-500/10'
-                          : 'border-white/10'
-                      }`}
-                    >
-                      <span>
-                        <span className="block text-sm font-medium text-white">{p.name}</span>
-                        <span className="text-xs text-slate-500">
-                          {p.level ? `${p.level} · ` : ''}
-                          {p.category}
-                        </span>
-                      </span>
-                      <span className="shrink-0 text-sm text-brand-300">
-                        {p.currency} {p.price.toLocaleString()}
-                      </span>
-                    </button>
-                  ))}
+                <p className="text-sm text-slate-400">
+                  Pick a service, then the tier that matches your experience, needs, and budget.
+                </p>
+                <div className="max-h-[28rem] space-y-4 overflow-auto pr-1">
+                  {serviceGroups.map((g) => {
+                    const selectedInGroup = g.variants.some((v) => v.id === packageId)
+                    return (
+                      <div
+                        key={g.groupId}
+                        className={`rounded-xl border p-3 ${
+                          selectedInGroup
+                            ? 'border-brand-400/40 bg-brand-500/[0.06]'
+                            : 'border-white/10 bg-white/[0.02]'
+                        }`}
+                      >
+                        <div className="mb-2 flex items-baseline justify-between gap-2">
+                          <p className="text-sm font-semibold text-white">{g.groupName}</p>
+                          <p className="text-[11px] uppercase tracking-wider text-slate-500">
+                            {g.category}
+                          </p>
+                        </div>
+                        <div className="space-y-1.5" role="radiogroup" aria-label={g.groupName}>
+                          {g.variants.map((p) => (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() => {
+                                setPackageId(p.id)
+                                setServiceSlug('')
+                              }}
+                              className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-left transition ${
+                                packageId === p.id
+                                  ? 'border-brand-400/50 bg-brand-500/10'
+                                  : 'border-white/8 hover:border-white/20'
+                              }`}
+                            >
+                              <span>
+                                <span className="block text-sm font-medium text-white">
+                                  {p.tierLabel}
+                                </span>
+                                <span className="text-xs text-slate-500">
+                                  {p.experienceBand || p.level || p.name}
+                                </span>
+                              </span>
+                              <span className="shrink-0 text-sm text-brand-300">
+                                {p.currency} {p.price.toLocaleString()}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
                 {intent !== 'buy' && (
                   <>
@@ -380,10 +423,12 @@ export function RequestServicePage() {
                   <div className="flex justify-between gap-4 border-b border-white/5 py-2">
                     <dt className="text-slate-500">Package / service</dt>
                     <dd className="text-right text-white">
-                      {selectedPackage?.name || selectedService?.name || 'Custom'}
+                      {selectedPackage
+                        ? `${selectedPackage.groupName || selectedPackage.name} — ${selectedPackage.tierLabel || selectedPackage.name}`
+                        : selectedService?.name || 'Custom'}
                       {selectedPackage && (
                         <span className="mt-0.5 block text-brand-300">
-                          From {selectedPackage.currency}{' '}
+                          {selectedPackage.currency}{' '}
                           {selectedPackage.price.toLocaleString()}
                         </span>
                       )}

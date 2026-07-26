@@ -114,6 +114,11 @@ type ShopProduct = {
   level?: string
   description: string
   status: string
+  groupId?: string
+  groupName?: string
+  tierLabel?: string
+  experienceBand?: string
+  image?: string
 }
 
 function ActivityModule() {
@@ -418,7 +423,7 @@ function ShopModule() {
   return (
     <Panel
       title="Product Pricing"
-      description="Add, edit, publish, or remove packages shown on /pricing. Changes save to the live site."
+      description="Each row is a buyable tier. Rows that share a Service group id appear as one card on /pricing with an in-card option selector."
     >
       <Err message={error} />
       <Msg message={message} />
@@ -446,6 +451,47 @@ function ShopModule() {
               >
                 Remove
               </button>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              <label className="text-[10px] uppercase tracking-wide text-slate-500">
+                Service group id
+                <input
+                  value={p.groupId || ''}
+                  onChange={(e) => {
+                    const next = [...products]
+                    next[idx] = { ...p, groupId: e.target.value }
+                    setProducts(next)
+                  }}
+                  className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                  placeholder="career_cover"
+                />
+              </label>
+              <label className="text-[10px] uppercase tracking-wide text-slate-500">
+                Service card name
+                <input
+                  value={p.groupName || ''}
+                  onChange={(e) => {
+                    const next = [...products]
+                    next[idx] = { ...p, groupName: e.target.value }
+                    setProducts(next)
+                  }}
+                  className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                  placeholder="Cover Letter"
+                />
+              </label>
+              <label className="text-[10px] uppercase tracking-wide text-slate-500">
+                Tier label
+                <input
+                  value={p.tierLabel || ''}
+                  onChange={(e) => {
+                    const next = [...products]
+                    next[idx] = { ...p, tierLabel: e.target.value }
+                    setProducts(next)
+                  }}
+                  className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                  placeholder="Student / 1–2 years"
+                />
+              </label>
             </div>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
               <label className="text-[10px] uppercase tracking-wide text-slate-500">
@@ -514,6 +560,19 @@ function ShopModule() {
                 </select>
               </label>
             </div>
+            <label className="block text-[10px] uppercase tracking-wide text-slate-500">
+              Experience / pocket band
+              <input
+                value={p.experienceBand || ''}
+                onChange={(e) => {
+                  const next = [...products]
+                  next[idx] = { ...p, experienceBand: e.target.value }
+                  setProducts(next)
+                }}
+                className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                placeholder="e.g. 1–2 years experience"
+              />
+            </label>
             <textarea
               value={p.description}
               onChange={(e) => {
@@ -543,6 +602,9 @@ function ShopModule() {
                 category: 'Web',
                 description: '',
                 status: 'draft',
+                groupId: `group_${Date.now().toString(36)}`,
+                groupName: 'New service',
+                tierLabel: 'Starter',
               },
             ])
           }
