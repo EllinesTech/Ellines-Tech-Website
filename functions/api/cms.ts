@@ -406,7 +406,11 @@ function normalizePageRecord(page, existing) {
   }
 }
 
-function findPageIndex(pages, { id: pageId, slug, path }) {
+/**
+ * `customOnly` keeps a slug-only write from silently taking over a record that
+ * is bound to a site route — those must be targeted by id or path.
+ */
+function findPageIndex(pages, { id: pageId, slug, path, customOnly = false }) {
   const routePath = normalizeRoutePath(path)
   if (pageId) {
     const byId = pages.findIndex((p) => p.id === pageId)
@@ -418,7 +422,9 @@ function findPageIndex(pages, { id: pageId, slug, path }) {
   }
   if (slug) {
     const normalized = slugifyPage(slug)
-    return pages.findIndex((p) => p.slug === normalized)
+    return pages.findIndex(
+      (p) => p.slug === normalized && (!customOnly || !normalizeRoutePath(p.path)),
+    )
   }
   return -1
 }
@@ -1227,6 +1233,7 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
       id: page.id,
       slug: page.slug,
       path: routePath,
+      customOnly: !page.id && !routePath,
     })
     const existing = existingIdx >= 0 ? pages[existingIdx] : null
     const record = normalizePageRecord(page, existing)
@@ -1255,12 +1262,24 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     const routePath = normalizeRoutePath(body.path)
     const requestedSlug = slugifyPage(body.slug)
     if (!routePath && !requestedSlug) return json({ error: 'slug or path required' }, 400)
-    const existingIdx = findPageIndex(pages, { id: body.id, slug: requestedSlug, path: routePath })
+    const existingIdx = findPageIndex(pages, {
+      id: body.id,
+      slug: requestedSlug,
+      path: routePath,
+      customOnly: !body.id && !routePath,
+    })
     if (existingIdx >= 0) return json({ ok: true, created: false, page: pages[existingIdx] })
 
-    const slug = requestedSlug || slugFromRoutePath(routePath)
-    if (pages.some((p) => p.slug === slug)) {
-      return json({ error: `Slug "${slug}" is already used by another page` }, 409)
+    let slug = requestedSlug
+    if (slug) {
+      if (pages.some((p) => p.slug === slug)) {
+        return json({ error: `Slug "${slug}" is already used by another page` }, 409)
+      }
+    } else {
+      // Slug is derived from the route, so pick the next free variant rather than failing.
+      const base = slugFromRoutePath(routePath)
+      slug = base
+      for (let n = 2; pages.some((p) => p.slug === slug); n += 1) slug = `${base}-${n}`
     }
     const record = normalizePageRecord(
       {
