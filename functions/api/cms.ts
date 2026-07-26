@@ -2127,7 +2127,7 @@ function defaultShop() {
     {
       "id": "tax_kenya_return",
       "name": "Kenya Tax Return Filing",
-      "price": 500,
+      "price": 200,
       "currency": "KES",
       "category": "Tax & Compliance",
       "level": "Starter",
@@ -2142,7 +2142,7 @@ function defaultShop() {
     {
       "id": "tax_kenya_pin_assist",
       "name": "KRA PIN / iTax Assist",
-      "price": 800,
+      "price": 500,
       "currency": "KES",
       "category": "Tax & Compliance",
       "level": "Entry",
