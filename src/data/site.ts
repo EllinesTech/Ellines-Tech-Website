@@ -8,7 +8,9 @@ export const siteConfig = {
     'Ellines Tech is a Kenya-based IT company offering software development, web design, AI, IT consulting, digital marketing, and career documents — with offices in Nyeri and Nairobi serving businesses across Africa.',
   url: 'https://tech.ellines.co.ke',
   email: 'info@ellines.co.ke',
-  emails: ['info@ellines.co.ke'] as const,
+  /** Orders, checkout, and project requests for Ellines Tech. */
+  ordersEmail: 'tech@ellines.co.ke',
+  emails: ['info@ellines.co.ke', 'tech@ellines.co.ke'] as const,
   phones: ['+254 728 807 213', '+254 748 255 466'] as const,
   phone: '+254 728 807 213',
   whatsapp: '+254748255466',

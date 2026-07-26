@@ -60,7 +60,7 @@ LOCATIONS (both are real and equally important)
 - Nairobi: client meetings, on-site delivery, and regional work.
 
 CONTACT
-WhatsApp +254 748 255 466 · Phone +254 728 807 213 · info@ellines.co.ke · tech.ellines.co.ke
+WhatsApp +254 748 255 466 · Phone +254 728 807 213 · info@ellines.co.ke (general) · tech@ellines.co.ke (orders) · tech.ellines.co.ke
 
 FLAGSHIP PRODUCTS
 AfyaVox AI (clinical voice assistant), RV22 AI Assistant (enterprise), Juno4 AI platform,

@@ -24,7 +24,8 @@ Parent: Ellines Group (Ellines Tech, Ellines Haven, Ellines Rattan)
 
 ## Contact
 
-- Email: info@ellines.co.ke
+- Email: info@ellines.co.ke (general)
+- Orders: tech@ellines.co.ke
 - Phone: +254 728 807 213
 - WhatsApp: +254 748 255 466
 - Hours: 24/7

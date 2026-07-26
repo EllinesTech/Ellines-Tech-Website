@@ -717,8 +717,8 @@ export function RequestServicePage() {
 
           <p className="mt-6 text-center text-sm text-slate-500">
             Prefer email?{' '}
-            <a href={`mailto:${siteConfig.email}`} className="text-brand-300">
-              {siteConfig.email}
+            <a href={`mailto:${siteConfig.ordersEmail}`} className="text-brand-300">
+              {siteConfig.ordersEmail}
             </a>
             {' · '}
             <Link to="/contact" className="text-brand-300">

@@ -165,7 +165,7 @@ export function InvoicePublicPage() {
                     </div>
                   </div>
                   <div className="mt-4 space-y-0.5 text-sm leading-relaxed text-slate-400 print:text-slate-600">
-                    <p>{siteConfig.email}</p>
+                    <p>{siteConfig.ordersEmail}</p>
                     <p>{siteConfig.phone}</p>
                     <p>{primaryLocation.address}</p>
                     {locations
@@ -271,7 +271,7 @@ export function InvoicePublicPage() {
                   {siteConfig.name}
                 </p>
                 <div className="mt-1.5 space-y-0.5 text-sm leading-relaxed text-slate-400 print:text-slate-600">
-                  <p>{siteConfig.email}</p>
+                  <p>{siteConfig.ordersEmail}</p>
                   <p>{siteConfig.phone}</p>
                   <p>{siteConfig.url.replace(/^https?:\/\//, '')}</p>
                 </div>
@@ -412,7 +412,7 @@ export function InvoicePublicPage() {
                   <p className="mt-3 text-sm leading-relaxed text-slate-400 print:text-slate-600">
                     Please settle the {amountPaid > 0 ? 'remaining balance' : 'amount due'} by the due
                     date using the secure payment options on this page, or contact{' '}
-                    <span className="text-slate-300 print:text-slate-800">{siteConfig.email}</span>{' '}
+                    <span className="text-slate-300 print:text-slate-800">{siteConfig.ordersEmail}</span>{' '}
                     to arrange an alternative method. Quote invoice{' '}
                     <span className="font-medium text-slate-200 print:text-slate-900">
                       {invoice.number}

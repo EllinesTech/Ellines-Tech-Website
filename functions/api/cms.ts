@@ -1354,8 +1354,8 @@ export async function onRequestPost(context) {
 
     const staffNotifyTo =
       cleanEmail(env.LEADS_NOTIFY_EMAIL) ||
-      cleanEmail(env.SUPER_ADMIN_EMAIL) ||
-      'info@ellines.co.ke'
+      cleanEmail(env.ORDERS_NOTIFY_EMAIL) ||
+      'tech@ellines.co.ke'
     const staffEmailResult = await sendResendEmail(env, {
       to: staffNotifyTo,
       subject: `[Ellines Tech] ${lead.intent || 'Lead'}: ${lead.name || lead.email}`,
