@@ -15,6 +15,7 @@ import {
   Wrench,
   Shirt,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -23,7 +24,7 @@ import { SEO } from '@/components/SEO'
 import { HeroVisual } from '@/components/home/HeroVisual'
 import { GroupEcosystem } from '@/components/home/GroupEcosystem'
 import { products } from '@/data/products'
-import { services, serviceCategories } from '@/data/services'
+import { serviceCategories } from '@/data/services'
 import { industries } from '@/data/industries'
 import { portfolioProjects } from '@/data/portfolio'
 import { clientBrands } from '@/data/clients'
@@ -33,6 +34,11 @@ import { useSiteCopy } from '@/hooks/useSiteCopy'
 import { ProcessSection } from '@/components/home/ProcessSection'
 import { TechMarquee } from '@/components/home/TechMarquee'
 import { NewsletterSignup } from '@/components/NewsletterSignup'
+import {
+  loadPublishedServices,
+  staticServicesAsCatalog,
+  type CatalogService,
+} from '@/lib/servicesCatalog'
 
 const iconMap: Record<string, React.ElementType> = {
   Code2,
@@ -67,10 +73,15 @@ const valueProps = valuePropData.map((item) => ({
 }))
 
 export function HomePage() {
+  const [services, setServices] = useState<CatalogService[]>(() => staticServicesAsCatalog())
   const featuredProducts = products.filter((p) => p.highlights && p.image).slice(0, 4)
   const featuredPortfolio = portfolioProjects.slice(0, 6)
   const waHref = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
   const { home: liveHome } = useSiteCopy()
+
+  useEffect(() => {
+    void loadPublishedServices().then(setServices)
+  }, [])
 
   return (
     <>

@@ -2,7 +2,6 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { adminNavGroups } from '@/admin/nav'
 import { products } from '@/data/products'
-import { services } from '@/data/services'
 import { portfolioProjects } from '@/data/portfolio'
 import { clientBrands } from '@/data/clients'
 import { siteConfig } from '@/data/site'
@@ -10,6 +9,7 @@ import { testimonials as defaultTestimonials } from '@/data/content'
 import { SocialLinks } from '@/components/engagement/SocialLinks'
 import { Button } from '@/components/ui/Button'
 import { PasswordInput } from '@/components/ui/PasswordInput'
+import { MediaPicker } from '@/components/admin/MediaPicker'
 import { AdminChatPage } from '@/pages/admin/AdminChatPage'
 import { AdminSettingsPage } from '@/pages/admin/AdminSettingsPage'
 import { AdminPagesEditor } from '@/pages/admin/AdminPagesEditor'
@@ -18,6 +18,7 @@ import { AdminDownloadsEditor } from '@/pages/admin/AdminDownloadsEditor'
 import { AdminCareersModule } from '@/pages/admin/AdminCareersModule'
 import { AdminInvoicesModule } from '@/pages/admin/AdminInvoicesModule'
 import { AdminReportsModule } from '@/pages/admin/AdminReportsModule'
+import { AdminServicesModule } from '@/pages/admin/AdminServicesModule'
 import {
   backupCms,
   createAdminUser,
@@ -27,23 +28,33 @@ import {
   fetchNewsletter,
   fetchNotifications,
   fetchReviews,
+  deleteMediaItem,
+  fetchMediaExtras,
   fetchShop,
   fetchSiteCopy,
   fetchUsers,
   restoreCms,
+  saveMediaItem,
   saveReviews,
   saveShop,
   saveSiteCopy,
   setUserActive,
   updateLeadStatus,
   updateUserRole,
+  type CmsMediaItem,
   type CmsUser,
 } from '@/lib/cmsApi'
 import { starterPricingPackages } from '@/data/pricingPackages'
 import { getSiteMediaLibrary, type SiteMediaItem } from '@/data/siteMediaLibrary'
 import { leadStatusOptions } from '@/data/downloads'
 
-function MediaAssetCard({ item }: { item: SiteMediaItem }) {
+function MediaAssetCard({
+  item,
+  onDelete,
+}: {
+  item: SiteMediaItem | CmsMediaItem
+  onDelete?: () => void
+}) {
   const [copied, setCopied] = useState(false)
 
   async function copyUrl() {
@@ -64,15 +75,161 @@ function MediaAssetCard({ item }: { item: SiteMediaItem }) {
           <p className="truncate text-xs font-medium capitalize text-slate-200">{item.label}</p>
           <p className="truncate text-[11px] text-slate-500">{item.src}</p>
         </div>
-        <button
-          type="button"
-          onClick={() => void copyUrl()}
-          className="shrink-0 rounded-md border border-white/10 px-2 py-1 text-[11px] text-brand-300 hover:border-brand-400/40 hover:text-white"
-        >
-          {copied ? 'Copied' : 'Copy URL'}
-        </button>
+        <div className="flex shrink-0 flex-col gap-1">
+          <button
+            type="button"
+            onClick={() => void copyUrl()}
+            className="rounded-md border border-white/10 px-2 py-1 text-[11px] text-brand-300 hover:border-brand-400/40 hover:text-white"
+          >
+            {copied ? 'Copied' : 'Copy URL'}
+          </button>
+          {onDelete ? (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="rounded-md border border-white/10 px-2 py-1 text-[11px] text-rose-300"
+            >
+              Remove
+            </button>
+          ) : null}
+        </div>
       </div>
     </li>
+  )
+}
+
+function SitePhotosModule() {
+  const library = getSiteMediaLibrary()
+  const banners = library.filter((i) => i.group === 'banners')
+  const scenes = library.filter((i) => i.group === 'scenes')
+  const packages = library.filter((i) => i.group === 'packages')
+  const [extras, setExtras] = useState<CmsMediaItem[]>([])
+  const [label, setLabel] = useState('')
+  const [src, setSrc] = useState('')
+  const [group, setGroup] = useState<CmsMediaItem['group']>('custom')
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+
+  async function loadExtras() {
+    try {
+      setExtras(await fetchMediaExtras())
+      setError('')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load custom photos')
+    }
+  }
+
+  useEffect(() => {
+    void loadExtras()
+  }, [])
+
+  async function onAdd() {
+    if (!src.trim()) {
+      setError('Paste an image URL or site path first')
+      return
+    }
+    try {
+      const res = await saveMediaItem({
+        label: label.trim() || 'Custom photo',
+        src: src.trim(),
+        group,
+      })
+      setExtras(res.media || [])
+      setLabel('')
+      setSrc('')
+      setMessage('Photo added to library')
+      setError('')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Save failed')
+    }
+  }
+
+  return (
+    <Panel
+      title="Site Photos"
+      description="Browse built-in banners, scenes, and package posters — or add custom URLs for services and pricing."
+    >
+      <Err message={error} />
+      <Msg message={message} />
+
+      <div className="mb-6 space-y-3 rounded-xl border border-dashed border-brand-400/30 bg-brand-500/5 p-4">
+        <p className="text-sm font-medium text-brand-200">Add photo by URL</p>
+        <p className="text-xs text-slate-400">
+          Paste a path like <code className="text-slate-300">/media/…</code> or a full https URL.
+          Hosted file upload is not wired yet — use Site Photos paths or an external CDN.
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <input
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder="Label"
+            className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+          />
+          <input
+            value={src}
+            onChange={(e) => setSrc(e.target.value)}
+            placeholder="URL or /media/… path"
+            className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white sm:col-span-2"
+          />
+          <select
+            value={group}
+            onChange={(e) => setGroup(e.target.value as CmsMediaItem['group'])}
+            className="rounded-lg border border-white/10 bg-slate-900 px-2 py-1.5 text-sm text-white"
+          >
+            <option value="custom">custom</option>
+            <option value="packages">packages</option>
+            <option value="banners">banners</option>
+            <option value="scenes">scenes</option>
+          </select>
+        </div>
+        <Button type="button" onClick={() => void onAdd()}>
+          Add to library
+        </Button>
+      </div>
+
+      {extras.length > 0 ? (
+        <>
+          <p className="mb-3 text-sm text-slate-400">Custom library ({extras.length})</p>
+          <ul className="mb-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {extras.map((item) => (
+              <MediaAssetCard
+                key={item.id}
+                item={item}
+                onDelete={() => {
+                  void deleteMediaItem(item.id)
+                    .then((res) => {
+                      setExtras(res.media || extras.filter((e) => e.id !== item.id))
+                      setMessage('Removed from library')
+                    })
+                    .catch((e) => setError(e instanceof Error ? e.message : 'Delete failed'))
+                }}
+              />
+            ))}
+          </ul>
+        </>
+      ) : null}
+
+      <p className="mb-3 text-sm text-slate-400">Banners</p>
+      <ul className="mb-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {banners.map((item) => (
+          <MediaAssetCard key={item.id} item={item} />
+        ))}
+      </ul>
+      <p className="mb-3 text-sm text-slate-400">Scenes</p>
+      <ul className="mb-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {scenes.map((item) => (
+          <MediaAssetCard key={item.id} item={item} />
+        ))}
+      </ul>
+      <p className="mb-3 text-sm text-slate-400">
+        Package posters ({packages.length}) — merch, graphics, stationery, and service photos
+      </p>
+      <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {packages.map((item) => (
+          <MediaAssetCard key={item.id} item={item} />
+        ))}
+      </ul>
+    </Panel>
   )
 }
 
@@ -574,6 +731,15 @@ function ShopModule() {
                 placeholder="e.g. 1–2 years experience"
               />
             </label>
+            <MediaPicker
+              value={p.image || ''}
+              onChange={(url) => {
+                const next = [...products]
+                next[idx] = { ...p, image: url }
+                setProducts(next)
+              }}
+              label="Package photo / poster"
+            />
             <textarea
               value={p.description}
               onChange={(e) => {
@@ -1076,27 +1242,7 @@ export function AdminModulePage({ module }: { module: string }) {
   }
 
   if (module === 'services') {
-    return (
-      <Panel title="Services" description="Service pages available on the website.">
-        <ul className="space-y-2">
-          {services.map((s) => (
-            <li key={s.slug} className="flex items-center justify-between gap-3 text-sm">
-              <span className="text-white">{s.name}</span>
-              <Link className="text-brand-300" to={`/services/${s.slug}`}>
-                Open
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-4 text-sm text-slate-400">
-          To publish custom landing pages for campaigns, use{' '}
-          <Link to="/admin/pages" className="text-brand-300">
-            Page Editor
-          </Link>
-          .
-        </p>
-      </Panel>
-    )
+    return <AdminServicesModule />
   }
 
   if (module === 'portfolio') {
@@ -1118,37 +1264,7 @@ export function AdminModulePage({ module }: { module: string }) {
   }
 
   if (module === 'media') {
-    const library = getSiteMediaLibrary()
-    const banners = library.filter((i) => i.group === 'banners')
-    const scenes = library.filter((i) => i.group === 'scenes')
-    const packages = library.filter((i) => i.group === 'packages')
-    return (
-      <Panel
-        title="Site Photos"
-        description="Banners, scenes, and pricing package posters — browse and copy URLs to reuse elsewhere."
-      >
-        <p className="mb-3 text-sm text-slate-400">Banners</p>
-        <ul className="mb-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {banners.map((item) => (
-            <MediaAssetCard key={item.id} item={item} />
-          ))}
-        </ul>
-        <p className="mb-3 text-sm text-slate-400">Scenes</p>
-        <ul className="mb-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {scenes.map((item) => (
-            <MediaAssetCard key={item.id} item={item} />
-          ))}
-        </ul>
-        <p className="mb-3 text-sm text-slate-400">
-          Package posters ({packages.length}) — merch, graphics, stationery, and service photos
-        </p>
-        <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {packages.map((item) => (
-            <MediaAssetCard key={item.id} item={item} />
-          ))}
-        </ul>
-      </Panel>
-    )
+    return <SitePhotosModule />
   }
 
   if (module === 'social') {

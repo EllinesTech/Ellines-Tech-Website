@@ -197,6 +197,69 @@ export async function saveShop(products: unknown[]) {
   })
 }
 
+export type CmsService = {
+  id: string
+  slug: string
+  name: string
+  category: string
+  description: string
+  offerings: string[]
+  image?: string
+  startingPrice?: number | null
+  pricingGroupId?: string
+  status: 'published' | 'draft'
+}
+
+export type CmsMediaItem = {
+  id: string
+  label: string
+  src: string
+  group: 'banners' | 'scenes' | 'packages' | 'custom'
+  createdAt?: string
+}
+
+export async function fetchServices(publishedOnly = true): Promise<CmsService[]> {
+  const data = await cmsFetch(
+    `resource=services${publishedOnly ? '&published=1' : ''}`,
+    publishedOnly ? undefined : { headers: elevatedHeaders() },
+  )
+  return (data.services || []) as CmsService[]
+}
+
+export async function fetchService(slug: string): Promise<CmsService> {
+  const data = await cmsFetch(`resource=services&slug=${encodeURIComponent(slug)}`)
+  return data.service as CmsService
+}
+
+export async function saveServices(services: CmsService[]) {
+  return cmsFetch('resource=services', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'save_services', services }),
+  })
+}
+
+export async function fetchMediaExtras(): Promise<CmsMediaItem[]> {
+  const data = await cmsFetch('resource=media')
+  return (data.media || []) as CmsMediaItem[]
+}
+
+export async function saveMediaItem(item: Partial<CmsMediaItem>) {
+  return cmsFetch('resource=media', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'save_media_item', item }),
+  })
+}
+
+export async function deleteMediaItem(id: string) {
+  return cmsFetch('resource=media', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'delete_media_item', id }),
+  })
+}
+
 import type { KnowledgeArticle } from '@/data/knowledge'
 
 export type { KnowledgeArticle }

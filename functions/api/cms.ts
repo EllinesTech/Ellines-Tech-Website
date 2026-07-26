@@ -1,5 +1,8 @@
 import { defaultKnowledge } from './knowledgeDefaults.js'
 import { defaultDownloads } from './downloadsDefaults.js'
+import { defaultServices } from './servicesDefaults.js'
+import { defaultProducts } from './productsDefaults.js'
+import { defaultPortfolio } from './portfolioDefaults.js'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -73,6 +76,127 @@ function defaultSiteSettings() {
 async function loadSiteSettings(env) {
   const stored = await getJson(env, 'cms:settings', null)
   return { ...defaultSiteSettings(), ...(stored && typeof stored === 'object' ? stored : {}) }
+}
+
+/** Services catalogue — seed defaults when KV empty; merge missing seed slugs only (never overwrite admin edits). */
+async function loadServicesCatalog(env) {
+  let list = await getJson(env, 'cms:services', null)
+  const defaults = defaultServices()
+  if (!list || !Array.isArray(list) || list.length === 0) {
+    list = defaults
+    await putJson(env, 'cms:services', list)
+    return list
+  }
+  const bySlug = new Set(list.map((s) => s.slug))
+  let changed = false
+  for (const d of defaults) {
+    if (!bySlug.has(d.slug)) {
+      list.push(d)
+      changed = true
+    }
+  }
+  if (changed) await putJson(env, 'cms:services', list)
+  return list
+}
+
+async function loadMediaExtras(env) {
+  const list = await getJson(env, 'cms:media-extras', null)
+  return Array.isArray(list) ? list : []
+}
+
+function mergeCatalogBySlug(stored, defaults) {
+  if (!stored || !Array.isArray(stored) || stored.length === 0) return defaults
+  const bySlug = new Set(stored.map((s) => s.slug))
+  const next = [...stored]
+  for (const d of defaults) {
+    if (!bySlug.has(d.slug)) next.push(d)
+  }
+  return next
+}
+
+async function loadProductsCatalog(env) {
+  const defaults = defaultProducts()
+  let list = mergeCatalogBySlug(await getJson(env, 'cms:products', null), defaults)
+  const prev = await getJson(env, 'cms:products', null)
+  if (!prev || !Array.isArray(prev) || prev.length === 0 || list.length !== prev.length) {
+    await putJson(env, 'cms:products', list)
+  }
+  return list
+}
+
+async function loadPortfolioCatalog(env) {
+  const defaults = defaultPortfolio()
+  let list = mergeCatalogBySlug(await getJson(env, 'cms:portfolio', null), defaults)
+  const prev = await getJson(env, 'cms:portfolio', null)
+  if (!prev || !Array.isArray(prev) || prev.length === 0 || list.length !== prev.length) {
+    await putJson(env, 'cms:portfolio', list)
+  }
+  return list
+}
+
+function defaultSiteProfile() {
+  return {
+    email: 'info@tech.ellines.co.ke',
+    phone: '+254 728 807 213',
+    whatsapp: '+254748255466',
+    address: 'Nairobi, Kenya',
+    socialLinks: [
+      {
+        id: 'facebook',
+        label: 'Facebook',
+        handle: '@ellines.tech',
+        href: 'https://www.facebook.com/ellines.tech/',
+      },
+      { id: 'twitter', label: 'X (Twitter)', handle: '@EllinesTech', href: 'https://x.com/EllinesTech' },
+      {
+        id: 'instagram',
+        label: 'Instagram',
+        handle: '@ellines.tech',
+        href: 'https://www.instagram.com/ellines.tech/',
+      },
+      {
+        id: 'linkedin',
+        label: 'LinkedIn',
+        handle: 'Ellines Tech',
+        href: 'https://www.linkedin.com/in/ellines-tech-8a3788310/',
+      },
+      { id: 'github', label: 'GitHub', handle: 'EllinesTech', href: 'https://github.com/EllinesTech' },
+    ],
+  }
+}
+
+async function loadSiteProfile(env) {
+  const stored = await getJson(env, 'cms:site-profile', null)
+  return { ...defaultSiteProfile(), ...(stored && typeof stored === 'object' ? stored : {}) }
+}
+
+function defaultChatFaqs() {
+  return [
+    {
+      id: 'welcome',
+      questions: ['hi', 'hello', 'hey'],
+      answer:
+        'Hello — welcome to Ellines Tech. I can help with products, services, pricing, or connect you to a human on WhatsApp.',
+      links: [
+        { label: 'Services', href: '/services' },
+        { label: 'Pricing', href: '/pricing' },
+      ],
+    },
+    {
+      id: 'pricing',
+      questions: ['pricing', 'how much', 'cost', 'price'],
+      answer: 'Transparent package pricing is on our Pricing page. Custom projects are quoted after a short brief.',
+      links: [{ label: 'View pricing', href: '/pricing' }],
+    },
+  ]
+}
+
+async function loadChatFaqs(env) {
+  const list = await getJson(env, 'cms:chat-faqs', null)
+  if (Array.isArray(list) && list.length) return list
+  const seed = defaultChatFaqs()
+  await putJson(env, 'cms:chat-faqs', seed)
+  return seed
 }
 
 function defaultJobs() {
@@ -402,26 +526,20 @@ export async function onRequestGet(context) {
           changed = true
         }
       }
-      // Repair posters + catalogue metadata from code defaults (KV self-heals on fetch)
+      // Repair broken/legacy posters only — never overwrite admin-edited price/name/meta
       products = products.map((p) => {
-        const d = defaultById.get(p.id)
-        if (!d) {
-          // Migrate legacy Career category label even for unknown custom rows
-          if (String(p.category || '') === 'Career') {
-            changed = true
-            return { ...p, category: 'Career Documents' }
-          }
-          return p
+        let category = String(p.category || '')
+        if (category === 'Career') {
+          changed = true
+          category = 'Career Documents'
         }
+        const d = defaultById.get(p.id)
         const image = String(p.image || '')
-        let category = String(p.category || d.category || '')
-        if (category === 'Career') category = 'Career Documents'
         const wrongGraphics =
           (image.includes('poster-graphics') ||
             image.includes('design_graphics_pack') ||
             image.includes('GRAPHICS')) &&
           category !== 'Graphics'
-        // Web (and any non-Graphics) must never keep the shared Graphics Design poster
         const webStuckOnGraphics =
           category === 'Web' &&
           (wrongGraphics ||
@@ -431,51 +549,48 @@ export async function onRequestGet(context) {
         const isLegacyArt =
           !image ||
           image.endsWith('.svg') ||
-          image.endsWith('.png') ||
           image.includes('logo-hero') ||
           image.includes('ellines-rebranding') ||
-          /\/media\/posters\/poster-/.test(image) ||
-          /\/media\/scenes\//.test(image)
-        const catalogPhoto = String(d.image || '')
-        const shouldUseCatalog =
-          Boolean(catalogPhoto) &&
-          catalogPhoto.includes('/media/posters/packages/') &&
-          image !== catalogPhoto
+          /\/media\/posters\/poster-/.test(image)
+        const catalogPhoto = d ? String(d.image || '') : ''
         const needsImage =
-          Boolean(d.image) &&
-          image !== d.image &&
-          (wrongGraphics || webStuckOnGraphics || isLegacyArt || shouldUseCatalog)
-        const needsMeta =
-          Number(p.price) !== Number(d.price) ||
-          String(p.name || '') !== String(d.name || '') ||
-          String(p.description || '') !== String(d.description || '') ||
-          category !== String(d.category || '') ||
-          String(p.level || '') !== String(d.level || '') ||
-          String(p.currency || '') !== String(d.currency || 'KES') ||
-          String(p.groupId || '') !== String(d.groupId || '') ||
-          String(p.groupName || '') !== String(d.groupName || '') ||
-          String(p.tierLabel || '') !== String(d.tierLabel || '') ||
-          String(p.experienceBand || '') !== String(d.experienceBand || '')
-        if (!needsImage && !needsMeta) return p
+          Boolean(catalogPhoto) &&
+          (wrongGraphics || webStuckOnGraphics || isLegacyArt) &&
+          image !== catalogPhoto
+        if (!needsImage && category === String(p.category || '')) return p
         changed = true
         return {
           ...p,
-          name: d.name,
-          price: d.price,
-          currency: d.currency || 'KES',
-          category: d.category,
-          level: d.level,
-          description: d.description,
-          groupId: d.groupId,
-          groupName: d.groupName,
-          tierLabel: d.tierLabel,
-          experienceBand: d.experienceBand,
-          ...(needsImage || shouldUseCatalog ? { image: d.image } : {}),
+          category,
+          ...(needsImage ? { image: catalogPhoto } : {}),
         }
       })
       if (changed) await putJson(env, 'cms:shop-products', products)
     }
     return json({ products })
+  }
+
+  if (resource === 'services') {
+    const list = await loadServicesCatalog(env)
+    if (slug) {
+      const service = list.find((s) => s.slug === slug)
+      if (!service) return json({ error: 'not found' }, 404)
+      if (service.status !== 'published' && !(await staffOrGod(request, env))) {
+        return json({ error: 'not found' }, 404)
+      }
+      return json({ service })
+    }
+    const publishedOnly = url.searchParams.get('published') === '1'
+    if (!publishedOnly && !(await staffOrGod(request, env))) {
+      return json({ error: 'unauthorized' }, 401)
+    }
+    return json({
+      services: publishedOnly ? list.filter((s) => s.status === 'published') : list,
+    })
+  }
+
+  if (resource === 'media') {
+    return json({ media: await loadMediaExtras(env) })
   }
 
   if (resource === 'knowledge') {
@@ -1154,6 +1269,70 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     return json({ ok: true })
   }
 
+  if (action === 'save_services') {
+    const incoming = Array.isArray(body.services) ? body.services : null
+    if (!incoming) return json({ error: 'services array required' }, 400)
+    const normalized = incoming.map((s) => {
+      const slug = String(s.slug || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+      return {
+        id: s.id || id('svc'),
+        slug,
+        name: String(s.name || 'Untitled service').trim(),
+        category: String(s.category || 'consulting'),
+        description: String(s.description || ''),
+        offerings: Array.isArray(s.offerings)
+          ? s.offerings.map((o) => String(o).trim()).filter(Boolean)
+          : String(s.offeringsText || '')
+              .split('\n')
+              .map((o) => o.trim())
+              .filter(Boolean),
+        image: String(s.image || ''),
+        startingPrice:
+          s.startingPrice === null || s.startingPrice === '' || s.startingPrice === undefined
+            ? null
+            : Number(s.startingPrice),
+        pricingGroupId: String(s.pricingGroupId || ''),
+        status: s.status === 'draft' ? 'draft' : 'published',
+      }
+    }).filter((s) => s.slug && s.name)
+    await putJson(env, 'cms:services', normalized)
+    await logActivity(env, { type: 'services', message: `Updated services catalogue (${normalized.length})` })
+    return json({ ok: true, services: normalized })
+  }
+
+  if (action === 'save_media_item') {
+    const list = await loadMediaExtras(env)
+    const item = body.item || {}
+    if (!item.src) return json({ error: 'src required' }, 400)
+    const record = {
+      id: item.id || id('media'),
+      label: String(item.label || 'Custom photo').trim(),
+      src: String(item.src).trim(),
+      group: ['banners', 'scenes', 'packages', 'custom'].includes(item.group)
+        ? item.group
+        : 'custom',
+      createdAt: item.createdAt || new Date().toISOString(),
+    }
+    const idx = list.findIndex((m) => m.id === record.id)
+    if (idx >= 0) list[idx] = { ...list[idx], ...record }
+    else list.unshift(record)
+    await putJson(env, 'cms:media-extras', list)
+    await logActivity(env, { type: 'media', message: `Saved media ${record.label}` })
+    return json({ ok: true, item: record, media: list })
+  }
+
+  if (action === 'delete_media_item') {
+    const list = await loadMediaExtras(env)
+    const next = list.filter((m) => m.id !== body.id)
+    await putJson(env, 'cms:media-extras', next)
+    await logActivity(env, { type: 'media', message: `Deleted media ${body.id}` })
+    return json({ ok: true, media: next })
+  }
+
   if (action === 'save_reviews') {
     await putJson(env, 'cms:reviews', body.reviews || [])
     return json({ ok: true })
@@ -1247,6 +1426,8 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
       pages: await getJson(env, 'cms:pages', []),
       siteCopy: await getJson(env, 'cms:site-copy', {}),
       shop: await getJson(env, 'cms:shop-products', []),
+      services: await getJson(env, 'cms:services', []),
+      mediaExtras: await getJson(env, 'cms:media-extras', []),
       knowledge: await getJson(env, 'cms:knowledge', []),
       downloads: await getJson(env, 'cms:downloads', []),
       reviews: await getJson(env, 'cms:reviews', []),
@@ -1268,6 +1449,8 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     if (backup.pages) await putJson(env, 'cms:pages', backup.pages)
     if (backup.siteCopy) await putJson(env, 'cms:site-copy', backup.siteCopy)
     if (backup.shop) await putJson(env, 'cms:shop-products', backup.shop)
+    if (backup.services) await putJson(env, 'cms:services', backup.services)
+    if (backup.mediaExtras) await putJson(env, 'cms:media-extras', backup.mediaExtras)
     if (backup.knowledge) await putJson(env, 'cms:knowledge', backup.knowledge)
     if (backup.downloads) await putJson(env, 'cms:downloads', backup.downloads)
     if (backup.reviews) await putJson(env, 'cms:reviews', backup.reviews)

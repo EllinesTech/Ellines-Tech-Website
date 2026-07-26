@@ -3,13 +3,13 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { Check, ChevronRight } from 'lucide-react'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
-import { services } from '@/data/services'
 import {
   starterPricingPackages,
   groupPricingPackages,
   type PricingPackage,
 } from '@/data/pricingPackages'
 import { fetchShop, submitServiceRequest } from '@/lib/cmsApi'
+import { loadPublishedServices, type CatalogService } from '@/lib/servicesCatalog'
 import { siteConfig } from '@/data/site'
 
 function withGroupDefaults(list: PricingPackage[]): PricingPackage[] {
@@ -47,6 +47,7 @@ export function RequestServicePage() {
   const [packageId, setPackageId] = useState(params.get('package') || '')
   const [serviceSlug, setServiceSlug] = useState(params.get('service') || '')
   const [packages, setPackages] = useState(() => withGroupDefaults(starterPricingPackages))
+  const [services, setServices] = useState<CatalogService[]>([])
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -66,6 +67,7 @@ export function RequestServicePage() {
         if (published.length) setPackages(published)
       })
       .catch(() => undefined)
+    void loadPublishedServices().then(setServices)
   }, [])
 
   const serviceGroups = useMemo(() => groupPricingPackages(packages), [packages])
@@ -76,7 +78,7 @@ export function RequestServicePage() {
   )
   const selectedService = useMemo(
     () => services.find((s) => s.slug === serviceSlug),
-    [serviceSlug],
+    [services, serviceSlug],
   )
 
   async function submit() {

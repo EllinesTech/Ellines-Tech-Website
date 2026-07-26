@@ -1,45 +1,64 @@
+import { useEffect, useState } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { CheckCircle2, ArrowLeft, ArrowRight } from 'lucide-react'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import {
-  getServiceBySlug,
-  serviceCategories,
-  services,
-} from '@/data/services'
+import { serviceCategories } from '@/data/services'
 import { siteConfig } from '@/data/site'
-import { servicePosterMap } from '@/data/posterMap'
-
-const categoryScenes: Record<string, string> = {
-  design: siteConfig.media.scenes.webDesign,
-  development: siteConfig.media.scenes.serviceTech,
-  ai: siteConfig.media.scenes.aiVisual,
-  marketing: siteConfig.media.scenes.growth,
-  security: siteConfig.media.scenes.uiDesign,
-  career: siteConfig.media.scenes.workspace,
-  consulting: siteConfig.media.scenes.solutionsAi,
-  support: '/media/posters/poster-os-install.png',
-  compliance: '/media/posters/poster-tax-returns.png',
-  merch: '/media/posters/poster-apparel.png',
-}
+import {
+  loadPublishedServices,
+  loadServiceBySlug,
+  serviceImage,
+  type CatalogService,
+} from '@/lib/servicesCatalog'
 
 export function ServiceDetailPage() {
   const { slug } = useParams<{ slug: string }>()
-  const service = slug ? getServiceBySlug(slug) : undefined
+  const [service, setService] = useState<CatalogService | null | undefined>(undefined)
+  const [related, setRelated] = useState<CatalogService[]>([])
+
+  useEffect(() => {
+    if (!slug) {
+      setService(null)
+      return
+    }
+    let cancelled = false
+    void (async () => {
+      const found = await loadServiceBySlug(slug)
+      if (cancelled) return
+      if (!found || found.status === 'draft') {
+        setService(null)
+        return
+      }
+      setService(found)
+      const all = await loadPublishedServices()
+      if (cancelled) return
+      setRelated(
+        all
+          .filter((s) => s.category === found.category && s.slug !== found.slug)
+          .slice(0, 3),
+      )
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [slug])
+
+  if (service === undefined) {
+    return (
+      <div className="section-container section-padding">
+        <p className="text-sm text-slate-400">Loading service…</p>
+      </div>
+    )
+  }
 
   if (!service) {
     return <Navigate to="/services" replace />
   }
 
-  const category = serviceCategories[service.category]
-  const related = services
-    .filter((s) => s.category === service.category && s.slug !== service.slug)
-    .slice(0, 3)
-  const scene =
-    servicePosterMap[service.slug] ||
-    categoryScenes[service.category] ||
-    siteConfig.media.scenes.heroTech
+  const category = serviceCategories[service.category] || serviceCategories.consulting
+  const scene = serviceImage(service)
 
   return (
     <>
@@ -68,11 +87,23 @@ export function ServiceDetailPage() {
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-300">
             {service.description}
           </p>
+          {service.startingPrice != null && service.startingPrice > 0 ? (
+            <p className="mt-3 text-sm font-medium text-brand-200">
+              From KES {service.startingPrice.toLocaleString()}
+            </p>
+          ) : null}
           <div className="mt-8 flex flex-wrap gap-3">
             <Button href={`/request?intent=request&service=${service.slug}`} icon>
               Request this service
             </Button>
-            <Button href="/pricing" variant="secondary">
+            <Button
+              href={
+                service.pricingGroupId
+                  ? `/pricing?group=${encodeURIComponent(service.pricingGroupId)}`
+                  : '/pricing'
+              }
+              variant="secondary"
+            >
               View pricing
             </Button>
           </div>
@@ -122,7 +153,11 @@ export function ServiceDetailPage() {
                     Based in {siteConfig.address} · {siteConfig.phones[0]}
                   </p>
                 </div>
-                <Button href={`/request?intent=request&service=${service.slug}`} className="mt-8 w-full sm:w-auto" icon>
+                <Button
+                  href={`/request?intent=request&service=${service.slug}`}
+                  className="mt-8 w-full sm:w-auto"
+                  icon
+                >
                   Start this service
                 </Button>
               </div>
@@ -154,6 +189,7 @@ export function ServiceDetailPage() {
                     title={item.name}
                     description={item.description}
                     href={`/services/${item.slug}`}
+                    image={serviceImage(item)}
                   />
                 ))}
               </div>

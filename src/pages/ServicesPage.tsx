@@ -1,9 +1,15 @@
+import { useEffect, useState } from 'react'
 import { SEO } from '@/components/SEO'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { ProcessSection } from '@/components/home/ProcessSection'
-import { services, serviceCategories, type ServiceCategory } from '@/data/services'
+import { serviceCategories, type ServiceCategory } from '@/data/services'
+import {
+  loadPublishedServices,
+  serviceImage,
+  type CatalogService,
+} from '@/lib/servicesCatalog'
 import {
   Brain,
   Briefcase,
@@ -16,7 +22,6 @@ import {
   Shirt,
   Wrench,
 } from 'lucide-react'
-import { servicePosterMap } from '@/data/posterMap'
 
 const iconMap: Record<string, React.ElementType> = {
   Code2,
@@ -32,10 +37,15 @@ const iconMap: Record<string, React.ElementType> = {
 }
 
 export function ServicesPage() {
+  const [services, setServices] = useState<CatalogService[]>([])
   const categories = Object.entries(serviceCategories) as [
     ServiceCategory,
     (typeof serviceCategories)[ServiceCategory],
   ][]
+
+  useEffect(() => {
+    void loadPublishedServices().then(setServices)
+  }, [])
 
   return (
     <>
@@ -72,6 +82,7 @@ export function ServicesPage() {
             {categories.map(([key, cat]) => {
               const Icon = iconMap[cat.icon] ?? Code2
               const categoryServices = services.filter((s) => s.category === key)
+              if (categoryServices.length === 0) return null
               return (
                 <div key={key} id={key} className="scroll-mt-24">
                   <div className="mb-8 flex items-start gap-4">
@@ -88,9 +99,13 @@ export function ServicesPage() {
                       <Card
                         key={service.slug}
                         title={service.name}
-                        description={service.description}
+                        description={
+                          service.startingPrice != null && service.startingPrice > 0
+                            ? `${service.description} From KES ${service.startingPrice.toLocaleString()}.`
+                            : service.description
+                        }
                         href={`/services/${service.slug}`}
-                        image={servicePosterMap[service.slug]}
+                        image={serviceImage(service)}
                       />
                     ))}
                   </div>
