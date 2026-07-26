@@ -431,12 +431,12 @@ export function RequestServicePage() {
                       autoComplete="name"
                     />
                   </Field>
-                  <Field label="Work email" htmlFor="req-email">
+                  <Field label="Work / Personal email" htmlFor="req-email">
                     <input
                       id="req-email"
                       required
                       type="email"
-                      placeholder="you@company.com"
+                      placeholder="you@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className={fieldClass}
@@ -453,10 +453,10 @@ export function RequestServicePage() {
                       autoComplete="tel"
                     />
                   </Field>
-                  <Field label="Company" htmlFor="req-company" optional>
+                  <Field label="Company / School" htmlFor="req-company" optional>
                     <input
                       id="req-company"
-                      placeholder="Your company"
+                      placeholder="Your company or school"
                       value={company}
                       onChange={(e) => setCompany(e.target.value)}
                       className={fieldClass}

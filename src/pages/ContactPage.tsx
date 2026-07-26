@@ -353,15 +353,15 @@ export function ContactPage() {
                           type="email"
                           required
                           className={fieldClass}
-                          placeholder="you@company.com"
+                          placeholder="you@email.com"
                         />
                       </Field>
-                      <Field label="Company" htmlFor="company" optional>
+                      <Field label="Company / School" htmlFor="company" optional>
                         <input
                           id="company"
                           name="company"
                           className={fieldClass}
-                          placeholder="Your company"
+                          placeholder="Your company or school"
                         />
                       </Field>
                       <Field label="Phone / WhatsApp" htmlFor="phone" optional>
