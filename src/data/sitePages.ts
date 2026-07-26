@@ -156,23 +156,3 @@ export function normalizeRoutePath(value: string | undefined | null): string {
   const trimmed = withSlash.replace(/\/+$/, '')
   return trimmed || '/'
 }
-
-export function findSitePage(path: string): SitePageEntry | undefined {
-  const normalized = normalizeRoutePath(path)
-  return sitePages.find((p) => p.path === normalized)
-}
-
-/** Default slug used when a route page is first created (mirrors the API). */
-export function slugForRoutePath(path: string): string {
-  const normalized = normalizeRoutePath(path)
-  if (!normalized || normalized === '/') return 'home'
-  return (
-    normalized
-      .replace(/^\//, '')
-      .replace(/\//g, '-')
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '') || 'page'
-  )
-}

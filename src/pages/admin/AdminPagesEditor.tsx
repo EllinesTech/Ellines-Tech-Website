@@ -15,7 +15,6 @@ import {
   normalizeRoutePath,
   sitePageGroups,
   sitePages,
-  slugForRoutePath,
   type SitePageEntry,
 } from '@/data/sitePages'
 
@@ -111,9 +110,9 @@ export function AdminPagesEditor() {
     }
     setBusy(true)
     try {
+      // No slug: the API derives it from the route and de-duplicates if needed.
       const { page, created } = await ensurePage({
         path: entry.path,
-        slug: slugForRoutePath(entry.path),
         title: entry.label,
         excerpt: entry.description,
         mode: 'append',
