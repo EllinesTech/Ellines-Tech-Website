@@ -1,12 +1,33 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SEO } from '@/components/SEO'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Button } from '@/components/ui/Button'
 import { fetchShop } from '@/lib/cmsApi'
 import { loadAuthUser } from '@/lib/auth'
-import { starterPricingPackages, retiredPricingIds, type PricingPackage } from '@/data/pricingPackages'
+import {
+  starterPricingPackages,
+  retiredPricingIds,
+  packageCategoryOrder,
+  levelSortIndex,
+  type PricingPackage,
+} from '@/data/pricingPackages'
 import { packagePosterMap, posterForPackage } from '@/data/posterMap'
+
+function sortPackages(list: PricingPackage[]): PricingPackage[] {
+  return [...list].sort((a, b) => {
+    const levelDiff = levelSortIndex(a.level) - levelSortIndex(b.level)
+    if (levelDiff !== 0) return levelDiff
+    return Number(a.price) - Number(b.price)
+  })
+}
+
+function orderedCategories(products: PricingPackage[]): string[] {
+  const present = new Set(products.map((p) => p.category))
+  const preferred = packageCategoryOrder.filter((c) => present.has(c))
+  const rest = [...present].filter((c) => !preferred.includes(c as (typeof packageCategoryOrder)[number]))
+  return [...preferred, ...rest]
+}
 
 export function PricingPage() {
   const [products, setProducts] = useState<PricingPackage[]>([])
@@ -35,13 +56,13 @@ export function PricingPage() {
       })
   }, [])
 
-  const categories = [...new Set(products.map((p) => p.category))]
+  const categories = useMemo(() => orderedCategories(products), [products])
 
   return (
     <>
       <SEO
         title="Product Pricing"
-        description="Transparent product pricing for Ellines Tech packages — websites, design, software, AI, career documents, and more."
+        description="Transparent Kenya-market packages — career documents by experience level, websites, consulting, design, and more."
         path="/pricing"
       />
       <section className="section-padding">
@@ -49,7 +70,7 @@ export function PricingPage() {
           <SectionHeader
             eyebrow="Product pricing"
             title="Packages & starting prices"
-            description="Clear Kenya-market starting prices. Request a package or buy through our professional intake — we confirm scope, then share payment details."
+            description="Self-select by level — from student and starter rates through business, senior, and executive packages. We confirm scope, then share payment details."
             align="center"
             className="mb-8"
           />
@@ -80,76 +101,81 @@ export function PricingPage() {
                 {category}
               </h2>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {products
-                  .filter((p) => p.category === category)
-                  .map((p) => {
-                    // Prefer id→JPG map so stale CMS / old category fallbacks cannot win
-                    const poster = packagePosterMap[p.id] || posterForPackage(p)
-                    return (
-                      <article
-                        key={p.id}
-                        className="group flex flex-col overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-b from-white/[0.1] to-surface-elevated/90 shadow-[0_22px_55px_-28px_rgba(0,0,0,0.9)] ring-1 ring-inset ring-white/[0.05] transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-400/45 hover:shadow-[0_28px_60px_-22px_rgba(34,211,238,0.3)]"
-                      >
-                        <div className="relative aspect-[16/10] overflow-hidden bg-slate-950">
-                          <img
-                            src={poster}
-                            alt={`${p.name} — package preview`}
-                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                            loading="lazy"
-                            onError={(e) => {
-                              const el = e.currentTarget
-                              if (el.dataset.fallback === '1') return
-                              el.dataset.fallback = '1'
-                              el.src = posterForPackage({
-                                ...p,
-                                id: undefined,
-                                image: undefined,
-                              })
-                            }}
-                          />
-                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-slate-950/10" />
-                          <img
-                            src="/logos/logo-mark-nav.png"
-                            alt=""
-                            width={36}
-                            height={36}
-                            className="absolute right-3 top-3 h-9 w-9 rounded-lg border border-white/15 bg-slate-950/75 object-contain p-1 shadow-lg backdrop-blur-md sm:right-4 sm:top-4"
-                          />
-                          <span className="absolute bottom-3 left-3 rounded-md border border-white/15 bg-slate-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-200 backdrop-blur-md sm:left-4">
+                {sortPackages(products.filter((p) => p.category === category)).map((p) => {
+                  // Prefer id→JPG map so stale CMS / old category fallbacks cannot win
+                  const poster = packagePosterMap[p.id] || posterForPackage(p)
+                  return (
+                    <article
+                      key={p.id}
+                      className="group flex flex-col overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-b from-white/[0.1] to-surface-elevated/90 shadow-[0_22px_55px_-28px_rgba(0,0,0,0.9)] ring-1 ring-inset ring-white/[0.05] transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-400/45 hover:shadow-[0_28px_60px_-22px_rgba(34,211,238,0.3)]"
+                    >
+                      <div className="relative aspect-[16/10] overflow-hidden bg-slate-950">
+                        <img
+                          src={poster}
+                          alt={`${p.name} — package preview`}
+                          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                          loading="lazy"
+                          onError={(e) => {
+                            const el = e.currentTarget
+                            if (el.dataset.fallback === '1') return
+                            el.dataset.fallback = '1'
+                            el.src = posterForPackage({
+                              ...p,
+                              id: undefined,
+                              image: undefined,
+                            })
+                          }}
+                        />
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-slate-950/10" />
+                        <img
+                          src="/logos/logo-mark-nav.png"
+                          alt=""
+                          width={36}
+                          height={36}
+                          className="absolute right-3 top-3 h-9 w-9 rounded-lg border border-white/15 bg-slate-950/75 object-contain p-1 shadow-lg backdrop-blur-md sm:right-4 sm:top-4"
+                        />
+                        <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5 sm:left-4">
+                          {p.level && (
+                            <span className="rounded-md border border-brand-400/35 bg-slate-950/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-200 backdrop-blur-md">
+                              {p.level}
+                            </span>
+                          )}
+                          <span className="rounded-md border border-white/15 bg-slate-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-300 backdrop-blur-md">
                             {p.category}
                           </span>
                         </div>
-                        <div className="flex flex-1 flex-col p-5 sm:p-6">
-                          <h3 className="font-display text-lg font-bold leading-snug text-white transition-colors group-hover:text-brand-200 sm:text-xl">
-                            {p.name}
-                          </h3>
-                          <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-300">
-                            {p.description}
+                      </div>
+                      <div className="flex flex-1 flex-col p-5 sm:p-6">
+                        <h3 className="font-display text-lg font-bold leading-snug text-white transition-colors group-hover:text-brand-200 sm:text-xl">
+                          {p.name}
+                        </h3>
+                        <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-300">
+                          {p.description}
+                        </p>
+                        <div className="mt-5 border-t border-white/12 pt-4">
+                          <p className="font-display text-2xl font-semibold tracking-tight text-white sm:text-[1.65rem]">
+                            <span className="mr-1.5 text-xs font-medium uppercase tracking-[0.12em] text-slate-400">
+                              From
+                            </span>
+                            <span className="text-brand-200">{p.currency}</span>{' '}
+                            {Number(p.price).toLocaleString()}
                           </p>
-                          <div className="mt-5 border-t border-white/12 pt-4">
-                            <p className="font-display text-2xl font-semibold tracking-tight text-white sm:text-[1.65rem]">
-                              <span className="mr-1.5 text-xs font-medium uppercase tracking-[0.12em] text-slate-400">
-                                From
-                              </span>
-                              <span className="text-brand-200">{p.currency}</span>{' '}
-                              {Number(p.price).toLocaleString()}
-                            </p>
-                            <div className="mt-4 flex flex-wrap gap-2">
-                              <Button
-                                href={`/request?intent=buy&package=${encodeURIComponent(p.id)}`}
-                                size="sm"
-                              >
-                                Buy / request
-                              </Button>
-                              <Button href="/contact#quote" size="sm" variant="ghost">
-                                Ask a question
-                              </Button>
-                            </div>
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            <Button
+                              href={`/request?intent=buy&package=${encodeURIComponent(p.id)}`}
+                              size="sm"
+                            >
+                              Buy / request
+                            </Button>
+                            <Button href="/contact#quote" size="sm" variant="ghost">
+                              Ask a question
+                            </Button>
                           </div>
                         </div>
-                      </article>
-                    )
-                  })}
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           ))}

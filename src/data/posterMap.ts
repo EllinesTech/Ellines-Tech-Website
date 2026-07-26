@@ -8,6 +8,7 @@ export const categoryPosterMap: Record<string, string> = {
   Security: '/media/posters/packages/shop_cyber_audit.jpg',
   Consulting: '/media/posters/packages/consult_it_halfday.jpg',
   Career: '/media/posters/packages/career_resume_build.jpg',
+  'Career Documents': '/media/posters/packages/career_resume_build.jpg',
   'Tax & Compliance': '/media/posters/packages/tax_kenya_return.jpg',
   'Tech Support': '/media/posters/packages/tech_os_install.jpg',
   'QA & Testing': '/media/posters/packages/tech_app_testing.jpg',
@@ -50,7 +51,7 @@ export const servicePosterMap: Record<string, string> = {
 }
 
 /**
- * Unique real photo per pricing package id (Unsplash / Pexels / CC stock, stored locally).
+ * Unique real photo per pricing package id (stored locally under public/media/posters/packages).
  */
 export const packagePosterMap: Record<string, string> = {
   shop_starter_web: '/media/posters/packages/shop_starter_web.jpg',
@@ -63,21 +64,32 @@ export const packagePosterMap: Record<string, string> = {
   shop_custom_software: '/media/posters/packages/shop_custom_software.jpg',
   shop_ai_automation: '/media/posters/packages/shop_ai_automation.jpg',
   shop_digital_marketing: '/media/posters/packages/shop_digital_marketing.jpg',
+  shop_digital_marketing_growth: '/media/posters/packages/shop_digital_marketing_growth.jpg',
   shop_cyber_audit: '/media/posters/packages/shop_cyber_audit.jpg',
+  shop_cyber_audit_enterprise: '/media/posters/packages/shop_cyber_audit_enterprise.jpg',
   consult_it_halfday: '/media/posters/packages/consult_it_halfday.jpg',
   consult_it_fullday: '/media/posters/packages/consult_it_fullday.jpg',
   consult_tech_roadmap: '/media/posters/packages/consult_tech_roadmap.jpg',
   consult_digital_transform: '/media/posters/packages/consult_digital_transform.jpg',
+  career_resume_student: '/media/posters/packages/career_resume_student.jpg',
+  career_resume_student_plus: '/media/posters/packages/career_resume_student_plus.jpg',
   career_resume_revamp: '/media/posters/packages/career_resume_revamp.jpg',
   career_resume_build: '/media/posters/packages/career_resume_build.jpg',
   career_resume_mid: '/media/posters/packages/career_resume_mid.jpg',
   career_resume_senior: '/media/posters/packages/career_resume_senior.jpg',
   career_resume_executive: '/media/posters/packages/career_resume_executive.jpg',
+  career_cover_student: '/media/posters/packages/career_cover_student.jpg',
   career_cover_letter: '/media/posters/packages/career_cover_letter.jpg',
+  career_cover_senior: '/media/posters/packages/career_cover_senior.jpg',
+  career_cover_executive: '/media/posters/packages/career_cover_executive.jpg',
   career_linkedin: '/media/posters/packages/career_linkedin.jpg',
+  career_linkedin_exec: '/media/posters/packages/career_linkedin_exec.jpg',
   career_docs_bundle: '/media/posters/packages/career_docs_bundle.jpg',
+  career_docs_bundle_pro: '/media/posters/packages/career_docs_bundle_pro.jpg',
+  career_docs_bundle_exec: '/media/posters/packages/career_docs_bundle_exec.jpg',
   tax_kenya_return: '/media/posters/packages/tax_kenya_return.jpg',
   tax_kenya_pin_assist: '/media/posters/packages/tax_kenya_pin_assist.jpg',
+  tax_kenya_sme: '/media/posters/packages/tax_kenya_sme.jpg',
   tech_os_install: '/media/posters/packages/tech_os_install.jpg',
   tech_os_install_office: '/media/posters/packages/tech_os_install_office.jpg',
   tech_app_testing: '/media/posters/packages/tech_app_testing.jpg',

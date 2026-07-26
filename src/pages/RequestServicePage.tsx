@@ -229,7 +229,10 @@ export function RequestServicePage() {
                     >
                       <span>
                         <span className="block text-sm font-medium text-white">{p.name}</span>
-                        <span className="text-xs text-slate-500">{p.category}</span>
+                        <span className="text-xs text-slate-500">
+                          {p.level ? `${p.level} · ` : ''}
+                          {p.category}
+                        </span>
                       </span>
                       <span className="shrink-0 text-sm text-brand-300">
                         {p.currency} {p.price.toLocaleString()}

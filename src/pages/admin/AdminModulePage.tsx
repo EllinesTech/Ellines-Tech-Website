@@ -111,6 +111,7 @@ type ShopProduct = {
   price: number
   currency: string
   category: string
+  level?: string
   description: string
   status: string
 }
@@ -446,7 +447,7 @@ function ShopModule() {
                 Remove
               </button>
             </div>
-            <div className="grid gap-2 sm:grid-cols-4">
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
               <label className="text-[10px] uppercase tracking-wide text-slate-500">
                 Price
                 <input
@@ -482,6 +483,19 @@ function ShopModule() {
                     setProducts(next)
                   }}
                   className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                />
+              </label>
+              <label className="text-[10px] uppercase tracking-wide text-slate-500">
+                Level
+                <input
+                  value={p.level || ''}
+                  onChange={(e) => {
+                    const next = [...products]
+                    next[idx] = { ...p, level: e.target.value }
+                    setProducts(next)
+                  }}
+                  className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                  placeholder="Student / Mid / …"
                 />
               </label>
               <label className="text-[10px] uppercase tracking-wide text-slate-500">
