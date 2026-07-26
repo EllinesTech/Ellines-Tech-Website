@@ -77,8 +77,25 @@ export function clearTranscripts() {
   localStorage.removeItem(TRANSCRIPTS_KEY)
 }
 
+/**
+ * God Mode credentials never live in the client bundle. `/admin/login` posts the
+ * owner password to `/api/cms` (`action: admin_login`), the edge compares it to
+ * `ADMIN_API_KEY`, and the browser only ever holds the short-lived opaque
+ * session token returned on success. A `super_admin` CMS account is the other
+ * route into God Mode and uses the normal user token instead.
+ */
+const ADMIN_TOKEN_KEY = 'et_admin_token'
+
+function readAdminToken(): string {
+  if (typeof sessionStorage === 'undefined') return ''
+  return (sessionStorage.getItem(ADMIN_TOKEN_KEY) || '').trim()
+}
+
 export function isAdminAuthed(): boolean {
-  return sessionStorage.getItem(ADMIN_SESSION_KEY) === '1'
+  if (typeof sessionStorage === 'undefined') return false
+  if (readAdminToken()) return true
+  // Legacy flag from a session created before token auth shipped.
+  return sessionStorage.getItem(ADMIN_SESSION_KEY) === '1' && Boolean(readAdminToken())
 }
 
 export function setAdminAuthed(value: boolean) {
@@ -86,38 +103,23 @@ export function setAdminAuthed(value: boolean) {
   else sessionStorage.removeItem(ADMIN_SESSION_KEY)
 }
 
-/**
- * Default owner / Super Admin password when env is unset or blank.
- * Frontend: `VITE_ADMIN_PASSWORD` (build-time). Backend: `ADMIN_API_KEY` (Pages/Workers).
- * Keep both in sync in production. Vite may bake `""` for empty vars — never use
- * `??` alone; trim and fall through to this default.
- */
-export const DEFAULT_ADMIN_PASSWORD = 'EllinesGodMode2026'
-
-/** Resolve configured admin password; empty / whitespace Vite env → default. */
-export function resolveConfiguredAdminPassword(): string {
-  const fromEnv = String(import.meta.env.VITE_ADMIN_PASSWORD ?? '').trim()
-  return fromEnv || DEFAULT_ADMIN_PASSWORD
-}
-
-export function verifyAdminPassword(password: string): boolean {
-  return password.trim() === resolveConfiguredAdminPassword()
-}
-
-const ADMIN_API_KEY = 'et_admin_api_key'
-
 export function setAdminApiKey(key: string) {
-  localStorage.setItem(ADMIN_API_KEY, key.trim())
+  sessionStorage.setItem(ADMIN_TOKEN_KEY, key.trim())
 }
 
 export function clearAdminApiKey() {
-  localStorage.removeItem(ADMIN_API_KEY)
+  sessionStorage.removeItem(ADMIN_TOKEN_KEY)
+  // Clear the pre-token storage location too, so old keys stop being sent.
+  try {
+    localStorage.removeItem('et_admin_api_key')
+  } catch {
+    /* ignore */
+  }
 }
 
+/** Opaque God Mode session token, or '' when the owner is not signed in. */
 export function getAdminApiKey(): string {
-  const stored =
-    typeof localStorage !== 'undefined' ? (localStorage.getItem(ADMIN_API_KEY) || '').trim() : ''
-  return stored || resolveConfiguredAdminPassword()
+  return readAdminToken()
 }
 
 function normalize(text: string) {
@@ -162,7 +164,7 @@ export function answerQuestion(input: string, faqs: ChatFaq[] = loadFaqs()): {
 
   return {
     answer:
-      "I don't have a precise answer for that yet — but a human on our team can help immediately. Tap “Talk to a human” and we’ll continue on WhatsApp.",
+      "I don't have a stored answer for that yet — let me think it through, or tap “Live Agent” to reach a human on our team right away.",
     matched: false,
     wantsHuman: true,
   }

@@ -69,9 +69,10 @@ export function AdminChatPage() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <h1 className="font-display text-3xl font-bold text-white">Chat knowledge</h1>
+          <h1 className="font-display text-3xl font-bold text-white">Ellenia knowledge</h1>
           <p className="mt-2 text-slate-400">
-            Train the engagement assistant. Saves to CMS (KV) so every visitor gets the same answers.
+            Train Ellenia, the floating-bar assistant. Saves to CMS (KV) so every visitor gets the
+            same approved answers, and the AI model uses them as grounding for harder questions.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

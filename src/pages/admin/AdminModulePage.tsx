@@ -15,6 +15,11 @@ import { AdminInvoicesModule } from '@/pages/admin/AdminInvoicesModule'
 import { AdminReportsModule } from '@/pages/admin/AdminReportsModule'
 import { AdminServicesModule } from '@/pages/admin/AdminServicesModule'
 import { AdminPaymentsModule } from '@/pages/admin/AdminPaymentsModule'
+import { AdminVisitorsModule } from '@/pages/admin/AdminVisitorsModule'
+import { MaskedIpNotice, VisitorChips } from '@/components/admin/VisitorContext'
+import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm'
+import { loadAuthUser } from '@/lib/auth'
+import { currentActor } from '@/lib/adminAccess'
 import {
   OnlineUsersModule,
   PortfolioEditor,
@@ -47,6 +52,8 @@ import {
   updateUserRole,
   type CmsMediaItem,
   type CmsUser,
+  type VisitorContext,
+  type VisitorRecord,
 } from '@/lib/cmsApi'
 import {
   loadClientBrands,
@@ -339,6 +346,7 @@ function LeadsModule() {
       timeline?: string
       status?: string
       company?: string
+      visitor?: VisitorContext
     }[]
   >([])
   const [error, setError] = useState('')
@@ -403,6 +411,11 @@ function LeadsModule() {
               </p>
             )}
             {l.message && <p className="mt-1 text-slate-300">{l.message}</p>}
+            {l.visitor && (
+              <div className="mt-2">
+                <VisitorChips visitor={l.visitor} />
+              </div>
+            )}
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <label className="text-xs text-slate-500">
                 Status
@@ -825,6 +838,8 @@ function AnalyticsModule({ title = 'Analytics' }: { title?: string }) {
     waitingChats?: number
     onlineNow?: number
     leadsTotal?: number
+    recentVisitors?: VisitorRecord[]
+    canSeeIp?: boolean
   } | null>(null)
   const [error, setError] = useState('')
 
@@ -870,6 +885,34 @@ function AnalyticsModule({ title = 'Analytics' }: { title?: string }) {
           </li>
         ))}
       </ul>
+
+      <div className="mt-6 border-t border-white/10 pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs uppercase tracking-wider text-slate-500">Recent visitors</p>
+          <MaskedIpNotice canSeeIp={Boolean(data?.canSeeIp)} />
+        </div>
+        <ul className="mt-2 space-y-2">
+          {(data?.recentVisitors || []).slice(0, 8).map((v) => (
+            <li key={v.sessionId} className="rounded-xl border border-white/10 px-3 py-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <span className="truncate text-slate-200">{v.path}</span>
+                <span className="text-xs text-slate-600">
+                  {new Date(v.lastSeen).toLocaleTimeString()}
+                </span>
+              </div>
+              <div className="mt-1.5">
+                <VisitorChips visitor={v.visitor} location={v.location} />
+              </div>
+            </li>
+          ))}
+          {(data?.recentVisitors || []).length === 0 && (
+            <li className="text-sm text-slate-500">No visitor sessions recorded yet.</li>
+          )}
+        </ul>
+        <Link to="/admin/visitors" className="mt-3 inline-block text-sm text-brand-300">
+          → Full visitor intelligence
+        </Link>
+      </div>
     </Panel>
   )
 }
@@ -1456,13 +1499,18 @@ function PermissionsModule() {
   const rows = [
     {
       lane: 'God Mode (/admin)',
-      who: 'Owner password',
-      can: 'Full CMS, users, settings, payments, backup, live chat',
+      who: 'Owner key · super_admin accounts',
+      can: 'Full CMS, users, settings, payments, backup, live chat, visitor IPs',
+    },
+    {
+      lane: 'Admin (/staff)',
+      who: 'admin CMS users',
+      can: 'Everything staff can do, plus unmasked visitor IP / user agent',
     },
     {
       lane: 'Staff (/staff)',
-      who: 'staff · admin · super_admin CMS users',
-      can: 'Leads, clients, invoices, careers, live chat, pricing view, materials',
+      who: 'staff CMS users',
+      can: 'Leads, clients, invoices, careers, live chat, pricing view, materials (visitor IPs masked)',
     },
     {
       lane: 'Client (/account)',
@@ -1666,10 +1714,9 @@ export function AdminModulePage({ module }: { module: string }) {
   if (module === 'users') return <UsersModule />
   if (module === 'permissions') return <PermissionsModule />
   if (module === 'shop') return <ShopModule />
-  if (module === 'analytics' || module === 'visitors')
-    return (
-      <AnalyticsModule title={module === 'visitors' ? 'Site Visitors' : 'Analytics'} />
-    )
+  if (module === 'visitors') return <AdminVisitorsModule />
+  if (module === 'analytics') return <AnalyticsModule />
+
   if (module === 'online') {
     return <OnlineUsersModule />
   }
@@ -1757,18 +1804,46 @@ export function AdminModulePage({ module }: { module: string }) {
   }
 
   if (module === 'security') {
+    const actor = currentActor()
+    const authUser = loadAuthUser()
     return (
       <Panel title="Security" description="Three separate access lanes — do not mix them.">
         <ul className="list-disc space-y-2 pl-5 text-sm text-slate-300">
           <li>
-            Admin panel (/admin) — owner God Mode password. Set matching `VITE_ADMIN_PASSWORD`
-            (frontend build) and `ADMIN_API_KEY` (Pages Functions). Never commit production secrets.
+            God Mode (/admin) — the owner key lives only in `ADMIN_API_KEY` (Cloudflare Pages).
+            It is verified at the edge and exchanged for a 12-hour session token, so it is never
+            shipped in the browser bundle. A `super_admin` account also grants God Mode.
           </li>
           <li>Staff (/staff) — employee accounts created under Users. Own email/password login.</li>
           <li>Clients (/account) — customers for pricing & packages. Public register/login.</li>
           <li>Roles: super_admin | admin | staff | customer · passwords PBKDF2-hashed in KV</li>
-          <li>Rotate secrets in Cloudflare Pages environment variables after first deploy</li>
+          <li>
+            Abuse control: per-IP rate limits on sign-in, leads, newsletter, applications, chat and
+            AI; honeypot fields on public forms; cross-origin writes rejected at the edge.
+          </li>
+          <li>
+            Password reset sends a one-time code by email (Resend) and SMS (Africa&apos;s Talking or
+            Twilio) when a phone number is on the account.
+          </li>
+          <li>
+            Payment secrets are write-only — the editor shows whether a key is set and blank fields
+            keep the stored value. Rotate keys in Cloudflare Pages environment variables.
+          </li>
         </ul>
+        {authUser && actor.role !== 'owner' ? (
+          <div className="mt-6">
+            <ChangePasswordForm user={authUser} />
+          </div>
+        ) : (
+          <p className="mt-6 text-sm text-slate-500">
+            Owner-key sessions have no account password. Sign in with a Super Admin email to change
+            that account&apos;s password, or use{' '}
+            <Link to="/account/reset" className="text-brand-300">
+              Forgot password
+            </Link>
+            .
+          </p>
+        )}
         <div className="mt-4 flex flex-wrap gap-3 text-sm">
           <Link to="/admin/users" className="text-brand-300">
             → Users & roles

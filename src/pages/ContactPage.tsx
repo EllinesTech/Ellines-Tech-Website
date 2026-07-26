@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/Button'
 import { Field, fieldClass } from '@/components/ui/Field'
 import { SocialLinks } from '@/components/engagement/SocialLinks'
 import { PrivacyConsentField } from '@/components/PrivacyConsentField'
+import { useHoneypot } from '@/components/HoneypotField'
 import { siteConfig } from '@/data/site'
 import { directionsUrl, locationLine, locations, mapsSearchUrl } from '@/data/locations'
 import { useSiteProfile } from '@/context/SiteProfileContext'
@@ -42,6 +43,7 @@ export function ContactPage() {
   const [sending, setSending] = useState(false)
   const { profile } = useSiteProfile()
   const { contact: liveContact } = useSiteCopy()
+  const { honeypot } = useHoneypot()
   const phone = profile.phone || siteConfig.phone
   const whatsapp = profile.whatsapp || siteConfig.whatsapp
   const email = profile.email || siteConfig.email
@@ -68,6 +70,7 @@ export function ContactPage() {
           message: `${data.get('interest') || ''}: ${data.get('message') || ''}`,
           intent: 'quote',
           source: 'contact',
+          website: data.get('website') || '',
         }),
       })
       if (!res.ok) throw new Error('Could not send message')
@@ -306,6 +309,7 @@ export function ContactPage() {
                   </motion.div>
                 ) : (
                   <form onSubmit={handleSubmit} className="relative mt-9 space-y-7">
+                    {honeypot}
                     <fieldset className="space-y-3">
                       <legend className="text-[13px] font-medium text-slate-300">
                         What can we help with?

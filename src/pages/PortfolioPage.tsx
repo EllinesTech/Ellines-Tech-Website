@@ -6,11 +6,11 @@ import { MediaCard } from '@/components/ui/MediaCard'
 import { portfolioCategories } from '@/data/portfolio'
 import { projectVisual } from '@/data/imagery'
 import { siteConfig } from '@/data/site'
-import { loadPublishedPortfolio, type CatalogProject } from '@/lib/portfolioCatalog'
+import { loadPublishedPortfolio, staticPortfolioAsCatalog, type CatalogProject } from '@/lib/portfolioCatalog'
 import { cn } from '@/lib/utils'
 
 export function PortfolioPage() {
-  const [projects, setProjects] = useState<CatalogProject[]>([])
+  const [projects, setProjects] = useState<CatalogProject[]>(() => staticPortfolioAsCatalog())
   const [activeCategory, setActiveCategory] = useState('All')
 
   useEffect(() => {
@@ -36,6 +36,10 @@ export function PortfolioPage() {
         title="Portfolio"
         description="Explore Ellines Tech portfolio — healthcare, education, business, AI, brand, and web projects."
         path="/portfolio"
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'Portfolio', path: '/portfolio' },
+        ]}
       />
 
       <section className="relative overflow-hidden border-b border-white/5">

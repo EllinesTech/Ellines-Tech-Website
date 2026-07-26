@@ -49,13 +49,10 @@ import { adminNavGroups } from '@/admin/nav'
 import { Button } from '@/components/ui/Button'
 import { Logo } from '@/components/ui/Logo'
 import { PasswordInput } from '@/components/ui/PasswordInput'
-import {
-  isAdminAuthed,
-  setAdminAuthed,
-  verifyAdminPassword,
-  setAdminApiKey,
-  clearAdminApiKey,
-} from '@/lib/engagementStore'
+import { setAdminAuthed, setAdminApiKey, clearAdminApiKey } from '@/lib/engagementStore'
+import { adminLogin, adminLogout, loginCustomer, logoutUser } from '@/lib/cmsApi'
+import { clearAuthSession, isGodRole, loadAuthUser, saveAuthSession } from '@/lib/auth'
+import { currentActor, hasGodMode } from '@/lib/adminAccess'
 import { useLockViewportScroll } from '@/hooks/useLockViewportScroll'
 import { cn } from '@/lib/utils'
 
@@ -103,21 +100,42 @@ const iconMap: Record<string, React.ElementType> = {
 
 export function AdminLoginPage() {
   const navigate = useNavigate()
+  const [mode, setMode] = useState<'owner' | 'account'>('owner')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    if (isAdminAuthed()) navigate('/admin', { replace: true })
+    if (hasGodMode()) navigate('/admin', { replace: true })
   }, [navigate])
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const trimmed = password.trim()
-    if (verifyAdminPassword(trimmed)) {
-      setAdminAuthed(true)
-      setAdminApiKey(trimmed)
+    setError('')
+    setBusy(true)
+    try {
+      if (mode === 'owner') {
+        // The password is checked at the edge; we only ever store the returned token.
+        const { token } = await adminLogin(password.trim())
+        setAdminApiKey(token)
+        setAdminAuthed(true)
+      } else {
+        const res = await loginCustomer({ email: email.trim(), password })
+        if (!isGodRole(res.user.role)) {
+          setError(
+            'That account is not a Super Admin. Staff sign in at /staff/login; clients at /account.',
+          )
+          return
+        }
+        saveAuthSession(res.token, res.user)
+      }
       navigate('/admin', { replace: true })
-    } else setError('Invalid password')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sign-in failed')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -127,11 +145,11 @@ export function AdminLoginPage() {
         className="w-full max-w-md rounded-[1.5rem] border border-white/10 bg-surface-elevated/70 p-8 shadow-2xl"
       >
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-400">
-          Ellines Tech · Admin
+          Ellines Tech · God Mode
         </p>
         <h1 className="mt-2 font-display text-2xl font-bold text-white">Admin access</h1>
         <p className="mt-3 text-sm text-slate-400">
-          Platform owner login. Employees use{' '}
+          Owner key or a Super Admin account. Employees use{' '}
           <a href="/staff/login" className="text-brand-300">
             Staff login
           </a>
@@ -141,24 +159,73 @@ export function AdminLoginPage() {
           </a>
           .
         </p>
+
+        <div className="mt-5 grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1">
+          {(
+            [
+              { id: 'owner', label: 'Owner key' },
+              { id: 'account', label: 'Super Admin' },
+            ] as const
+          ).map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => {
+                setMode(tab.id)
+                setError('')
+              }}
+              className={cn(
+                'rounded-lg px-3 py-2 text-xs font-semibold transition',
+                mode === tab.id
+                  ? 'bg-brand-500/20 text-brand-200'
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white',
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {mode === 'account' && (
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Super Admin email"
+            className="mt-4 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
+            autoFocus
+          />
+        )}
         <PasswordInput
+          required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Admin password"
-          className="mt-6 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
-          autoFocus
+          placeholder={mode === 'owner' ? 'Owner key' : 'Account password'}
+          className="mt-3 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none focus:border-brand-400/40"
+          autoFocus={mode === 'owner'}
         />
         {error && <p className="mt-2 text-sm text-rose-300">{error}</p>}
-        <Button type="submit" className="mt-5 w-full" icon>
-          Enter Admin Panel
+        <Button type="submit" className="mt-5 w-full" icon disabled={busy}>
+          {busy ? 'Verifying…' : 'Enter Admin Panel'}
         </Button>
+        {mode === 'account' && (
+          <p className="mt-4 text-center text-xs text-slate-500">
+            <a
+              href={`/account/reset?from=${encodeURIComponent('/admin/login')}`}
+              className="text-brand-300"
+            >
+              Forgot password?
+            </a>
+          </p>
+        )}
       </form>
     </div>
   )
 }
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
-  if (!isAdminAuthed()) return <Navigate to="/admin/login" replace />
+  if (!hasGodMode()) return <Navigate to="/admin/login" replace />
   return children
 }
 
@@ -167,6 +234,8 @@ export function AdminLayout() {
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
   const mainRef = useRef<HTMLElement>(null)
+  const actor = currentActor()
+  const authUser = loadAuthUser()
 
   useLockViewportScroll(true)
 
@@ -222,8 +291,11 @@ export function AdminLayout() {
             </div>
             <span className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-brand-500/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-300 ring-1 ring-inset ring-brand-400/20">
               <span className="h-1.5 w-1.5 rounded-full bg-brand-400" aria-hidden />
-              Super Admin
+              God Mode
             </span>
+            <p className="mt-2 truncate text-[11px] text-slate-500">
+              {actor.role === 'owner' ? 'Owner key session' : `${actor.name} · Super Admin`}
+            </p>
           </div>
 
           <nav
@@ -317,7 +389,7 @@ export function AdminLayout() {
             <div className="flex shrink-0 items-center gap-2">
               <span className="hidden items-center gap-1.5 rounded-md bg-emerald-500/12 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 ring-1 ring-inset ring-emerald-400/20 sm:inline-flex">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" aria-hidden />
-                Admin
+                {actor.role === 'owner' ? 'Owner' : 'Super Admin'}
               </span>
               <Link
                 to="/"
@@ -328,9 +400,13 @@ export function AdminLayout() {
               </Link>
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
+                  // Revoke server-side first so a stolen token dies with the click.
+                  if (actor.role === 'owner') await adminLogout()
+                  else if (authUser) await logoutUser()
                   setAdminAuthed(false)
                   clearAdminApiKey()
+                  if (authUser && isGodRole(authUser.role)) clearAuthSession()
                   navigate('/admin/login')
                 }}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:border-rose-400/30 hover:bg-rose-500/10 hover:text-rose-200"

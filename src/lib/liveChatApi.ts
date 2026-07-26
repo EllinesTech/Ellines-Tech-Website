@@ -1,5 +1,6 @@
 import { getAdminApiKey, isAdminAuthed } from '@/lib/engagementStore'
 import { loadAuthToken } from '@/lib/auth'
+import type { VisitorContext } from '@/lib/cmsApi'
 
 export type LiveRole = 'visitor' | 'admin' | 'assistant' | 'system' | 'ai'
 
@@ -19,6 +20,9 @@ export interface LiveSession {
   updatedAt: string
   unreadAdmin?: number
   messages: LiveMessage[]
+  /** Only present on agent-authenticated reads; redacted by role at the edge. */
+  visitor?: VisitorContext
+  location?: string
 }
 
 export interface LiveSessionSummary {
@@ -29,16 +33,23 @@ export interface LiveSessionSummary {
   updatedAt: string
   createdAt: string
   unreadAdmin: number
+  location?: string
+  device?: string
+  browser?: string
 }
 
 const base = '/api/live-chat'
 
-/** God Mode key when admin session active; otherwise staff CMS token */
+/**
+ * Whatever elevated credentials the browser holds — an admin-panel session
+ * token or a CMS user token. The edge decides what they unlock.
+ */
 function agentHeaders(json = false): HeadersInit {
   const token = loadAuthToken() || ''
+  const adminToken = getAdminApiKey()
   const headers: Record<string, string> = {}
   if (json) headers['Content-Type'] = 'application/json'
-  if (isAdminAuthed()) headers['X-Admin-Key'] = getAdminApiKey()
+  if (isAdminAuthed() && adminToken) headers['X-Admin-Key'] = adminToken
   if (token) headers['X-User-Token'] = token
   return headers
 }
@@ -122,16 +133,25 @@ export async function closeLiveSession(sessionId: string): Promise<LiveSession> 
   return data.session
 }
 
+/**
+ * Ask Ellenia. Elevated credentials are forwarded when present so the edge can
+ * decide the audience (public / staff / admin / God Mode) — the browser never
+ * declares its own role.
+ */
 export async function askAi(
   question: string,
   history: { role: string; text: string }[],
-): Promise<string> {
+): Promise<{ answer: string; audience: string; source: string }> {
   const res = await fetch('/api/ai', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: agentHeaders(true),
     body: JSON.stringify({ question, history }),
   })
   const data = await res.json()
-  if (!res.ok) throw new Error(data.error || 'AI failed')
-  return data.answer as string
+  if (!res.ok && !data.answer) throw new Error(data.error || 'AI failed')
+  return {
+    answer: String(data.answer || ''),
+    audience: String(data.audience || 'public'),
+    source: String(data.source || 'unknown'),
+  }
 }

@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   MessageCircle,
   X,
   Send,
   UserRound,
-  Bot,
+  Sparkles,
   Minimize2,
   MessageSquare,
+  ShieldCheck,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { siteConfig } from '@/data/site'
@@ -23,6 +24,7 @@ import {
   type LiveSession,
 } from '@/lib/liveChatApi'
 import { fetchChatFaqs } from '@/lib/cmsApi'
+import { currentActor } from '@/lib/adminAccess'
 import { cn } from '@/lib/utils'
 
 type Mode = 'ai' | 'human' | 'whatsapp'
@@ -39,23 +41,55 @@ function uid() {
 
 const SESSION_KEY = 'et_live_session_id'
 
+/** Ellenia adapts her opening line and shortcuts to who is signed in. */
+function greetingFor(actor: ReturnType<typeof currentActor>) {
+  if (actor.god) {
+    return `Hi ${actor.name || 'there'} — I’m Ellenia, your God Mode copilot. Ask me about leads, invoices, live chats, visitors, or any admin module, and I can draft client replies for you.`
+  }
+  if (actor.staff) {
+    return `Hi ${actor.name || 'there'} — I’m Ellenia. I can summarise your leads and chats, draft replies and quotes, and answer client questions with you.`
+  }
+  return `Hi — I’m Ellenia, the Ellines Tech AI. Ask me anything technical: scope, integrations, timelines, or pricing. You can also reach a human agent or WhatsApp. We’re ${siteConfig.hours.label.toLowerCase()}.`
+}
+
+function promptsFor(actor: ReturnType<typeof currentActor>) {
+  if (actor.god) {
+    return [
+      'Summarise today’s leads and what needs action',
+      'Draft a follow-up email for an unpaid invoice',
+      'Where do I change payment settings?',
+    ]
+  }
+  if (actor.staff) {
+    return [
+      'Summarise the open leads I should call first',
+      'Draft a friendly reply to a pricing question',
+      'How do I share company materials with a client?',
+    ]
+  }
+  return [
+    'What would a custom booking system cost?',
+    'Can you integrate M-Pesa and Paystack?',
+    'How fast can you ship an MVP?',
+  ]
+}
+
 export function ChatWidget() {
   const { settings } = useSiteFeatures()
   const { profile } = useSiteProfile()
+  const actor = useMemo(() => currentActor(), [])
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<Mode>('ai')
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [session, setSession] = useState<LiveSession | null>(null)
   const [messages, setMessages] = useState<Bubble[]>([
-    {
-      id: 'welcome',
-      role: 'assistant',
-      text: `Hi — I’m Ellines Assist. Ask complex product/tech questions, open WhatsApp, or talk to a human agent live. We’re ${siteConfig.hours.label.toLowerCase()}.`,
-    },
+    { id: 'welcome', role: 'assistant', text: greetingFor(actor) },
   ])
   const endRef = useRef<HTMLDivElement>(null)
   const waBase = `https://wa.me/${(profile.whatsapp || siteConfig.whatsapp).replace(/\D/g, '')}`
+  const quickPrompts = useMemo(() => promptsFor(actor), [actor])
+  const showPrompts = messages.length <= 1 && mode === 'ai'
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -109,7 +143,7 @@ export function ChatWidget() {
         localStorage.removeItem(SESSION_KEY)
       }
     }
-    const created = await createLiveSession('Website visitor')
+    const created = await createLiveSession(actor.staff ? `${actor.name} (team)` : 'Website visitor')
     localStorage.setItem(SESSION_KEY, created.id)
     setSession(created)
     return created
@@ -120,29 +154,29 @@ export function ChatWidget() {
     setMessages((prev) => [...prev, { id: uid(), role: 'user', text }])
     try {
       const local = answerQuestion(text, loadFaqs())
+      // Signed-in team members always get the model — their questions are
+      // operational and the canned public FAQ answers would be wrong for them.
+      const preferModel = actor.staff || !local.matched || text.split(' ').length > 6
       let answer = local.answer
-      // For unmatched / complex questions, call Workers AI
-      if (!local.matched || text.split(' ').length > 8) {
+      let links = local.links
+      if (preferModel) {
         try {
           const history = messages
             .filter((m) => m.role === 'user' || m.role === 'assistant')
             .slice(-6)
             .map((m) => ({ role: m.role, text: m.text }))
-          answer = await askAi(text, history)
+          const result = await askAi(text, history)
+          if (result.answer) {
+            answer = result.answer
+            if (!local.matched) links = undefined
+          }
         } catch {
           if (!local.matched) {
-            answer =
-              local.answer +
-              ' You can also switch to Talk to a human for a live agent, or WhatsApp.'
+            answer = `${local.answer} You can also switch to Live Agent for a human, or WhatsApp us.`
           }
         }
-      } else {
-        answer = local.answer
       }
-      setMessages((prev) => [
-        ...prev,
-        { id: uid(), role: 'assistant', text: answer, links: local.links },
-      ])
+      setMessages((prev) => [...prev, { id: uid(), role: 'assistant', text: answer, links }])
     } finally {
       setBusy(false)
     }
@@ -199,9 +233,7 @@ export function ChatWidget() {
 
   function openWhatsApp() {
     setMode('whatsapp')
-    const msg = encodeURIComponent(
-      'Hello Ellines Tech — I need help from the website chat.',
-    )
+    const msg = encodeURIComponent('Hello Ellines Tech — I need help from the website chat.')
     window.open(`${waBase}?text=${msg}`, '_blank', 'noopener,noreferrer')
   }
 
@@ -229,6 +261,19 @@ export function ChatWidget() {
         }))
       : messages
 
+  const statusLine =
+    mode === 'human'
+      ? session?.status === 'live'
+        ? 'Human connected'
+        : 'Waiting for human'
+      : mode === 'whatsapp'
+        ? 'WhatsApp'
+        : actor.god
+          ? 'God Mode copilot'
+          : actor.staff
+            ? 'Team copilot'
+            : 'AI online'
+
   return (
     <div className="pointer-events-none fixed bottom-4 right-4 z-[70] flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
       <AnimatePresence>
@@ -242,20 +287,13 @@ export function ChatWidget() {
             <div className="flex items-center justify-between border-b border-white/10 bg-gradient-to-r from-brand-500/15 via-transparent to-sky-500/10 px-4 py-3">
               <div className="flex items-center gap-3">
                 <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300 ring-1 ring-brand-400/30">
-                  <Bot className="h-5 w-5" />
+                  <Sparkles className="h-5 w-5" />
                   <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
                 </div>
                 <div>
-                  <p className="font-display text-sm font-semibold text-white">Ellines Assist</p>
+                  <p className="font-display text-sm font-semibold text-white">Ellenia</p>
                   <p className="text-[11px] text-emerald-300/90">
-                    {siteConfig.hours.label} ·{' '}
-                    {mode === 'human'
-                      ? session?.status === 'live'
-                        ? 'Human connected'
-                        : 'Waiting for human'
-                      : mode === 'whatsapp'
-                        ? 'WhatsApp'
-                        : 'AI online'}
+                    {siteConfig.hours.label} · {statusLine}
                   </p>
                 </div>
               </div>
@@ -269,17 +307,30 @@ export function ChatWidget() {
               </button>
             </div>
 
-            <div className="grid grid-cols-3 gap-1 border-b border-white/10 p-2">
+            {actor.staff && (
+              <p className="flex items-center gap-1.5 border-b border-white/10 bg-brand-500/[0.07] px-4 py-1.5 text-[11px] text-brand-200">
+                <ShieldCheck className="h-3 w-3 shrink-0" aria-hidden />
+                Signed in as {actor.god ? 'Super Admin' : actor.role} — operational answers enabled.
+              </p>
+            )}
+
+            <div
+              className="grid grid-cols-3 gap-1 border-b border-white/10 p-2"
+              role="tablist"
+              aria-label="Support channels"
+            >
               {(
                 [
-                  { id: 'ai', label: 'AI', icon: Bot },
-                  { id: 'human', label: 'Human', icon: UserRound },
+                  { id: 'ai', label: 'Ellenia', icon: Sparkles },
+                  { id: 'human', label: 'Live Agent', icon: UserRound },
                   { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
                 ] as const
               ).map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
+                  role="tab"
+                  aria-selected={mode === tab.id}
                   onClick={() => {
                     if (tab.id === 'whatsapp') openWhatsApp()
                     else if (tab.id === 'human') startHuman()
@@ -322,7 +373,7 @@ export function ChatWidget() {
                         Human agent
                       </p>
                     )}
-                    <p>{m.text}</p>
+                    <p className="whitespace-pre-wrap">{m.text}</p>
                     {m.links?.map((link) => (
                       <Link
                         key={link.href}
@@ -336,6 +387,23 @@ export function ChatWidget() {
                   </div>
                 </div>
               ))}
+              {showPrompts && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {quickPrompts.map((prompt) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() => handleSend(prompt)}
+                      className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-left text-[11px] text-slate-300 transition hover:border-brand-400/30 hover:text-white"
+                    >
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {busy && mode === 'ai' && (
+                <p className="text-[11px] text-slate-500">Ellenia is thinking…</p>
+              )}
               <div ref={endRef} />
             </div>
 
@@ -350,7 +418,11 @@ export function ChatWidget() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={
-                  mode === 'human' ? 'Message the human agent…' : 'Ask anything…'
+                  mode === 'human'
+                    ? 'Message the human agent…'
+                    : actor.staff
+                      ? 'Ask Ellenia about leads, admin, or draft a reply…'
+                      : 'Ask Ellenia anything…'
                 }
                 disabled={busy || mode === 'whatsapp'}
                 className="h-10 flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-brand-400/40 disabled:opacity-50"
@@ -372,9 +444,10 @@ export function ChatWidget() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="pointer-events-auto relative inline-flex items-center gap-2 rounded-full bg-brand-400 px-4 py-3 font-display text-sm font-semibold text-slate-950 shadow-[0_12px_40px_-10px_rgba(34,211,238,0.65)] transition hover:bg-brand-300"
+        aria-label={open ? 'Close Ellenia chat' : 'Open Ellenia chat'}
       >
         {open ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
-        <span className="hidden sm:inline">{open ? 'Close' : 'Chat with us'}</span>
+        <span className="hidden sm:inline">{open ? 'Close' : 'Ask Ellenia'}</span>
         {!open && (
           <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-slate-950 sm:static sm:ml-1 sm:h-2 sm:w-2 sm:ring-0" />
         )}

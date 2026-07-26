@@ -3,7 +3,10 @@ import { useParams, Link, Navigate } from 'react-router-dom'
 import { CheckCircle2, ArrowLeft, ArrowRight } from 'lucide-react'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
 import { Card } from '@/components/ui/Card'
+import { PageLoading } from '@/components/ui/PageLoading'
+import { ProcessSection } from '@/components/home/ProcessSection'
 import { serviceCategories } from '@/data/services'
 import { siteConfig } from '@/data/site'
 import {
@@ -46,11 +49,7 @@ export function ServiceDetailPage() {
   }, [slug])
 
   if (service === undefined) {
-    return (
-      <div className="section-container section-padding">
-        <p className="text-sm text-slate-400">Loading service…</p>
-      </div>
-    )
+    return <PageLoading label="Loading service…" />
   }
 
   if (!service) {
@@ -66,9 +65,32 @@ export function ServiceDetailPage() {
         title={service.name}
         description={service.description}
         path={`/services/${service.slug}`}
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'Services', path: '/services' },
+          { name: service.name, path: `/services/${service.slug}` },
+        ]}
+        jsonLd={{
+          '@type': 'Service',
+          name: service.name,
+          description: service.description,
+          provider: { '@id': `${siteConfig.url}/#organization` },
+          areaServed: ['KE', 'Africa'],
+          url: `${siteConfig.url}/services/${service.slug}`,
+          serviceType: category.label,
+          ...(service.startingPrice != null && service.startingPrice > 0
+            ? {
+                offers: {
+                  '@type': 'Offer',
+                  priceCurrency: 'KES',
+                  price: service.startingPrice,
+                  availability: 'https://schema.org/InStock',
+                },
+              }
+            : {}),
+        }}
       />
 
-      {/* Hero media slot — the service poster today, founder walkthrough footage later. */}
       <section className="relative overflow-hidden border-b border-white/5">
         <img
           src={scene}
@@ -79,6 +101,14 @@ export function ServiceDetailPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/40 to-transparent" />
         <div className="section-container relative py-16 sm:py-20 lg:py-24">
+          <Breadcrumbs
+            className="mb-6"
+            items={[
+              { label: 'Home', href: '/' },
+              { label: 'Services', href: '/services' },
+              { label: service.name },
+            ]}
+          />
           <Link
             to="/services"
             className="mb-8 inline-flex items-center gap-2 text-sm text-slate-300 transition-colors hover:text-brand-300"
@@ -223,6 +253,8 @@ export function ServiceDetailPage() {
           )}
         </div>
       </section>
+
+      <ProcessSection ctaHref={`/request?intent=request&service=${service.slug}`} />
     </>
   )
 }

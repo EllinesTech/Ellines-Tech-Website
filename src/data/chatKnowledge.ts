@@ -11,7 +11,13 @@ export const defaultChatFaqs: ChatFaq[] = [
     id: 'hello',
     questions: ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening'],
     answer:
-      'Hello — welcome to Ellines Tech. I can help with products, services, pricing, or connect you to a human on WhatsApp. What do you need?',
+      'Hello — I’m Ellenia, the Ellines Tech assistant. I can help with products, services, pricing, and technical questions, or connect you to a human. What do you need?',
+  },
+  {
+    id: 'ellenia',
+    questions: ['who are you', 'your name', 'ellenia', 'are you a bot', 'what are you'],
+    answer:
+      'I’m Ellenia — the AI assistant built into the Ellines Tech website. I answer product, service, pricing, and technical questions, and I can hand you to a human agent or WhatsApp any time.',
   },
   {
     id: 'what-you-do',

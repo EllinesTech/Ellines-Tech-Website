@@ -4,14 +4,6 @@ import type { DownloadResource } from '@/data/downloads'
 import type { SiteFeatureSettings } from '@/lib/siteFeatures'
 import { defaultFeatureSettings } from '@/lib/siteFeatures'
 
-const ADMIN_KEY = () => getAdminApiKey()
-
-function adminHeaders(json = false): HeadersInit {
-  return json
-    ? { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY() }
-    : { 'X-Admin-Key': ADMIN_KEY() }
-}
-
 function userHeaders(json = false): HeadersInit {
   const token = loadAuthToken() || ''
   return json
@@ -19,15 +11,23 @@ function userHeaders(json = false): HeadersInit {
     : { 'X-User-Token': token }
 }
 
-/** God Mode key only when Super Admin session is active; otherwise staff/customer token */
+/**
+ * Sends whichever elevated credentials the browser holds. The server decides
+ * what they unlock: an admin-panel session token or a `super_admin` user token
+ * both resolve to God Mode, other staff tokens resolve to staff access.
+ */
 function elevatedHeaders(json = false): HeadersInit {
   const token = loadAuthToken() || ''
+  const adminToken = getAdminApiKey()
   const base: Record<string, string> = {}
   if (json) base['Content-Type'] = 'application/json'
-  if (isAdminAuthed()) base['X-Admin-Key'] = ADMIN_KEY()
+  if (isAdminAuthed() && adminToken) base['X-Admin-Key'] = adminToken
   if (token) base['X-User-Token'] = token
   return base
 }
+
+/** God Mode endpoints — same credentials, kept as a named alias for intent. */
+const adminHeaders = elevatedHeaders
 
 async function cmsFetch(params: string, init?: RequestInit) {
   let res: Response
@@ -166,11 +166,49 @@ export async function fetchMyInvoices(): Promise<Invoice[]> {
   return data.invoices || []
 }
 
-export async function updateProfile(name: string) {
+export async function updateProfile(name: string, phone?: string) {
   return cmsFetch('resource=users', {
     method: 'POST',
     headers: userHeaders(true),
-    body: JSON.stringify({ action: 'update_profile', name }),
+    body: JSON.stringify({
+      action: 'update_profile',
+      name,
+      ...(phone !== undefined ? { phone } : {}),
+    }),
+  })
+}
+
+/** Change password while signed in. Returns a fresh session token. */
+export async function changePassword(currentPassword: string, newPassword: string) {
+  return cmsFetch('resource=users', {
+    method: 'POST',
+    headers: userHeaders(true),
+    body: JSON.stringify({ action: 'change_password', currentPassword, newPassword }),
+  })
+}
+
+/** Request a password-reset OTP (email + SMS when available). */
+export async function requestPasswordReset(email: string) {
+  return cmsFetch('resource=users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'password_reset_request', email }),
+  })
+}
+
+export async function verifyPasswordResetCode(email: string, code: string) {
+  return cmsFetch('resource=users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'password_reset_verify', email, code }),
+  })
+}
+
+export async function completePasswordReset(email: string, code: string, newPassword: string) {
+  return cmsFetch('resource=users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'password_reset_complete', email, code, newPassword }),
   })
 }
 
@@ -397,12 +435,68 @@ export async function saveChatFaqs(faqs: ChatFaqRecord[]) {
   })
 }
 
+/**
+ * Edge-derived context for a site visitor. `ip` and `userAgent` are blanked by
+ * the API for roles without PII access — `ipMasked` is always safe to show.
+ */
+export type VisitorContext = {
+  ip?: string
+  ipMasked?: string
+  country?: string
+  region?: string
+  city?: string
+  timezone?: string
+  network?: string
+  colo?: string
+  browser?: string
+  os?: string
+  device?: string
+  bot?: boolean
+  userAgent?: string
+  referrer?: string
+  language?: string
+}
+
+export type PresenceEntry = {
+  sessionId: string
+  path: string
+  at: string
+  visitor?: VisitorContext
+  location?: string
+}
+
+export type VisitorRecord = {
+  sessionId: string
+  firstSeen: string
+  lastSeen: string
+  hits: number
+  path: string
+  paths: string[]
+  visitor?: VisitorContext
+  location?: string
+  online?: boolean
+}
+
 export async function fetchPresence(): Promise<{
-  online: { sessionId: string; path: string; at: string }[]
+  online: PresenceEntry[]
   count: number
+  canSeeIp: boolean
 }> {
   const data = await cmsFetch('resource=presence', { headers: elevatedHeaders() })
-  return { online: data.online || [], count: data.count || 0 }
+  return {
+    online: data.online || [],
+    count: data.count || 0,
+    canSeeIp: Boolean(data.canSeeIp),
+  }
+}
+
+/** Recent visitor sessions with IP, geo, device, journey — admin/staff only. */
+export async function fetchVisitors(): Promise<{
+  visitors: VisitorRecord[]
+  canSeeIp: boolean
+}> {
+  const data = await cmsFetch('resource=visitors', { headers: elevatedHeaders() })
+  return { visitors: data.visitors || [], canSeeIp: Boolean(data.canSeeIp) }
 }
 
 import type { KnowledgeArticle } from '@/data/knowledge'
@@ -510,6 +604,44 @@ export async function loginCustomer(input: { email: string; password: string }) 
   })
 }
 
+export async function logoutUser() {
+  try {
+    await cmsFetch('resource=users', {
+      method: 'POST',
+      headers: userHeaders(true),
+      body: JSON.stringify({ action: 'logout' }),
+    })
+  } catch {
+    /* local session is cleared regardless */
+  }
+}
+
+/**
+ * Owner sign-in. The password is verified at the edge against `ADMIN_API_KEY`
+ * and exchanged for a short-lived God Mode session token — it is never compared
+ * in the browser and never shipped in the bundle.
+ */
+export async function adminLogin(password: string): Promise<{ token: string }> {
+  const data = await cmsFetch('resource=users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'admin_login', password }),
+  })
+  return { token: data.token as string }
+}
+
+export async function adminLogout() {
+  try {
+    await cmsFetch('resource=users', {
+      method: 'POST',
+      headers: adminHeaders(true),
+      body: JSON.stringify({ action: 'admin_logout' }),
+    })
+  } catch {
+    /* local session is cleared regardless */
+  }
+}
+
 export async function trackVisit(path: string) {
   try {
     let sessionId = ''
@@ -553,6 +685,8 @@ export async function submitServiceRequest(input: {
   packageName?: string
   packagePrice?: string
   service?: string
+  /** Honeypot value from `useHoneypot` — must stay empty for real submissions. */
+  website?: string
 }) {
   const token = loadAuthToken()
   return cmsFetch('resource=leads', {
@@ -564,11 +698,11 @@ export async function submitServiceRequest(input: {
   })
 }
 
-export async function subscribeNewsletter(email: string) {
+export async function subscribeNewsletter(email: string, website = '') {
   return cmsFetch('resource=newsletter', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'newsletter_subscribe', email }),
+    body: JSON.stringify({ action: 'newsletter_subscribe', email, website }),
   })
 }
 

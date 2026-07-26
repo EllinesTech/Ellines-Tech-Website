@@ -94,6 +94,12 @@ export function ResourceDetailPage() {
         title={article.seoTitle || article.title}
         description={article.seoDescription || article.excerpt}
         path={`/resources/${article.slug}`}
+        type="article"
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'Resources', path: '/resources' },
+          { name: article.title, path: `/resources/${article.slug}` },
+        ]}
       />
 
       <ArticleShell

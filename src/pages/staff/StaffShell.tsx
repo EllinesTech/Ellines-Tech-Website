@@ -28,9 +28,14 @@ import {
   fetchNotifications,
   updateLeadStatus,
   updateProfile,
+  logoutUser,
+  type VisitorContext,
 } from '@/lib/cmsApi'
+import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm'
+import { VisitorChips } from '@/components/admin/VisitorContext'
 import {
   clearAuthSession,
+  isGodRole,
   isStaffRole,
   loadAuthToken,
   loadAuthUser,
@@ -62,7 +67,8 @@ export function StaffLoginPage() {
 
   useEffect(() => {
     const user = loadAuthUser()
-    if (user && isStaffRole(user.role)) navigate('/staff', { replace: true })
+    if (user && isGodRole(user.role)) navigate('/admin', { replace: true })
+    else if (user && isStaffRole(user.role)) navigate('/staff', { replace: true })
   }, [navigate])
 
   async function onSubmit(e: React.FormEvent) {
@@ -75,7 +81,8 @@ export function StaffLoginPage() {
         return
       }
       saveAuthSession(res.token, res.user)
-      navigate('/staff', { replace: true })
+      // Super Admins land in God Mode; everyone else in the staff workspace.
+      navigate(isGodRole(res.user.role) ? '/admin' : '/staff', { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     }
@@ -116,6 +123,13 @@ export function StaffLoginPage() {
           Enter staff workspace
         </Button>
         <p className="mt-4 text-center text-xs text-slate-500">
+          <Link
+            to={`/account/reset?from=${encodeURIComponent('/staff/login')}`}
+            className="text-brand-300"
+          >
+            Forgot password?
+          </Link>
+          {' · '}
           Clients:{' '}
           <Link to="/account" className="text-brand-300">
             Client login
@@ -170,6 +184,14 @@ export function StaffLayout() {
                 {user?.name}
                 {user?.jobTitle ? ` · ${user.jobTitle}` : ''}
               </p>
+              {isGodRole(user?.role) && (
+                <Link
+                  to="/admin"
+                  className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-brand-500/12 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-brand-300 ring-1 ring-inset ring-brand-400/20"
+                >
+                  God Mode · Admin panel
+                </Link>
+              )}
             </div>
           </div>
           <nav className="min-h-0 flex-1 space-y-0.5 overflow-y-auto overscroll-contain px-3 py-2">
@@ -231,7 +253,8 @@ export function StaffLayout() {
               </Link>
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
+                  await logoutUser()
                   clearAuthSession()
                   navigate('/staff/login')
                 }}
@@ -354,6 +377,7 @@ export function StaffLeadsPage() {
       phone?: string
       message?: string
       company?: string
+      visitor?: VisitorContext
     }[]
   >([])
   const [error, setError] = useState('')
@@ -419,6 +443,11 @@ export function StaffLeadsPage() {
               {l.company ? ` · ${l.company}` : ''}
             </p>
             {l.message && <p className="mt-1 text-slate-500">{l.message}</p>}
+            {l.visitor && (
+              <div className="mt-2">
+                <VisitorChips visitor={l.visitor} />
+              </div>
+            )}
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <select
                 value={l.status || 'new'}
@@ -650,46 +679,66 @@ export function StaffLiveChatPage() {
 export function StaffProfilePage() {
   const [user, setUser] = useState<AuthUser | null>(() => loadAuthUser())
   const [name, setName] = useState(user?.name || '')
+  const [phone, setPhone] = useState(user?.phone || '')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
   if (!user) return null
 
   return (
-    <div className="max-w-lg space-y-4">
-      <h2 className="font-display text-2xl font-bold text-white">Profile</h2>
-      <p className="text-sm text-slate-400">
-        {user.email} · {user.jobTitle || user.role}
-      </p>
-      <label className="block text-xs text-slate-400">
-        Display name
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="mt-1 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white"
-        />
-      </label>
-      <Button
-        type="button"
-        size="sm"
-        onClick={async () => {
-          setError('')
-          try {
-            const res = await updateProfile(name)
-            const token = loadAuthToken()
-            const next = { ...user, name: res.user.name as string }
-            if (token) saveAuthSession(token, next)
-            setUser(next)
-            setMessage('Profile updated')
-          } catch (e) {
-            setError(e instanceof Error ? e.message : 'Update failed')
-          }
-        }}
-      >
-        Save name
-      </Button>
-      {message && <p className="text-sm text-emerald-300">{message}</p>}
-      {error && <p className="text-sm text-amber-200">{error}</p>}
+    <div className="max-w-lg space-y-6">
+      <div>
+        <h2 className="font-display text-2xl font-bold text-white">Profile</h2>
+        <p className="mt-1 text-sm text-slate-400">
+          {user.email} · {user.jobTitle || user.role}
+        </p>
+      </div>
+      <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+        <label className="block text-xs text-slate-400">
+          Display name
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="mt-1 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white"
+          />
+        </label>
+        <label className="block text-xs text-slate-400">
+          Mobile (for SMS reset codes)
+          <input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+2547…"
+            className="mt-1 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white"
+            autoComplete="tel"
+          />
+        </label>
+        <Button
+          type="button"
+          size="sm"
+          onClick={async () => {
+            setError('')
+            try {
+              const res = await updateProfile(name, phone)
+              const token = loadAuthToken()
+              const next = {
+                ...user,
+                name: res.user.name as string,
+                phone: (res.user.phone as string) || '',
+              }
+              if (token) saveAuthSession(token, next)
+              setUser(next)
+              setMessage('Profile updated')
+            } catch (e) {
+              setError(e instanceof Error ? e.message : 'Update failed')
+            }
+          }}
+        >
+          Save profile
+        </Button>
+        {message && <p className="text-sm text-emerald-300">{message}</p>}
+        {error && <p className="text-sm text-amber-200">{error}</p>}
+      </div>
+      <ChangePasswordForm user={user} onUpdated={setUser} />
     </div>
   )
 }

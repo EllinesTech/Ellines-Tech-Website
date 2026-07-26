@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { subscribeNewsletter } from '@/lib/cmsApi'
+import { useHoneypot } from '@/components/HoneypotField'
 
 export function NewsletterSignup() {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'ok' | 'err'>('idle')
   const [consent, setConsent] = useState(false)
+  const { website, honeypot } = useHoneypot()
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -15,7 +17,7 @@ export function NewsletterSignup() {
       return
     }
     try {
-      await subscribeNewsletter(email)
+      await subscribeNewsletter(email, website)
       setStatus('ok')
       setEmail('')
     } catch {
@@ -24,7 +26,8 @@ export function NewsletterSignup() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-3">
+    <form onSubmit={onSubmit} className="relative flex flex-col gap-3">
+      {honeypot}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <input
           type="email"

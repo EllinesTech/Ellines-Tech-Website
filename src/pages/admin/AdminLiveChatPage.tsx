@@ -9,6 +9,8 @@ import {
   type LiveSession,
   type LiveSessionSummary,
 } from '@/lib/liveChatApi'
+import { MaskedIpNotice, VisitorDetails } from '@/components/admin/VisitorContext'
+import { currentActor } from '@/lib/adminAccess'
 import { cn } from '@/lib/utils'
 
 export function AdminLiveChatPage({ agentName = 'Admin' }: { agentName?: string }) {
@@ -18,6 +20,7 @@ export function AdminLiveChatPage({ agentName = 'Admin' }: { agentName?: string 
   const [text, setText] = useState('')
   const [error, setError] = useState('')
   const endRef = useRef<HTMLDivElement>(null)
+  const actor = currentActor()
 
   async function refreshList() {
     try {
@@ -92,7 +95,7 @@ export function AdminLiveChatPage({ agentName = 'Admin' }: { agentName?: string 
         </p>
       )}
 
-      <div className="grid min-h-[32rem] gap-4 lg:grid-cols-[280px_1fr]">
+      <div className="grid min-h-[32rem] gap-4 lg:grid-cols-[280px_1fr] xl:grid-cols-[260px_1fr_260px]">
         <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
           <div className="border-b border-white/10 px-4 py-3 text-sm font-semibold text-white">
             Inbox
@@ -125,6 +128,11 @@ export function AdminLiveChatPage({ agentName = 'Admin' }: { agentName?: string 
                     {s.status}
                   </span>
                 </div>
+                {(s.location || s.device) && (
+                  <p className="mt-0.5 truncate text-[11px] text-slate-600">
+                    {[s.location, s.device, s.browser].filter(Boolean).join(' · ')}
+                  </p>
+                )}
                 <p className="mt-1 truncate text-xs text-slate-500">{s.preview}</p>
               </button>
             ))}
@@ -222,6 +230,24 @@ export function AdminLiveChatPage({ agentName = 'Admin' }: { agentName?: string 
             </>
           )}
         </div>
+
+        <aside className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+          <p className="text-sm font-semibold text-white">Visitor context</p>
+          <p className="mt-1 text-[11px] text-slate-500">
+            Captured at the edge when the chat opened — use it to greet with context and to spot
+            abuse.
+          </p>
+          <div className="mt-3">
+            {session ? (
+              <VisitorDetails visitor={session.visitor} location={session.location} />
+            ) : (
+              <p className="text-xs text-slate-500">Select a conversation to see visitor details.</p>
+            )}
+          </div>
+          <div className="mt-3">
+            <MaskedIpNotice canSeeIp={actor.canSeeVisitorPii} />
+          </div>
+        </aside>
       </div>
     </div>
   )

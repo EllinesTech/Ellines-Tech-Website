@@ -51,6 +51,10 @@ export function AboutPage() {
         title="About — IT Company in Kenya"
         description="About Ellines Tech — a software, web design, AI, and IT consulting company with offices in Nyeri and Nairobi, serving businesses across Kenya and Africa."
         path="/about"
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'About', path: '/about' },
+        ]}
       />
 
       <section className="relative overflow-hidden border-b border-white/5">

@@ -4,6 +4,9 @@ import { motion } from 'framer-motion'
 import { CheckCircle2, ArrowLeft } from 'lucide-react'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
+import { CtaPanel } from '@/components/ui/CtaPanel'
+import { PageLoading } from '@/components/ui/PageLoading'
 import { productCategories } from '@/data/products'
 import { productVisual } from '@/data/imagery'
 import { siteConfig } from '@/data/site'
@@ -32,11 +35,7 @@ export function ProductDetailPage() {
   }, [slug])
 
   if (product === undefined) {
-    return (
-      <div className="section-container section-padding">
-        <p className="text-slate-400">Loading…</p>
-      </div>
-    )
+    return <PageLoading label="Loading product…" />
   }
 
   if (!product) {
@@ -52,6 +51,28 @@ export function ProductDetailPage() {
         title={product.name}
         description={product.description}
         path={`/products/${product.slug}`}
+        image={visual.src}
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'Products', path: '/products' },
+          { name: product.name, path: `/products/${product.slug}` },
+        ]}
+        jsonLd={{
+          '@type': 'SoftwareApplication',
+          name: product.name,
+          description: product.description,
+          applicationCategory: category?.label || product.category,
+          operatingSystem: 'Web',
+          url: `${siteConfig.url}/products/${product.slug}`,
+          image: visual.src.startsWith('http') ? visual.src : `${siteConfig.url}${visual.src}`,
+          provider: { '@id': `${siteConfig.url}/#organization` },
+          offers: {
+            '@type': 'Offer',
+            priceCurrency: 'KES',
+            availability: 'https://schema.org/InStock',
+            url: `${siteConfig.url}/contact`,
+          },
+        }}
       />
 
       <section className="relative overflow-hidden border-b border-white/5">
@@ -61,6 +82,14 @@ export function ProductDetailPage() {
         <div className="pointer-events-none absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-sky-600/10 blur-[110px]" />
 
         <div className="section-container relative py-16 sm:py-20 lg:py-24">
+          <Breadcrumbs
+            className="mb-6"
+            items={[
+              { label: 'Home', href: '/' },
+              { label: 'Products', href: '/products' },
+              { label: product.name },
+            ]}
+          />
           <Link
             to="/products"
             className="inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-brand-300"
@@ -183,29 +212,13 @@ export function ProductDetailPage() {
 
       <section className="section-padding border-t border-white/5">
         <div className="section-container">
-          <div className="relative overflow-hidden rounded-[1.75rem] border border-brand-500/20 bg-gradient-to-br from-brand-900/50 via-slate-950 to-sky-950/60 p-8 sm:p-12">
-            <div className="pointer-events-none absolute -right-10 -top-10 h-52 w-52 rounded-full bg-brand-500/10 blur-3xl" />
-            <div className="relative max-w-xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
-                Next step
-              </p>
-              <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                See {product.name} running on your data
-              </h2>
-              <p className="mt-4 text-slate-300">
-                We&apos;ll walk you through a live environment, answer implementation questions, and
-                scope what rollout looks like for your team.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button href="/contact#quote" size="lg" icon>
-                  Book a walkthrough
-                </Button>
-                <Button href="/products" variant="secondary" size="lg">
-                  Browse all products
-                </Button>
-              </div>
-            </div>
-          </div>
+          <CtaPanel
+            eyebrow="Next step"
+            title={`See ${product.name} running on your data`}
+            description="We'll walk you through a live environment, answer implementation questions, and scope what rollout looks like for your team."
+            primary={{ label: 'Book a walkthrough', href: '/contact#quote' }}
+            secondary={{ label: 'Browse all products', href: '/products' }}
+          />
         </div>
       </section>
     </>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://tech.ellines.co.ke/</loc><lastmod>2026-07-26</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://tech.ellines.co.ke/</loc><lastmod>2026-07-26</lastmod><changefreq>weekly</changefreq><priority>1</priority></url>
   <url><loc>https://tech.ellines.co.ke/about</loc><lastmod>2026-07-26</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://tech.ellines.co.ke/services</loc><lastmod>2026-07-26</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://tech.ellines.co.ke/products</loc><lastmod>2026-07-26</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
@@ -36,6 +36,17 @@
   <url><loc>https://tech.ellines.co.ke/services/it-consulting</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://tech.ellines.co.ke/services/digital-transformation-consulting</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://tech.ellines.co.ke/services/cloud-infrastructure-consulting</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tech.ellines.co.ke/services/kenya-tax-return</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tech.ellines.co.ke/services/os-installation</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tech.ellines.co.ke/services/app-testing</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tech.ellines.co.ke/services/branding-services</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tech.ellines.co.ke/services/graphics-design</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tech.ellines.co.ke/services/campaign-posters</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tech.ellines.co.ke/services/apparel-branding</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tech.ellines.co.ke/services/phone-case-decoration</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tech.ellines.co.ke/services/business-cards</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tech.ellines.co.ke/services/stationery-rebrand</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tech.ellines.co.ke/services/business-rebrand-kit</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://tech.ellines.co.ke/products/medflow</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
   <url><loc>https://tech.ellines.co.ke/products/afyavox</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
   <url><loc>https://tech.ellines.co.ke/products/pharmacy-management</loc><lastmod>2026-07-26</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>

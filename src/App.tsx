@@ -23,6 +23,7 @@ import { NotFoundPage } from '@/pages/NotFoundPage'
 import { CmsPageView } from '@/pages/CmsPageView'
 import { ShopPage as PricingPage } from '@/pages/ShopPage'
 import { AccountPage } from '@/pages/AccountPage'
+import { PasswordResetPage } from '@/pages/PasswordResetPage'
 import { RequestServicePage } from '@/pages/RequestServicePage'
 import { InvoicePublicPage } from '@/pages/InvoicePublicPage'
 import { PayResultPage } from '@/pages/PayResultPage'
@@ -180,6 +181,7 @@ export default function App() {
               }
             />
             <Route path="account" element={<AccountPage />} />
+            <Route path="account/reset" element={<PasswordResetPage />} />
             <Route path="p/:slug" element={<CmsPageView />} />
             <Route path="invoice/:id" element={<InvoicePublicPage />} />
             <Route path="pay/result" element={<PayResultPage />} />

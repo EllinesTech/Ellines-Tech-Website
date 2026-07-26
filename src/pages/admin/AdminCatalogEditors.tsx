@@ -12,8 +12,10 @@ import {
   saveSiteProfile,
   type CmsPortfolioProject,
   type CmsProduct,
+  type PresenceEntry,
   type SiteProfile,
 } from '@/lib/cmsApi'
+import { MaskedIpNotice, VisitorChips } from '@/components/admin/VisitorContext'
 import { productCategories } from '@/data/products'
 import { portfolioCategories } from '@/data/portfolio'
 
@@ -516,13 +518,15 @@ export function SiteProfileEditor({ mode }: { mode: 'social' | 'email' | 'both' 
 }
 
 export function OnlineUsersModule() {
-  const [online, setOnline] = useState<{ sessionId: string; path: string; at: string }[]>([])
+  const [online, setOnline] = useState<PresenceEntry[]>([])
+  const [canSeeIp, setCanSeeIp] = useState(false)
   const [error, setError] = useState('')
 
   async function load() {
     try {
       const data = await fetchPresence()
       setOnline(data.online)
+      setCanSeeIp(data.canSeeIp)
       setError('')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed')
@@ -538,27 +542,37 @@ export function OnlineUsersModule() {
   return (
     <Panel
       title="Online Users"
-      description="Visitors active in the last 5 minutes (consent-based visit tracking)."
+      description="Visitors active in the last 5 minutes, with network and device context (consent-based visit tracking)."
     >
       <Err message={error} />
-      <p className="mb-3 text-sm text-slate-400">{online.length} online now</p>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-slate-400">{online.length} online now</p>
+        <MaskedIpNotice canSeeIp={canSeeIp} />
+      </div>
       <ul className="space-y-2">
         {online.length === 0 && (
           <li className="text-sm text-slate-500">No active visitors right now.</li>
         )}
         {online.map((p) => (
-          <li
-            key={p.sessionId}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 px-3 py-2 text-sm"
-          >
-            <span className="text-white">{p.path}</span>
-            <span className="text-xs text-slate-500">{new Date(p.at).toLocaleTimeString()}</span>
+          <li key={p.sessionId} className="rounded-xl border border-white/10 px-3 py-2.5 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="truncate font-medium text-white">{p.path}</span>
+              <span className="text-xs text-slate-500">{new Date(p.at).toLocaleTimeString()}</span>
+            </div>
+            <div className="mt-1.5">
+              <VisitorChips visitor={p.visitor} location={p.location} />
+            </div>
           </li>
         ))}
       </ul>
-      <Link to="/admin/live-chat" className="mt-4 inline-block text-sm text-brand-300">
-        Open Live Chat →
-      </Link>
+      <div className="mt-4 flex flex-wrap gap-3 text-sm">
+        <Link to="/admin/visitors" className="text-brand-300">
+          Visitor intelligence →
+        </Link>
+        <Link to="/admin/live-chat" className="text-brand-300">
+          Open Live Chat →
+        </Link>
+      </div>
     </Panel>
   )
 }

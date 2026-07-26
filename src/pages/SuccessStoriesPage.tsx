@@ -25,6 +25,10 @@ export function SuccessStoriesPage() {
         title="Success Stories"
         description="Success stories and case studies from Ellines Tech clients across Africa."
         path="/success-stories"
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'Success Stories', path: '/success-stories' },
+        ]}
       />
 
       <section className="relative overflow-hidden border-b border-white/5">
@@ -97,109 +101,129 @@ export function SuccessStoriesPage() {
 
       <section className="section-padding">
         <div className="section-container">
-          <div className="space-y-20 lg:space-y-24">
-            {stories.map((story, i) => {
-              const visual = projectVisual(story)
-              const flip = i % 2 === 1
-              return (
-                <motion.article
-                  key={story.slug}
-                  id={story.slug}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-60px' }}
-                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                  className="group grid scroll-mt-28 items-center gap-8 lg:grid-cols-12 lg:gap-14"
-                >
-                  <div className={cn('lg:col-span-6', flip && 'lg:order-2')}>
-                    <Link
-                      to={`/portfolio#${story.slug}`}
-                      className={cn(
-                        'relative block overflow-hidden rounded-[1.5rem] border border-white/10',
-                        visual.fit === 'contain' &&
-                          'bg-gradient-to-br from-slate-900 via-surface to-slate-950',
-                      )}
+          {stories.length === 0 ? (
+            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.02] px-6 py-14 text-center">
+              <p className="font-display text-xl font-semibold text-white">Case studies coming soon</p>
+              <p className="mx-auto mt-3 max-w-md text-sm text-slate-400">
+                We&apos;re preparing detailed outcome write-ups. Browse the portfolio for shipped work
+                in the meantime.
+              </p>
+              <div className="mt-8 flex justify-center gap-3">
+                <Button href="/portfolio" icon>
+                  View portfolio
+                </Button>
+                <Button href="/contact#quote" variant="secondary">
+                  Start a project
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-20 lg:space-y-24">
+                {stories.map((story, i) => {
+                  const visual = projectVisual(story)
+                  const flip = i % 2 === 1
+                  return (
+                    <motion.article
+                      key={story.slug}
+                      id={story.slug}
+                      initial={{ opacity: 0, y: 24 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: '-60px' }}
+                      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                      className="group grid scroll-mt-28 items-center gap-8 lg:grid-cols-12 lg:gap-14"
                     >
-                      <div className="aspect-[16/10]">
-                        <img
-                          src={visual.src}
-                          alt={story.name}
+                      <div className={cn('lg:col-span-6', flip && 'lg:order-2')}>
+                        <Link
+                          to={`/portfolio#${story.slug}`}
                           className={cn(
-                            'h-full w-full transition-transform duration-[900ms] ease-out group-hover:scale-[1.04]',
-                            visual.fit === 'contain'
-                              ? 'object-contain p-10'
-                              : 'object-cover object-center',
+                            'relative block overflow-hidden rounded-[1.5rem] border border-white/10',
+                            visual.fit === 'contain' &&
+                              'bg-gradient-to-br from-slate-900 via-surface to-slate-950',
                           )}
-                          loading="lazy"
-                        />
-                      </div>
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-                      <span className="absolute bottom-4 left-4 rounded-lg bg-slate-950/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-200 ring-1 ring-white/15 backdrop-blur-md">
-                        {portfolioCategories[story.category]}
-                      </span>
-                    </Link>
-                  </div>
-
-                  <div className={cn('lg:col-span-6', flip && 'lg:order-1')}>
-                    <span className="font-mono text-[11px] tracking-[0.14em] text-slate-600">
-                      Case {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-[2.1rem] lg:leading-tight">
-                      {story.name}
-                    </h2>
-                    {story.client && <p className="mt-2 text-sm text-slate-500">{story.client}</p>}
-                    <p className="mt-5 leading-relaxed text-slate-300">{story.description}</p>
-
-                    {story.results && (
-                      <dl className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2">
-                        {story.results.map((result) => (
-                          <div key={result} className="border-l border-brand-400/30 pl-4">
-                            <dt className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                              <TrendingUp className="h-3.5 w-3.5 text-brand-400" />
-                              Outcome
-                            </dt>
-                            <dd className="mt-2 font-display text-base font-semibold leading-snug text-white">
-                              {result}
-                            </dd>
+                        >
+                          <div className="aspect-[16/10]">
+                            <img
+                              src={visual.src}
+                              alt={story.name}
+                              className={cn(
+                                'h-full w-full transition-transform duration-[900ms] ease-out group-hover:scale-[1.04]',
+                                visual.fit === 'contain'
+                                  ? 'object-contain p-10'
+                                  : 'object-cover object-center',
+                              )}
+                              loading="lazy"
+                            />
                           </div>
-                        ))}
-                      </dl>
-                    )}
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                          <span className="absolute bottom-4 left-4 rounded-lg bg-slate-950/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-200 ring-1 ring-white/15 backdrop-blur-md">
+                            {portfolioCategories[story.category]}
+                          </span>
+                        </Link>
+                      </div>
 
-                    <div className="mt-7 flex flex-wrap gap-x-3 gap-y-2 font-mono text-[11px] uppercase tracking-[0.1em] text-slate-500">
-                      {story.technologies.map((tech, index) => (
-                        <span key={tech} className="inline-flex items-center gap-3">
-                          {tech}
-                          {index < story.technologies.length - 1 && (
-                            <span className="text-slate-700" aria-hidden>
-                              /
-                            </span>
-                          )}
+                      <div className={cn('lg:col-span-6', flip && 'lg:order-1')}>
+                        <span className="font-mono text-[11px] tracking-[0.14em] text-slate-600">
+                          Case {String(i + 1).padStart(2, '0')}
                         </span>
-                      ))}
-                    </div>
+                        <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-[2.1rem] lg:leading-tight">
+                          {story.name}
+                        </h2>
+                        {story.client && <p className="mt-2 text-sm text-slate-500">{story.client}</p>}
+                        <p className="mt-5 leading-relaxed text-slate-300">{story.description}</p>
 
-                    <Link
-                      to={`/portfolio#${story.slug}`}
-                      className="mt-7 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-300 transition-colors hover:text-brand-200"
-                    >
-                      View project
-                      <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                    </Link>
-                  </div>
-                </motion.article>
-              )
-            })}
-          </div>
+                        {story.results && (
+                          <dl className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                            {story.results.map((result) => (
+                              <div key={result} className="border-l border-brand-400/30 pl-4">
+                                <dt className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                                  <TrendingUp className="h-3.5 w-3.5 text-brand-400" />
+                                  Outcome
+                                </dt>
+                                <dd className="mt-2 font-display text-base font-semibold leading-snug text-white">
+                                  {result}
+                                </dd>
+                              </div>
+                            ))}
+                          </dl>
+                        )}
 
-          <div className="mt-20 flex flex-col gap-3 border-t border-white/10 pt-10 sm:flex-row">
-            <Button href="/portfolio" icon>
-              View full portfolio
-            </Button>
-            <Button href="/contact#quote" variant="secondary">
-              Start your project
-            </Button>
-          </div>
+                        <div className="mt-7 flex flex-wrap gap-x-3 gap-y-2 font-mono text-[11px] uppercase tracking-[0.1em] text-slate-500">
+                          {story.technologies.map((tech, index) => (
+                            <span key={tech} className="inline-flex items-center gap-3">
+                              {tech}
+                              {index < story.technologies.length - 1 && (
+                                <span className="text-slate-700" aria-hidden>
+                                  /
+                                </span>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+
+                        <Link
+                          to={`/portfolio#${story.slug}`}
+                          className="mt-7 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-300 transition-colors hover:text-brand-200"
+                        >
+                          View project
+                          <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                        </Link>
+                      </div>
+                    </motion.article>
+                  )
+                })}
+              </div>
+
+              <div className="mt-20 flex flex-col gap-3 border-t border-white/10 pt-10 sm:flex-row">
+                <Button href="/portfolio" icon>
+                  View full portfolio
+                </Button>
+                <Button href="/contact#quote" variant="secondary">
+                  Start your project
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </section>
     </>

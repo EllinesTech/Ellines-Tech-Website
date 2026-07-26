@@ -375,11 +375,19 @@ export function FaqPage() {
     },
     {
       q: 'How do I get a quote?',
-      a: 'Use the contact form, chat assistant, or WhatsApp. We’ll scope your needs and respond with next steps.',
+      a: 'Use the contact form, request flow, chat assistant, or WhatsApp. We scope your needs and usually reply within a few hours.',
+    },
+    {
+      q: 'How long does a typical project take?',
+      a: 'Smaller services (resume, logo, landing pages) can ship in days. Product builds and custom software usually take weeks, with a clear milestone plan before we start.',
     },
     {
       q: 'Do you offer AI products?',
-      a: 'Yes — including AfyaVox AI, RV22 AI Assistant, and Juno4, plus custom AI automation.',
+      a: 'Yes — including AfyaVox AI, RV22 AI Assistant, and Juno4, plus custom AI automation for support, ops, and document workflows.',
+    },
+    {
+      q: 'What does onboarding look like?',
+      a: 'Brief → scope → build → launch. You get a written plan, demos you can react to, and a clean handoff with support that stays available 24/7.',
     },
     {
       q: 'Where are you based?',
@@ -389,6 +397,10 @@ export function FaqPage() {
       q: 'How do you handle my personal data?',
       a: 'Under the Kenya Data Protection Act, 2019. See Privacy and Cookie policies, and use the consent banner to manage cookies.',
     },
+    {
+      q: 'Can you work with schools, clinics, and SMEs — not only enterprises?',
+      a: 'Yes. We build for individuals, schools, clinics, SACCOs, and growing businesses as often as we build for larger organizations.',
+    },
   ]
   const faqs = cmsFaq?.length ? cmsFaq : fallback
 
@@ -396,8 +408,13 @@ export function FaqPage() {
     <>
       <SEO
         title="FAQ"
-        description="Frequently asked questions about Ellines Tech products, services, and support."
+        description="Frequently asked questions about Ellines Tech products, services, timelines, pricing, and support in Kenya."
         path="/faq"
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'FAQ', path: '/faq' },
+        ]}
+        faqs={faqs.map((item) => ({ question: item.q, answer: item.a }))}
       />
       <section className="relative overflow-hidden border-b border-white/5">
         <img

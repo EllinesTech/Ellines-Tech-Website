@@ -4,6 +4,7 @@ import { ArrowUpRight } from 'lucide-react'
 import { SEO } from '@/components/SEO'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
+import { CtaPanel } from '@/components/ui/CtaPanel'
 import { MediaCard } from '@/components/ui/MediaCard'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { industries } from '@/data/industries'
@@ -25,6 +26,10 @@ export function IndustriesPage() {
         title="Industries"
         description="Ellines Tech serves healthcare, education, government, finance, retail, and more across Africa."
         path="/industries"
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'Industries', path: '/industries' },
+        ]}
       />
 
       <section className="relative overflow-hidden border-b border-white/5">
@@ -159,31 +164,14 @@ export function IndustriesPage() {
 
       <section className="section-padding border-t border-white/5">
         <div className="section-container">
-          <div className="relative overflow-hidden rounded-[1.75rem] border border-brand-500/20 bg-gradient-to-br from-brand-900/50 via-slate-950 to-sky-950/60 p-8 sm:p-12">
-            <div className="pointer-events-none absolute -right-10 -top-10 h-52 w-52 rounded-full bg-brand-500/10 blur-3xl" />
-            <div className="relative flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center">
-              <div className="max-w-xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
-                  Not listed?
-                </p>
-                <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                  Don&apos;t see your industry?
-                </h2>
-                <p className="mt-4 text-slate-300">
-                  We&apos;ve built for regulated, high-volume, and field-heavy operations. Describe
-                  yours and we&apos;ll tell you honestly whether we&apos;re the right fit.
-                </p>
-              </div>
-              <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
-                <Button href="/contact#quote" size="lg" icon>
-                  Talk to us
-                </Button>
-                <Button href="/portfolio" variant="secondary" size="lg">
-                  See portfolio
-                </Button>
-              </div>
-            </div>
-          </div>
+          <CtaPanel
+            split
+            eyebrow="Not listed?"
+            title="Don't see your industry?"
+            description="We've built for regulated, high-volume, and field-heavy operations. Describe yours and we'll tell you honestly whether we're the right fit."
+            primary={{ label: 'Talk to us', href: '/contact#quote' }}
+            secondary={{ label: 'See portfolio', href: '/portfolio' }}
+          />
         </div>
       </section>
     </>

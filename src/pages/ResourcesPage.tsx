@@ -73,6 +73,10 @@ export function ResourcesPage() {
         title="Knowledge Hub"
         description="Articles, tutorials, case studies, white papers, documentation, and FAQs from Ellines Tech."
         path="/resources"
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'Resources', path: '/resources' },
+        ]}
       />
 
       <section className="relative overflow-hidden border-b border-white/5">

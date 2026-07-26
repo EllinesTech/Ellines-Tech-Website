@@ -3,11 +3,40 @@ import { defaultDownloads } from './downloadsDefaults.js'
 import { defaultServices } from './servicesDefaults.js'
 import { defaultProducts } from './productsDefaults.js'
 import { defaultPortfolio } from './portfolioDefaults.js'
+import {
+  ALLOWED_HEADERS,
+  authAttemptBucket,
+  canSeeVisitorPii,
+  cleanEmail,
+  cleanPhone,
+  cleanPlain,
+  cleanText,
+  createGodSession,
+  createUserSession,
+  honeypotTripped,
+  locationLabel,
+  rateLimitBump,
+  rateLimitByIp,
+  rateLimitPeek,
+  redactVisitor,
+  resolveActor,
+  resolveAdminKey,
+  resolveUserSession,
+  sanitizeRichText,
+  revokeGodSession,
+  timingSafeEqual,
+  validatePassword,
+  visitorContext,
+} from '../_shared/security'
+import { deliverResetCode, sendEmail } from '../_shared/notify'
 
+/**
+ * Origin reflection and security headers are applied centrally in
+ * `functions/_middleware.ts`; these are just the defaults each route returns.
+ */
 const cors = {
-  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key, X-User-Token',
+  'Access-Control-Allow-Headers': ALLOWED_HEADERS,
 }
 
 /** Load Knowledge Hub articles — seed defaults when KV is empty; merge missing seed ids / downloadUrl */
@@ -217,13 +246,68 @@ async function loadPaymentMethods(env) {
   }
 }
 
+/**
+ * Secrets are write-only from the admin UI: the editor shows whether a value is
+ * set, and blank fields on save keep whatever is already stored.
+ */
+function maskPaymentSecrets(cfg) {
+  return {
+    ...cfg,
+    mpesa: {
+      ...cfg.mpesa,
+      consumerSecret: '',
+      passkey: '',
+      consumerSecretSet: Boolean(cfg.mpesa?.consumerSecret),
+      passkeySet: Boolean(cfg.mpesa?.passkey),
+    },
+    paypal: {
+      ...cfg.paypal,
+      clientSecret: '',
+      clientSecretSet: Boolean(cfg.paypal?.clientSecret),
+    },
+    paystack: {
+      ...cfg.paystack,
+      secretKey: '',
+      webhookSecret: '',
+      secretKeySet: Boolean(cfg.paystack?.secretKey),
+      webhookSecretSet: Boolean(cfg.paystack?.webhookSecret),
+    },
+  }
+}
+
+/** Presence row shaped for an admin/staff viewer (IP masked unless permitted). */
+function presenceView(entry, actor) {
+  const visitor = redactVisitor(entry.visitor || {}, actor)
+  return {
+    sessionId: entry.sessionId,
+    path: entry.path,
+    at: entry.at,
+    visitor,
+    location: locationLabel(entry.visitor),
+  }
+}
+
+function visitorLogView(entry, actor) {
+  const visitor = redactVisitor(entry.visitor || {}, actor)
+  return {
+    sessionId: entry.sessionId,
+    firstSeen: entry.firstSeen,
+    lastSeen: entry.lastSeen,
+    hits: entry.hits || 1,
+    path: entry.path,
+    paths: entry.paths || [],
+    visitor,
+    location: locationLabel(entry.visitor),
+  }
+}
+
 function defaultChatFaqs() {
   return [
     {
       id: 'welcome',
       questions: ['hi', 'hello', 'hey'],
       answer:
-        'Hello — welcome to Ellines Tech. I can help with products, services, pricing, or connect you to a human on WhatsApp.',
+        'Hello — I’m Ellenia, the Ellines Tech assistant. I can help with products, services, pricing, and technical questions, or connect you to a human agent or WhatsApp.',
       links: [
         { label: 'Services', href: '/services' },
         { label: 'Pricing', href: '/pricing' },
@@ -395,12 +479,12 @@ function normalizePageRecord(page, existing) {
     slug,
     path: routePath,
     mode: page.mode === 'replace' ? 'replace' : 'append',
-    title: page.title,
-    excerpt: page.excerpt || '',
-    body: page.body || '',
+    title: cleanPlain(page.title, 200),
+    excerpt: cleanText(page.excerpt, 1000),
+    body: sanitizeRichText(page.body),
     status: page.status === 'published' ? 'published' : 'draft',
-    seoTitle: page.seoTitle || page.title,
-    seoDescription: page.seoDescription || page.excerpt || '',
+    seoTitle: cleanPlain(page.seoTitle || page.title, 200),
+    seoDescription: cleanText(page.seoDescription || page.excerpt, 400),
     updatedAt: now,
     createdAt: page.createdAt || existing?.createdAt || now,
   }
@@ -429,68 +513,43 @@ function findPageIndex(pages, { id: pageId, slug, path, customOnly = false }) {
   return -1
 }
 
-function adminOk(request, env) {
-  // Align with client DEFAULT_ADMIN_PASSWORD / VITE_ADMIN_PASSWORD resolution:
-  // empty or whitespace ADMIN_API_KEY must fall back (not compare as "").
-  const key = (request.headers.get('X-Admin-Key') || '').trim()
-  const expected = String(env.ADMIN_API_KEY ?? '').trim() || 'EllinesGodMode2026'
-  return key === expected
-}
-
-/** Super Admin God Mode only (panel password / ADMIN_API_KEY). Staff never use this. */
-function isGodMode(request, env) {
-  return adminOk(request, env)
-}
-
-const STAFF_ROLES = new Set(['staff', 'admin', 'super_admin'])
 const CUSTOMER_ROLE = 'customer'
 
-async function resolveUserSession(request, env) {
-  const token = request.headers.get('X-User-Token') || ''
-  if (!token) return null
-  const session = await getJson(env, `cms:session:${token}`, null)
-  if (!session?.userId) return null
-  const users = await getJson(env, 'cms:users', [])
-  const user = users.find((u) => u.id === session.userId)
-  if (!user || user.active === false) return null
-  return user
-}
-
-async function staffOk(request, env) {
-  const user = await resolveUserSession(request, env)
-  if (!user || !STAFF_ROLES.has(user.role)) return null
-  return user
+/**
+ * God Mode — granted to the owner key, a server-issued admin panel session, or
+ * any signed-in CMS user whose role is `super_admin`. See `_shared/security.ts`.
+ */
+async function isGodMode(request, env) {
+  const actor = await resolveActor(request, env)
+  return actor?.kind === 'god'
 }
 
 /** God Mode OR staff/admin user token — for day-to-day CMS modules */
 async function staffOrGod(request, env) {
-  if (isGodMode(request, env)) return { kind: 'god', user: null }
-  const user = await staffOk(request, env)
-  if (user) return { kind: 'staff', user }
-  return null
+  return resolveActor(request, env)
 }
 
 async function sendResendEmail(env, { to, subject, html }) {
-  const key = env.RESEND_API_KEY
-  if (!key || !to) return { sent: false, reason: 'no_key' }
-  try {
-    const from = env.RESEND_FROM || 'Ellines Tech <onboarding@resend.dev>'
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ from, to: [to], subject, html }),
-    })
-    if (!res.ok) {
-      const err = await res.text().catch(() => '')
-      return { sent: false, reason: err || 'send_failed' }
-    }
-    return { sent: true }
-  } catch (e) {
-    return { sent: false, reason: String(e) }
-  }
+  return sendEmail(env, { to, subject, html })
+}
+
+const RESET_TTL_SECONDS = 15 * 60
+const RESET_CODE_LENGTH = 6
+
+function resetKey(email) {
+  return `cms:pwd-reset:${email}`
+}
+
+/** Cryptographically random 6-digit OTP (leading zeros allowed). */
+function generateResetCode() {
+  const bytes = crypto.getRandomValues(new Uint8Array(4))
+  const n = new DataView(bytes.buffer).getUint32(0, false) % 1_000_000
+  return String(n).padStart(RESET_CODE_LENGTH, '0')
+}
+
+async function hashResetCode(code, saltB64) {
+  const { hash, salt } = await hashPassword(`reset:${code}`, saltB64)
+  return { hash, salt }
 }
 
 async function getJson(env, key, fallback) {
@@ -573,8 +632,15 @@ export async function onRequestGet(context) {
   }
 
   if (resource === 'leads') {
-    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
-    return json({ leads: await getJson(env, 'cms:leads', []) })
+    const actor = await staffOrGod(request, env)
+    if (!actor) return json({ error: 'unauthorized' }, 401)
+    const leads = await getJson(env, 'cms:leads', [])
+    return json({
+      leads: leads.map((lead) =>
+        lead.visitor ? { ...lead, visitor: redactVisitor(lead.visitor, actor) } : lead,
+      ),
+      canSeeIp: canSeeVisitorPii(actor),
+    })
   }
 
   if (resource === 'me') {
@@ -589,11 +655,9 @@ export async function onRequestGet(context) {
     if (!user || user.role !== CUSTOMER_ROLE) return json({ error: 'unauthorized' }, 401)
     const leads = await getJson(env, 'cms:leads', [])
     const email = String(user.email || '').toLowerCase()
-    const mine = leads.filter(
-      (l) =>
-        String(l.email || '').toLowerCase() === email ||
-        l.userId === user.id,
-    )
+    const mine = leads
+      .filter((l) => String(l.email || '').toLowerCase() === email || l.userId === user.id)
+      .map(({ visitor, ...safe }) => safe)
     return json({ leads: mine })
   }
 
@@ -749,9 +813,11 @@ export async function onRequestGet(context) {
   }
 
   if (resource === 'payments') {
-    // Full payment config is God Mode only (keys / till numbers). Public gets enabled flags later.
-    if (!isGodMode(request, env)) return json({ error: 'unauthorized' }, 401)
-    return json({ payments: await loadPaymentMethods(env) })
+    // Payment config is God Mode only, and live secrets never leave the edge —
+    // the editor sends blanks back and `save_payments` keeps the stored value.
+    if (!(await isGodMode(request, env))) return json({ error: 'unauthorized' }, 401)
+    const payments = await loadPaymentMethods(env)
+    return json({ payments: maskPaymentSecrets(payments) })
   }
 
   if (resource === 'chat-faqs') {
@@ -759,11 +825,33 @@ export async function onRequestGet(context) {
   }
 
   if (resource === 'presence') {
-    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
+    const actor = await staffOrGod(request, env)
+    if (!actor) return json({ error: 'unauthorized' }, 401)
     const presence = await getJson(env, 'cms:presence', [])
     const cutoff = Date.now() - 5 * 60 * 1000
-    const online = presence.filter((p) => new Date(p.at).getTime() >= cutoff)
-    return json({ online, count: online.length })
+    const online = presence
+      .filter((p) => new Date(p.at).getTime() >= cutoff)
+      .map((p) => presenceView(p, actor))
+    return json({ online, count: online.length, canSeeIp: canSeeVisitorPii(actor) })
+  }
+
+  if (resource === 'visitors') {
+    const actor = await staffOrGod(request, env)
+    if (!actor) return json({ error: 'unauthorized' }, 401)
+    const log = await getJson(env, 'cms:visitor-log', [])
+    const presence = await getJson(env, 'cms:presence', [])
+    const liveIds = new Set(
+      presence
+        .filter((p) => new Date(p.at).getTime() >= Date.now() - 5 * 60 * 1000)
+        .map((p) => p.sessionId),
+    )
+    return json({
+      visitors: log.slice(0, 200).map((entry) => ({
+        ...visitorLogView(entry, actor),
+        online: liveIds.has(entry.sessionId),
+      })),
+      canSeeIp: canSeeVisitorPii(actor),
+    })
   }
 
   if (resource === 'knowledge') {
@@ -789,7 +877,7 @@ export async function onRequestGet(context) {
 
   if (resource === 'users') {
     // Users module: Super Admin God Mode only — staff never manage accounts here
-    if (!isGodMode(request, env)) return json({ error: 'unauthorized' }, 401)
+    if (!(await isGodMode(request, env))) return json({ error: 'unauthorized' }, 401)
     const users = await getJson(env, 'cms:users', [])
     return json({
       users: users.map(({ passwordHash, salt, ...safe }) => safe),
@@ -797,7 +885,8 @@ export async function onRequestGet(context) {
   }
 
   if (resource === 'analytics') {
-    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
+    const actor = await staffOrGod(request, env)
+    if (!actor) return json({ error: 'unauthorized' }, 401)
     const visitors = await getJson(env, 'cms:visitors', { total: 0, today: 0, pages: {} })
     const sessions = await getJson(env, 'chat:index', [])
     const presence = await getJson(env, 'cms:presence', [])
@@ -807,6 +896,7 @@ export async function onRequestGet(context) {
     const shop = await getJson(env, 'cms:shop-products', [])
     const services = await loadServicesCatalog(env)
     const products = await loadProductsCatalog(env)
+    const log = await getJson(env, 'cms:visitor-log', [])
     return json({
       analytics: {
         visitors,
@@ -817,6 +907,11 @@ export async function onRequestGet(context) {
         shopPublished: (shop || []).filter((p) => p.status === 'published').length,
         servicesPublished: services.filter((s) => s.status === 'published').length,
         productsPublished: products.filter((p) => p.status === 'published').length,
+        countries: visitors.countries || {},
+        browsers: visitors.browsers || {},
+        devices: visitors.devices || {},
+        recentVisitors: log.slice(0, 25).map((entry) => visitorLogView(entry, actor)),
+        canSeeIp: canSeeVisitorPii(actor),
       },
     })
   }
@@ -910,8 +1005,37 @@ export async function onRequestPost(context) {
   const body = await request.json().catch(() => ({}))
   const action = body.action || 'save'
 
+  // Owner panel sign-in: the key is verified here so it never ships in the
+  // browser bundle. Success returns a short-lived God Mode session token.
+  if (action === 'admin_login') {
+    const bucket = authAttemptBucket(request, 'admin_login')
+    const limits = { limit: 8, windowSeconds: 600 }
+    if (!(await rateLimitPeek(env, bucket, limits)).ok) {
+      return json({ error: 'Too many attempts. Try again in a few minutes.' }, 429)
+    }
+    const password = String(body.password || '')
+    if (!timingSafeEqual(password.trim(), resolveAdminKey(env))) {
+      await rateLimitBump(env, bucket, limits)
+      await logActivity(env, { type: 'security', message: 'Failed admin panel sign-in' })
+      return json({ error: 'Invalid password' }, 401)
+    }
+    const session = await createGodSession(env, { name: 'Owner' })
+    await logActivity(env, { type: 'security', message: 'Admin panel sign-in (owner key)' })
+    return json({ ok: true, token: session.token, expiresIn: session.expiresIn })
+  }
+
+  if (action === 'admin_logout') {
+    await revokeGodSession(env, request.headers.get('X-Admin-Key') || '')
+    return json({ ok: true })
+  }
+
   // Public lead capture / newsletter
   if (action === 'lead') {
+    const limited = await rateLimitByIp(env, request, 'lead', { limit: 8, windowSeconds: 600 })
+    if (!limited.ok) {
+      return json({ error: 'Too many submissions. Please try again shortly.' }, 429)
+    }
+    if (honeypotTripped(body)) return json({ ok: true, id: id('lead') })
     const settings = await loadSiteSettings(env)
     const source = String(body.source || 'website')
     if (
@@ -924,25 +1048,39 @@ export async function onRequestPost(context) {
       return json({ error: 'Contact form is currently unavailable' }, 403)
     }
     const sessionUser = await resolveUserSession(request, env)
+    const email = cleanEmail(body.email)
+    if (!email) return json({ error: 'A valid email address is required' }, 400)
     const leads = await getJson(env, 'cms:leads', [])
+    const context = visitorContext(request)
     const lead = {
       id: id('lead'),
-      name: body.name || '',
-      email: body.email || '',
-      phone: body.phone || '',
-      company: body.company || '',
-      message: body.message || '',
-      source: body.source || 'website',
-      intent: body.intent || 'quote',
-      budget: body.budget || '',
-      timeline: body.timeline || '',
-      packageId: body.packageId || '',
-      packageName: body.packageName || '',
-      packagePrice: body.packagePrice || '',
-      service: body.service || '',
-      userId: sessionUser?.id || body.userId || '',
+      name: cleanPlain(body.name, 120),
+      email,
+      phone: cleanPlain(body.phone, 40),
+      company: cleanPlain(body.company, 140),
+      message: cleanText(body.message, 4000),
+      source: cleanPlain(body.source || 'website', 60),
+      intent: cleanPlain(body.intent || 'quote', 40),
+      budget: cleanPlain(body.budget, 80),
+      timeline: cleanPlain(body.timeline, 80),
+      packageId: cleanPlain(body.packageId, 80),
+      packageName: cleanPlain(body.packageName, 160),
+      packagePrice: cleanPlain(body.packagePrice, 40),
+      service: cleanPlain(body.service, 160),
+      userId: sessionUser?.id || cleanPlain(body.userId, 80),
       status: body.intent === 'buy' ? 'purchase_request' : 'new',
       at: new Date().toISOString(),
+      /** Admin-only context so sales can qualify and spot abuse. */
+      visitor: {
+        ip: context.ip,
+        country: context.country,
+        region: context.region,
+        city: context.city,
+        browser: context.browser,
+        os: context.os,
+        device: context.device,
+        referrer: context.referrer,
+      },
     }
     leads.unshift(lead)
     await putJson(env, 'cms:leads', leads.slice(0, 500))
@@ -1022,13 +1160,19 @@ export async function onRequestPost(context) {
   }
 
   if (action === 'newsletter_subscribe') {
+    const limited = await rateLimitByIp(env, request, 'newsletter', {
+      limit: 6,
+      windowSeconds: 600,
+    })
+    if (!limited.ok) return json({ error: 'Too many requests. Try again shortly.' }, 429)
+    if (honeypotTripped(body)) return json({ ok: true })
     const settings = await loadSiteSettings(env)
     if (!settings.newsletterEnabled) {
       return json({ error: 'Newsletter signup is currently unavailable' }, 403)
     }
     const list = await getJson(env, 'cms:newsletter', [])
-    const email = String(body.email || '').toLowerCase().trim()
-    if (!email.includes('@')) return json({ error: 'invalid email' }, 400)
+    const email = cleanEmail(body.email)
+    if (!email) return json({ error: 'invalid email' }, 400)
     if (!list.some((s) => s.email === email)) {
       list.unshift({ id: id('sub'), email, at: new Date().toISOString() })
       await putJson(env, 'cms:newsletter', list.slice(0, 2000))
@@ -1037,17 +1181,22 @@ export async function onRequestPost(context) {
   }
 
   if (action === 'job_apply') {
+    const limited = await rateLimitByIp(env, request, 'apply', { limit: 5, windowSeconds: 3600 })
+    if (!limited.ok) {
+      return json({ error: 'Too many applications from this network. Try again later.' }, 429)
+    }
+    if (honeypotTripped(body)) return json({ ok: true })
     const settings = await loadSiteSettings(env)
     if (!settings.careersEnabled) {
       return json({ error: 'Careers applications are currently closed' }, 403)
     }
-    const name = String(body.name || '').trim()
-    const email = String(body.email || '').toLowerCase().trim()
-    if (!name || !email.includes('@')) {
+    const name = cleanPlain(body.name, 120)
+    const email = cleanEmail(body.email)
+    if (!name || !email) {
       return json({ error: 'name and valid email required' }, 400)
     }
     const jobs = await loadJobs(env)
-    const jobId = String(body.jobId || '').trim()
+    const jobId = cleanPlain(body.jobId, 80)
     const job = jobs.find((j) => j.id === jobId && j.status === 'published')
     if (!job && jobId !== 'general') {
       return json({ error: 'Role not found or no longer open' }, 404)
@@ -1060,15 +1209,15 @@ export async function onRequestPost(context) {
     const application = {
       id: id('app'),
       jobId: job?.id || jobId || 'general',
-      jobTitle: job?.title || body.jobTitle || 'General application',
+      jobTitle: job?.title || cleanPlain(body.jobTitle, 160) || 'General application',
       name,
       email,
-      phone: String(body.phone || '').trim(),
-      coverLetter: String(body.coverLetter || '').trim().slice(0, 8000),
-      portfolioUrl: String(body.portfolioUrl || '').trim().slice(0, 500),
-      linkedinUrl: String(body.linkedinUrl || '').trim().slice(0, 500),
-      resumeFileName: String(body.resumeFileName || '').trim().slice(0, 200),
-      resumeMime: String(body.resumeMime || '').trim().slice(0, 100),
+      phone: cleanPlain(body.phone, 40),
+      coverLetter: cleanText(body.coverLetter, 8000),
+      portfolioUrl: cleanPlain(body.portfolioUrl, 500),
+      linkedinUrl: cleanPlain(body.linkedinUrl, 500),
+      resumeFileName: cleanPlain(body.resumeFileName, 200),
+      resumeMime: cleanPlain(body.resumeMime, 100),
       resumeData,
       status: 'new',
       at: new Date().toISOString(),
@@ -1106,38 +1255,94 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
   }
 
   if (action === 'track_visit') {
+    const limited = await rateLimitByIp(env, request, 'track', {
+      limit: 120,
+      windowSeconds: 300,
+    })
+    if (!limited.ok) return json({ ok: true, throttled: true })
+
+    const context = visitorContext(request)
+    const path = cleanPlain(body.path || '/', 300) || '/'
+    const nowIso = new Date().toISOString()
+
+    // Crawlers still get a 200 so they don't retry, but never inflate analytics.
+    if (context.bot) return json({ ok: true, sessionId: '', bot: true })
+
     const visitors = await getJson(env, 'cms:visitors', { total: 0, today: 0, pages: {} })
-    const day = new Date().toISOString().slice(0, 10)
+    const day = nowIso.slice(0, 10)
     if (visitors.day !== day) {
       visitors.day = day
       visitors.today = 0
     }
     visitors.total += 1
     visitors.today += 1
-    const path = body.path || '/'
     visitors.pages[path] = (visitors.pages[path] || 0) + 1
+    visitors.countries = visitors.countries || {}
+    if (context.country) {
+      visitors.countries[context.country] = (visitors.countries[context.country] || 0) + 1
+    }
+    visitors.browsers = visitors.browsers || {}
+    if (context.browser) {
+      visitors.browsers[context.browser] = (visitors.browsers[context.browser] || 0) + 1
+    }
+    visitors.devices = visitors.devices || {}
+    visitors.devices[context.device] = (visitors.devices[context.device] || 0) + 1
     await putJson(env, 'cms:visitors', visitors)
 
     // Lightweight presence for Online Users (5-minute window)
-    const sid = String(body.sessionId || body.visitorId || '').slice(0, 64) || id('vis')
+    const sid = cleanPlain(body.sessionId || body.visitorId || '', 64) || id('vis')
     const presence = await getJson(env, 'cms:presence', [])
-    const nowIso = new Date().toISOString()
     const next = presence.filter((p) => new Date(p.at).getTime() >= Date.now() - 10 * 60 * 1000)
     const idx = next.findIndex((p) => p.sessionId === sid)
-    const entry = { sessionId: sid, path, at: nowIso }
+    const entry = { sessionId: sid, path, at: nowIso, visitor: context }
     if (idx >= 0) next[idx] = entry
     else next.unshift(entry)
     await putJson(env, 'cms:presence', next.slice(0, 200))
+
+    // Rolling visitor log — one row per session with first/last seen and journey.
+    const log = await getJson(env, 'cms:visitor-log', [])
+    const logIdx = log.findIndex((v) => v.sessionId === sid)
+    if (logIdx >= 0) {
+      const prev = log[logIdx]
+      const paths = Array.isArray(prev.paths) ? prev.paths : []
+      log.splice(logIdx, 1)
+      log.unshift({
+        ...prev,
+        lastSeen: nowIso,
+        hits: (prev.hits || 1) + 1,
+        path,
+        paths: [path, ...paths.filter((p) => p !== path)].slice(0, 12),
+        visitor: { ...prev.visitor, ...context, referrer: prev.visitor?.referrer || context.referrer },
+      })
+    } else {
+      log.unshift({
+        sessionId: sid,
+        firstSeen: nowIso,
+        lastSeen: nowIso,
+        hits: 1,
+        path,
+        paths: [path],
+        visitor: context,
+      })
+    }
+    await putJson(env, 'cms:visitor-log', log.slice(0, 300))
 
     return json({ ok: true, sessionId: sid })
   }
 
   if (action === 'register') {
-    const email = String(body.email || '').toLowerCase().trim()
-    const name = String(body.name || '').trim()
+    const limited = await rateLimitByIp(env, request, 'register', {
+      limit: 5,
+      windowSeconds: 900,
+    })
+    if (!limited.ok) return json({ error: 'Too many sign-up attempts. Try again later.' }, 429)
+    if (honeypotTripped(body)) return json({ error: 'Invalid submission' }, 400)
+    const email = cleanEmail(body.email)
+    const name = cleanPlain(body.name, 120)
+    const phone = cleanPhone(body.phone)
     const password = String(body.password || '')
-    if (!email.includes('@') || password.length < 6) {
-      return json({ error: 'Valid email and password (6+ chars) required' }, 400)
+    if (!email || password.length < 8) {
+      return json({ error: 'Valid email and password (8+ characters) required' }, 400)
     }
     // Public signup is customers only — staff are created by Super Admin
     const users = await getJson(env, 'cms:users', [])
@@ -1147,23 +1352,19 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
       id: id('user'),
       email,
       name: name || email.split('@')[0],
+      phone: phone || '',
       role: 'customer',
       jobTitle: '',
       active: true,
       passwordHash: hash,
       salt,
+      passwordVersion: 0,
       createdAt: new Date().toISOString(),
     }
     users.unshift(user)
     await putJson(env, 'cms:users', users)
     await logActivity(env, { type: 'user', message: `Customer registered: ${email}` })
-    const token = id('tok')
-    await putJson(env, `cms:session:${token}`, {
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      at: new Date().toISOString(),
-    })
+    const token = await createUserSession(env, user)
     return json({
       ok: true,
       token,
@@ -1171,6 +1372,7 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
         id: user.id,
         email: user.email,
         name: user.name,
+        phone: user.phone,
         role: user.role,
         jobTitle: user.jobTitle,
       },
@@ -1178,21 +1380,33 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
   }
 
   if (action === 'login') {
-    const email = String(body.email || '').toLowerCase().trim()
+    const email = cleanEmail(body.email)
+    // Failures burn the budget; successful sign-ins never lock anyone out.
+    const limits = { limit: 10, windowSeconds: 600 }
+    const ipBucket = authAttemptBucket(request, 'login')
+    const acctBucket = `login-acct:${email || 'unknown'}`
+    if (!(await rateLimitPeek(env, ipBucket, limits)).ok) {
+      return json({ error: 'Too many attempts. Try again in a few minutes.' }, 429)
+    }
+    if (!(await rateLimitPeek(env, acctBucket, limits)).ok) {
+      return json({ error: 'Too many attempts for this account.' }, 429)
+    }
+    const failed = async (message, status = 401) => {
+      await rateLimitBump(env, ipBucket, limits)
+      await rateLimitBump(env, acctBucket, limits)
+      return json({ error: message }, status)
+    }
     const password = String(body.password || '')
     const users = await getJson(env, 'cms:users', [])
     const user = users.find((u) => u.email === email)
-    if (!user) return json({ error: 'Invalid credentials' }, 401)
+    if (!user) return failed('Invalid credentials')
     if (user.active === false) return json({ error: 'Account deactivated' }, 403)
     const { hash } = await hashPassword(password, user.salt)
-    if (hash !== user.passwordHash) return json({ error: 'Invalid credentials' }, 401)
-    const token = id('tok')
-    await putJson(env, `cms:session:${token}`, {
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      at: new Date().toISOString(),
-    })
+    if (!timingSafeEqual(hash, user.passwordHash)) {
+      await logActivity(env, { type: 'security', message: `Failed sign-in: ${email}` })
+      return failed('Invalid credentials')
+    }
+    const token = await createUserSession(env, user)
     return json({
       ok: true,
       token,
@@ -1200,10 +1414,23 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
         id: user.id,
         email: user.email,
         name: user.name,
+        phone: user.phone || '',
         role: user.role,
         jobTitle: user.jobTitle || '',
       },
     })
+  }
+
+  if (action === 'logout') {
+    const value = (request.headers.get('X-User-Token') || '').trim()
+    if (value) {
+      try {
+        await env.ET_STORE.delete(`cms:session:${value}`)
+      } catch {
+        /* already gone */
+      }
+    }
+    return json({ ok: true })
   }
 
   if (action === 'update_profile') {
@@ -1212,16 +1439,272 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     const users = await getJson(env, 'cms:users', [])
     const idx = users.findIndex((u) => u.id === user.id)
     if (idx < 0) return json({ error: 'user not found' }, 404)
-    if (body.name) users[idx].name = String(body.name).trim()
+    if (body.name !== undefined) users[idx].name = cleanPlain(body.name, 120)
+    if (body.phone !== undefined) {
+      const phone = cleanPhone(body.phone)
+      // Allow clearing the phone with an empty string; reject malformed non-empty values.
+      if (String(body.phone || '').trim() && !phone) {
+        return json({ error: 'Enter a valid phone number (e.g. +2547…)' }, 400)
+      }
+      users[idx].phone = phone
+    }
     await putJson(env, 'cms:users', users)
     const { passwordHash, salt, ...safe } = users[idx]
     return json({ ok: true, user: safe })
+  }
+
+  /**
+   * Signed-in password change — any CMS role (super_admin, admin, staff, customer).
+   * Owner-key God Mode sessions have no user password; those callers get a clear error.
+   */
+  if (action === 'change_password') {
+    const user = await resolveUserSession(request, env)
+    if (!user) {
+      return json(
+        {
+          error:
+            'Sign in with your account email to change a password. Owner-key sessions have no account password.',
+        },
+        401,
+      )
+    }
+    const limited = await rateLimitByIp(env, request, 'change-password', {
+      limit: 10,
+      windowSeconds: 600,
+    })
+    if (!limited.ok) return json({ error: 'Too many attempts. Try again shortly.' }, 429)
+
+    const currentPassword = String(body.currentPassword || '')
+    const newPassword = String(body.newPassword || '')
+    const pwdError = validatePassword(newPassword)
+    if (pwdError) return json({ error: pwdError }, 400)
+    if (currentPassword === newPassword) {
+      return json({ error: 'New password must be different from the current one' }, 400)
+    }
+
+    const users = await getJson(env, 'cms:users', [])
+    const idx = users.findIndex((u) => u.id === user.id)
+    if (idx < 0) return json({ error: 'user not found' }, 404)
+    const { hash: currentHash } = await hashPassword(currentPassword, users[idx].salt)
+    if (!timingSafeEqual(currentHash, users[idx].passwordHash)) {
+      await logActivity(env, {
+        type: 'security',
+        message: `Failed password change: ${users[idx].email}`,
+      })
+      return json({ error: 'Current password is incorrect' }, 401)
+    }
+
+    const { hash, salt } = await hashPassword(newPassword)
+    users[idx].passwordHash = hash
+    users[idx].salt = salt
+    users[idx].passwordVersion = (users[idx].passwordVersion || 0) + 1
+    users[idx].passwordChangedAt = new Date().toISOString()
+    await putJson(env, 'cms:users', users)
+    await env.ET_STORE.delete(resetKey(users[idx].email))
+    const token = await createUserSession(env, users[idx])
+    await logActivity(env, {
+      type: 'security',
+      message: `Password changed: ${users[idx].email}`,
+    })
+    const { passwordHash, salt: _s, ...safe } = users[idx]
+    return json({ ok: true, token, user: safe })
+  }
+
+  /**
+   * Forgot-password step 1. Always returns the same shape so callers cannot
+   * probe whether an email is registered. OTP is hashed at rest and delivered
+   * by email + SMS (when a phone is on file and an SMS provider is configured).
+   */
+  if (action === 'password_reset_request') {
+    const email = cleanEmail(body.email)
+    const limits = { limit: 5, windowSeconds: 900 }
+    const ipBucket = authAttemptBucket(request, 'pwd-reset')
+    const acctBucket = `pwd-reset-acct:${email || 'unknown'}`
+    if (!(await rateLimitPeek(env, ipBucket, limits)).ok) {
+      return json({ error: 'Too many reset requests. Try again later.' }, 429)
+    }
+    if (!(await rateLimitPeek(env, acctBucket, limits)).ok) {
+      return json({ error: 'Too many reset requests for this account.' }, 429)
+    }
+    await rateLimitBump(env, ipBucket, limits)
+    await rateLimitBump(env, acctBucket, limits)
+
+    const generic = {
+      ok: true,
+      message:
+        'If an account exists for that email, a reset code has been sent by email and SMS (when a phone number is on file).',
+    }
+    if (!email) return json(generic)
+
+    const users = await getJson(env, 'cms:users', [])
+    const user = users.find((u) => u.email === email && u.active !== false)
+    if (!user) {
+      // Spend a little time so missing accounts don't answer faster than hits.
+      await hashPassword(generateResetCode())
+      return json(generic)
+    }
+
+    const code = generateResetCode()
+    const { hash, salt } = await hashResetCode(code)
+    const resetRecord = {
+      userId: user.id,
+      email,
+      codeHash: hash,
+      salt,
+      attempts: 0,
+      at: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + RESET_TTL_SECONDS * 1000).toISOString(),
+    }
+    await env.ET_STORE.put(resetKey(email), JSON.stringify(resetRecord), {
+      expirationTtl: RESET_TTL_SECONDS + 60,
+    })
+
+    const delivery = await deliverResetCode(env, {
+      email: user.email,
+      phone: user.phone || '',
+      code,
+      name: user.name,
+    })
+    await logActivity(env, {
+      type: 'security',
+      message: `Password reset code issued: ${email} (email=${delivery.emailed ? 'yes' : 'no'}, sms=${
+        delivery.sms ? 'yes' : 'no'
+      })`,
+    })
+    return json({
+      ...generic,
+      /** Hints only — never confirm the account exists via a different shape. */
+      channels: {
+        emailConfigured: Boolean(String(env.RESEND_API_KEY || '').trim()),
+        smsConfigured: Boolean(
+          (String(env.AT_API_KEY || '').trim() && String(env.AT_USERNAME || '').trim()) ||
+            (String(env.TWILIO_ACCOUNT_SID || '').trim() &&
+              String(env.TWILIO_AUTH_TOKEN || '').trim() &&
+              String(env.TWILIO_FROM || '').trim()),
+        ),
+      },
+    })
+  }
+
+  if (action === 'password_reset_verify') {
+    const email = cleanEmail(body.email)
+    const code = String(body.code || '').replace(/\D/g, '').slice(0, RESET_CODE_LENGTH)
+    const limits = { limit: 15, windowSeconds: 900 }
+    const bucket = authAttemptBucket(request, 'pwd-verify')
+    if (!(await rateLimitPeek(env, bucket, limits)).ok) {
+      return json({ error: 'Too many attempts. Try again later.' }, 429)
+    }
+    if (!email || code.length !== RESET_CODE_LENGTH) {
+      await rateLimitBump(env, bucket, limits)
+      return json({ error: 'Invalid code' }, 400)
+    }
+    const record = await getJson(env, resetKey(email), null)
+    if (!record?.codeHash || !record.salt) {
+      await rateLimitBump(env, bucket, limits)
+      return json({ error: 'Invalid or expired code' }, 400)
+    }
+    if (record.expiresAt && Date.parse(record.expiresAt) < Date.now()) {
+      await env.ET_STORE.delete(resetKey(email))
+      await rateLimitBump(env, bucket, limits)
+      return json({ error: 'Code expired. Request a new one.' }, 400)
+    }
+    if ((record.attempts || 0) >= 8) {
+      await env.ET_STORE.delete(resetKey(email))
+      await rateLimitBump(env, bucket, limits)
+      return json({ error: 'Too many incorrect codes. Request a new one.' }, 429)
+    }
+    const { hash } = await hashResetCode(code, record.salt)
+    if (!timingSafeEqual(hash, record.codeHash)) {
+      record.attempts = (record.attempts || 0) + 1
+      await putJson(env, resetKey(email), record)
+      await rateLimitBump(env, bucket, limits)
+      return json({ error: 'Invalid or expired code' }, 400)
+    }
+    return json({ ok: true, verified: true })
+  }
+
+  if (action === 'password_reset_complete') {
+    const email = cleanEmail(body.email)
+    const code = String(body.code || '').replace(/\D/g, '').slice(0, RESET_CODE_LENGTH)
+    const newPassword = String(body.newPassword || '')
+    const limits = { limit: 10, windowSeconds: 900 }
+    const bucket = authAttemptBucket(request, 'pwd-complete')
+    if (!(await rateLimitPeek(env, bucket, limits)).ok) {
+      return json({ error: 'Too many attempts. Try again later.' }, 429)
+    }
+    const pwdError = validatePassword(newPassword)
+    if (pwdError) return json({ error: pwdError }, 400)
+    if (!email || code.length !== RESET_CODE_LENGTH) {
+      await rateLimitBump(env, bucket, limits)
+      return json({ error: 'Invalid code' }, 400)
+    }
+
+    const record = await getJson(env, resetKey(email), null)
+    if (!record?.codeHash || !record.salt) {
+      await rateLimitBump(env, bucket, limits)
+      return json({ error: 'Invalid or expired code' }, 400)
+    }
+    if (record.expiresAt && Date.parse(record.expiresAt) < Date.now()) {
+      await env.ET_STORE.delete(resetKey(email))
+      await rateLimitBump(env, bucket, limits)
+      return json({ error: 'Code expired. Request a new one.' }, 400)
+    }
+    if ((record.attempts || 0) >= 8) {
+      await env.ET_STORE.delete(resetKey(email))
+      return json({ error: 'Too many incorrect codes. Request a new one.' }, 429)
+    }
+    const { hash: codeHash } = await hashResetCode(code, record.salt)
+    if (!timingSafeEqual(codeHash, record.codeHash)) {
+      record.attempts = (record.attempts || 0) + 1
+      await putJson(env, resetKey(email), record)
+      await rateLimitBump(env, bucket, limits)
+      return json({ error: 'Invalid or expired code' }, 400)
+    }
+
+    const users = await getJson(env, 'cms:users', [])
+    const idx = users.findIndex((u) => u.id === record.userId || u.email === email)
+    if (idx < 0 || users[idx].active === false) {
+      await env.ET_STORE.delete(resetKey(email))
+      return json({ error: 'Account not found' }, 404)
+    }
+
+    const { hash, salt } = await hashPassword(newPassword)
+    users[idx].passwordHash = hash
+    users[idx].salt = salt
+    users[idx].passwordVersion = (users[idx].passwordVersion || 0) + 1
+    users[idx].passwordChangedAt = new Date().toISOString()
+    await putJson(env, 'cms:users', users)
+    await env.ET_STORE.delete(resetKey(email))
+    const token = await createUserSession(env, users[idx])
+    await logActivity(env, {
+      type: 'security',
+      message: `Password reset completed: ${users[idx].email}`,
+    })
+    const { passwordHash, salt: _s, ...safe } = users[idx]
+    return json({
+      ok: true,
+      token,
+      user: {
+        id: safe.id,
+        email: safe.email,
+        name: safe.name,
+        role: safe.role,
+        jobTitle: safe.jobTitle || '',
+        phone: safe.phone || '',
+      },
+    })
   }
 
   // Elevated actions below — God Mode OR staff for operational modules
   const actor = await staffOrGod(request, env)
   if (!actor) return json({ error: 'unauthorized' }, 401)
   const godOnly = actor.kind === 'god'
+
+  const writeLimited = await rateLimitByIp(env, request, 'cms-write', {
+    limit: 120,
+    windowSeconds: 300,
+  })
+  if (!writeLimited.ok) return json({ error: 'Too many changes. Slow down a moment.' }, 429)
 
   if (action === 'save_page') {
     const pages = await getJson(env, 'cms:pages', [])
@@ -1331,9 +1814,9 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     const record = {
       id: article.id || id('kh'),
       slug,
-      title: article.title,
-      excerpt: article.excerpt || '',
-      body: article.body || '',
+      title: cleanPlain(article.title, 200),
+      excerpt: cleanText(article.excerpt, 1000),
+      body: sanitizeRichText(article.body),
       category,
       tags: Array.isArray(article.tags)
         ? article.tags.map((t) => String(t).trim()).filter(Boolean)
@@ -1801,13 +2284,17 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
 
   if (action === 'create_admin_user' || action === 'create_staff_user') {
     if (!godOnly) return json({ error: 'Not authorized' }, 403)
-    const email = String(body.email || '').toLowerCase().trim()
+    const email = cleanEmail(body.email)
     const password = String(body.password || '')
     // Employees are staff or admin — never create God Mode via this form as default
     let role = body.role === 'admin' ? 'admin' : 'staff'
     if (body.role === 'super_admin') role = 'super_admin'
-    if (!email.includes('@') || password.length < 6) {
-      return json({ error: 'Valid email and password required' }, 400)
+    // Elevated accounts carry God Mode / CMS write access, so hold them to a
+    // longer password than public customer signups.
+    const minLength = role === 'staff' ? 8 : 12
+    if (!email) return json({ error: 'Valid email required' }, 400)
+    if (password.length < minLength) {
+      return json({ error: `Password must be at least ${minLength} characters for ${role}` }, 400)
     }
     const users = await getJson(env, 'cms:users', [])
     if (users.some((u) => u.email === email)) return json({ error: 'exists' }, 409)
@@ -1815,12 +2302,14 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     users.unshift({
       id: id('user'),
       email,
-      name: body.name || 'Staff',
+      name: cleanPlain(body.name, 120) || 'Staff',
+      phone: cleanPhone(body.phone) || '',
       role,
-      jobTitle: body.jobTitle || '',
+      jobTitle: cleanPlain(body.jobTitle, 120),
       active: true,
       passwordHash: hash,
       salt,
+      passwordVersion: 0,
       createdAt: new Date().toISOString(),
     })
     await putJson(env, 'cms:users', users)

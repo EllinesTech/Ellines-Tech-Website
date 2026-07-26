@@ -132,6 +132,23 @@ export function HomePage() {
       <SEO
         description="Ellines Tech — Kenya IT company for software development, web design, AI, IT consulting, digital marketing, and career documents. Nyeri & Nairobi · Your Idea. Our Code."
         path="/"
+        faqs={[
+          {
+            question: 'How fast can we start?',
+            answer:
+              'Most service requests get a scoped reply within a few hours. Smaller deliverables can begin the same week; larger builds get a written plan first.',
+          },
+          {
+            question: 'Do you support after launch?',
+            answer:
+              'Yes — we stay available 24/7 for demos, fixes, and follow-up work. Support is part of how we ship, not an afterthought.',
+          },
+          {
+            question: 'Who is Ellines Tech for?',
+            answer:
+              'Individuals, schools, clinics, SACCOs, and growing businesses — plus organizations that need software, AI, or brand systems built to last.',
+          },
+        ]}
       />
 
       {/* Hero — brand typography + one product canvas (no 3D logo dump) */}
@@ -489,8 +506,8 @@ export function HomePage() {
       <section className="section-padding border-t border-white/5">
         <div className="section-container">
           <SectionHeader
-            eyebrow="Our feedbacks"
-            title="What they are saying about us"
+            eyebrow="Client feedback"
+            title="What teams say about working with us"
             description="Clients and partners across Kenya trust Ellines Tech for software, AI, and digital delivery."
             align="center"
             className="mb-12"
@@ -609,6 +626,50 @@ export function HomePage() {
                 />
               )
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ teaser — answers buyer objections before the final CTA */}
+      <section className="section-padding border-t border-white/5 bg-surface/35">
+        <div className="section-container">
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
+            <div className="lg:col-span-5">
+              <SectionHeader
+                eyebrow="FAQ"
+                title="Answers before you book a call"
+                description="Clear expectations on timelines, support, and how we work — so you can decide with confidence."
+              />
+              <div className="mt-8">
+                <Button href="/faq" variant="secondary" icon>
+                  View all FAQs
+                </Button>
+              </div>
+            </div>
+            <div className="divide-y divide-white/10 border-y border-white/10 lg:col-span-7">
+              {[
+                {
+                  q: 'How fast can we start?',
+                  a: 'Most service requests get a scoped reply within a few hours. Smaller deliverables can begin the same week; larger builds get a written plan first.',
+                },
+                {
+                  q: 'Do you support after launch?',
+                  a: 'Yes — we stay available 24/7 for demos, fixes, and follow-up work. Support is part of how we ship, not an afterthought.',
+                },
+                {
+                  q: 'Who is Ellines Tech for?',
+                  a: 'Individuals, schools, clinics, SACCOs, and growing businesses — plus organizations that need software, AI, or brand systems built to last.',
+                },
+              ].map((item) => (
+                <details key={item.q} className="group py-5">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-display font-semibold text-white transition-colors hover:text-brand-200">
+                    {item.q}
+                    <ArrowRight className="h-4 w-4 shrink-0 text-slate-500 transition-transform duration-300 group-open:rotate-90 group-open:text-brand-300" />
+                  </summary>
+                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-400">{item.a}</p>
+                </details>
+              ))}
+            </div>
           </div>
         </div>
       </section>

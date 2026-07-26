@@ -25,6 +25,10 @@ export function ClientsPage() {
         title="Clients"
         description="Organizations and brands that trust Ellines Tech for software, AI, logos, and digital transformation."
         path="/clients"
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'Clients', path: '/clients' },
+        ]}
       />
 
       <section className="relative overflow-hidden border-b border-white/5">
@@ -125,9 +129,12 @@ export function ClientsPage() {
               />
             ))}
           </div>
-          <div className="mt-12 text-center">
+          <div className="mt-12 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Button href="/contact#quote" icon>
               Become a client
+            </Button>
+            <Button href="/success-stories" variant="secondary">
+              Read success stories
             </Button>
           </div>
         </div>

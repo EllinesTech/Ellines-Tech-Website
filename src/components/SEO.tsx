@@ -9,6 +9,12 @@ interface SEOProps {
   image?: string
   noindex?: boolean
   type?: 'website' | 'article'
+  /** Optional breadcrumb trail for BreadcrumbList JSON-LD */
+  breadcrumbs?: { name: string; path: string }[]
+  /** Optional FAQ entries for FAQPage JSON-LD */
+  faqs?: { question: string; answer: string }[]
+  /** Extra JSON-LD objects merged into the page graph (Service, Product, etc.) */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[]
 }
 
 function setMeta(name: string, content: string, property = false) {
@@ -42,6 +48,9 @@ export function SEO({
   image,
   noindex = false,
   type = 'website',
+  breadcrumbs,
+  faqs,
+  jsonLd,
 }: SEOProps) {
   const pageTitle = title
     ? `${title} | ${siteConfig.name}`
@@ -207,7 +216,49 @@ export function SEO({
       publisher: { '@id': `${siteConfig.url}/#organization` },
       inLanguage: 'en-KE',
     })
-  }, [pageTitle, pageDescription, url, ogImage, noindex, type])
+
+    if (breadcrumbs?.length) {
+      setJsonLd('ld-breadcrumbs', {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: breadcrumbs.map((crumb, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: crumb.name,
+          item: `${siteConfig.url}${crumb.path.startsWith('/') ? crumb.path : `/${crumb.path}`}`,
+        })),
+      })
+    } else {
+      document.getElementById('ld-breadcrumbs')?.remove()
+    }
+
+    if (faqs?.length) {
+      setJsonLd('ld-faq', {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqs.map((item) => ({
+          '@type': 'Question',
+          name: item.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: item.answer,
+          },
+        })),
+      })
+    } else {
+      document.getElementById('ld-faq')?.remove()
+    }
+
+    if (jsonLd) {
+      const nodes = Array.isArray(jsonLd) ? jsonLd : [jsonLd]
+      setJsonLd('ld-extra', {
+        '@context': 'https://schema.org',
+        '@graph': nodes,
+      })
+    } else {
+      document.getElementById('ld-extra')?.remove()
+    }
+  }, [pageTitle, pageDescription, url, ogImage, noindex, type, breadcrumbs, faqs, jsonLd])
 
   return null
 }

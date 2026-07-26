@@ -3,12 +3,14 @@ import { motion } from 'framer-motion'
 import { SEO } from '@/components/SEO'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { CtaPanel } from '@/components/ui/CtaPanel'
 import { ProcessSection } from '@/components/home/ProcessSection'
 import { serviceCategories, type ServiceCategory } from '@/data/services'
 import { siteConfig } from '@/data/site'
 import {
   loadPublishedServices,
   serviceImage,
+  staticServicesAsCatalog,
   type CatalogService,
 } from '@/lib/servicesCatalog'
 import {
@@ -38,7 +40,7 @@ const iconMap: Record<string, React.ElementType> = {
 }
 
 export function ServicesPage() {
-  const [services, setServices] = useState<CatalogService[]>([])
+  const [services, setServices] = useState<CatalogService[]>(() => staticServicesAsCatalog())
   const waHref = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
   const categories = Object.entries(serviceCategories) as [
     ServiceCategory,
@@ -55,6 +57,10 @@ export function ServicesPage() {
         title="IT & Digital Services in Kenya"
         description="Ellines Tech services in Kenya — web design, software development, AI automation, IT consulting, digital marketing, cyber security, logo design, and career documents."
         path="/services"
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'Services', path: '/services' },
+        ]}
       />
 
       <section className="relative overflow-hidden border-b border-white/5">
@@ -112,42 +118,57 @@ export function ServicesPage() {
 
       <section className="section-padding">
         <div className="section-container">
-          <div className="space-y-20">
-            {categories.map(([key, cat]) => {
-              const Icon = iconMap[cat.icon] ?? Code2
-              const categoryServices = services.filter((s) => s.category === key)
-              if (categoryServices.length === 0) return null
-              return (
-                <div key={key} id={key} className="scroll-mt-24">
-                  <div className="mb-8 flex items-start gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-500/10 text-brand-400">
-                      <Icon className="h-6 w-6" />
+          {services.length === 0 ? (
+            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.02] px-6 py-14 text-center">
+              <p className="font-display text-xl font-semibold text-white">Services updating</p>
+              <p className="mx-auto mt-3 max-w-md text-sm text-slate-400">
+                The catalogue is refreshing. In the meantime, send a brief and we&apos;ll recommend
+                the right engagement.
+              </p>
+              <div className="mt-8 flex justify-center">
+                <Button href="/contact#quote" icon>
+                  Send a brief
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-20">
+              {categories.map(([key, cat]) => {
+                const Icon = iconMap[cat.icon] ?? Code2
+                const categoryServices = services.filter((s) => s.category === key)
+                if (categoryServices.length === 0) return null
+                return (
+                  <div key={key} id={key} className="scroll-mt-24">
+                    <div className="mb-8 flex items-start gap-4">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-500/10 text-brand-400">
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h2 className="font-display text-2xl font-bold text-white">{cat.label}</h2>
+                        <p className="mt-1 text-slate-400">{cat.description}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="font-display text-2xl font-bold text-white">{cat.label}</h2>
-                      <p className="mt-1 text-slate-400">{cat.description}</p>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {categoryServices.map((service) => (
+                        <Card
+                          key={service.slug}
+                          title={service.name}
+                          description={service.description}
+                          tag={
+                            service.startingPrice != null && service.startingPrice > 0
+                              ? `From KES ${service.startingPrice.toLocaleString()}`
+                              : undefined
+                          }
+                          href={`/services/${service.slug}`}
+                          image={serviceImage(service)}
+                        />
+                      ))}
                     </div>
                   </div>
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {categoryServices.map((service) => (
-                      <Card
-                        key={service.slug}
-                        title={service.name}
-                        description={service.description}
-                        tag={
-                          service.startingPrice != null && service.startingPrice > 0
-                            ? `From KES ${service.startingPrice.toLocaleString()}`
-                            : undefined
-                        }
-                        href={`/services/${service.slug}`}
-                        image={serviceImage(service)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -155,29 +176,13 @@ export function ServicesPage() {
 
       <section className="section-padding border-t border-white/5">
         <div className="section-container">
-          <div className="relative overflow-hidden rounded-[1.75rem] border border-brand-500/20 bg-gradient-to-br from-brand-900/50 via-slate-950 to-sky-950/60 p-8 sm:p-12">
-            <div className="pointer-events-none absolute -right-10 -top-10 h-52 w-52 rounded-full bg-brand-500/10 blur-3xl" />
-            <div className="relative max-w-xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
-                Not sure which service fits?
-              </p>
-              <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                Describe the outcome — we&apos;ll scope the work
-              </h2>
-              <p className="mt-4 text-slate-300">
-                Send a short brief and we&apos;ll recommend the right service and price. Replies
-                within a few hours, 24/7.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button href="/contact#quote" size="lg" icon>
-                  Send a brief
-                </Button>
-                <Button href={waHref} variant="secondary" size="lg" external>
-                  WhatsApp us
-                </Button>
-              </div>
-            </div>
-          </div>
+          <CtaPanel
+            eyebrow="Not sure which service fits?"
+            title="Describe the outcome — we'll scope the work"
+            description="Send a short brief and we'll recommend the right service and price. Replies within a few hours, 24/7."
+            primary={{ label: 'Send a brief', href: '/contact#quote' }}
+            secondary={{ label: 'WhatsApp us', href: waHref, external: true }}
+          />
         </div>
       </section>
     </>

@@ -9,10 +9,21 @@ export type AuthUser = {
   name: string
   role: UserRole
   jobTitle?: string
+  phone?: string
 }
 
 export function isStaffRole(role?: string | null): boolean {
   return role === 'staff' || role === 'admin' || role === 'super_admin'
+}
+
+/** Roles with God Mode. Mirrors `GOD_ROLES` in `functions/_shared/security.ts`. */
+export function isGodRole(role?: string | null): boolean {
+  return role === 'super_admin'
+}
+
+/** Roles allowed to see unmasked visitor IPs and user agents. */
+export function canSeeVisitorPii(role?: string | null): boolean {
+  return role === 'super_admin' || role === 'admin'
 }
 
 export function isCustomerRole(role?: string | null): boolean {

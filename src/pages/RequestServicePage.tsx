@@ -11,6 +11,7 @@ import {
   type PricingPackage,
 } from '@/data/pricingPackages'
 import { fetchShop, submitServiceRequest } from '@/lib/cmsApi'
+import { useHoneypot } from '@/components/HoneypotField'
 import { isInstantCheckoutPackage } from '@/lib/checkoutPackages'
 import { startPaystackCheckout } from '@/lib/paystackApi'
 import { loadAuthUser } from '@/lib/auth'
@@ -73,6 +74,7 @@ export function RequestServicePage() {
   const [privacyOk, setPrivacyOk] = useState(false)
   const [wantPayNow, setWantPayNow] = useState(initialPay)
   const [currency, setCurrency] = useState<'KES' | 'USD'>('KES')
+  const { website, honeypot } = useHoneypot()
 
   useEffect(() => {
     fetchShop()
@@ -158,6 +160,7 @@ export function RequestServicePage() {
         service: selectedService?.name || serviceSlug,
         message,
         source: 'request-flow',
+        website,
       })
       setDone(true)
     } catch (e) {
@@ -216,7 +219,8 @@ export function RequestServicePage() {
         path="/request"
       />
       <section className="section-padding">
-        <div className="section-container max-w-3xl">
+        <div className="relative section-container max-w-3xl">
+          {honeypot}
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-400">
             {expressCheckout ? 'Express checkout' : 'Professional intake'}
           </p>

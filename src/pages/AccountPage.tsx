@@ -9,10 +9,12 @@ import {
   fetchMyInvoices,
   fetchMyLeads,
   loginCustomer,
+  logoutUser,
   registerCustomer,
   updateProfile,
   type Invoice,
 } from '@/lib/cmsApi'
+import { ChangePasswordForm } from '@/components/auth/ChangePasswordForm'
 import {
   clearAuthSession,
   isCustomerRole,
@@ -58,12 +60,14 @@ export function AccountPage() {
   >([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [profileName, setProfileName] = useState('')
+  const [profilePhone, setProfilePhone] = useState('')
   const [payingId, setPayingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
     if (isStaffRole(user.role)) return
     setProfileName(user.name)
+    setProfilePhone(user.phone || '')
     fetchMyLeads()
       .then(setLeads)
       .catch(() => setLeads([]))
@@ -174,7 +178,8 @@ export function AccountPage() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
+                  onClick={async () => {
+                    await logoutUser()
                     clearAuthSession()
                     setUser(null)
                   }}
@@ -411,40 +416,61 @@ export function AccountPage() {
               )}
 
               {tab === 'profile' && (
-                <div>
-                  <h2 className="font-display text-xl font-bold tracking-tight text-white">
-                    Profile
-                  </h2>
-                  <p className="mt-2 text-sm text-slate-500">{user.email}</p>
-                  <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-white/10 pt-6">
-                    <input
-                      aria-label="Display name"
-                      value={profileName}
-                      onChange={(e) => setProfileName(e.target.value)}
-                      className={cn(fieldClass, 'sm:max-w-xs')}
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={async () => {
-                        try {
-                          const res = await updateProfile(profileName)
-                          const token = loadAuthToken()
-                          const next = { ...user, name: res.user.name as string }
-                          if (token) saveAuthSession(token, next)
-                          setUser(next)
-                          setMessage('Profile updated')
-                          setError('')
-                        } catch (err) {
-                          setError(err instanceof Error ? err.message : 'Update failed')
-                        }
-                      }}
-                    >
-                      Save name
-                    </Button>
+                <div className="space-y-8">
+                  <div>
+                    <h2 className="font-display text-xl font-bold tracking-tight text-white">
+                      Profile
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-500">{user.email}</p>
+                    <div className="mt-6 space-y-4 border-t border-white/10 pt-6">
+                      <label className="block text-xs text-slate-400">
+                        Display name
+                        <input
+                          aria-label="Display name"
+                          value={profileName}
+                          onChange={(e) => setProfileName(e.target.value)}
+                          className={cn(fieldClass, 'mt-1')}
+                        />
+                      </label>
+                      <label className="block text-xs text-slate-400">
+                        Mobile (for SMS reset codes)
+                        <input
+                          aria-label="Phone"
+                          value={profilePhone}
+                          onChange={(e) => setProfilePhone(e.target.value)}
+                          placeholder="+2547…"
+                          className={cn(fieldClass, 'mt-1')}
+                          autoComplete="tel"
+                        />
+                      </label>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            const res = await updateProfile(profileName, profilePhone)
+                            const token = loadAuthToken()
+                            const next = {
+                              ...user,
+                              name: res.user.name as string,
+                              phone: (res.user.phone as string) || '',
+                            }
+                            if (token) saveAuthSession(token, next)
+                            setUser(next)
+                            setMessage('Profile updated')
+                            setError('')
+                          } catch (err) {
+                            setError(err instanceof Error ? err.message : 'Update failed')
+                          }
+                        }}
+                      >
+                        Save profile
+                      </Button>
+                    </div>
+                    {message && <p className="mt-2 text-sm text-emerald-300">{message}</p>}
+                    {error && <p className="mt-2 text-sm text-amber-200">{error}</p>}
                   </div>
-                  {message && <p className="mt-2 text-sm text-emerald-300">{message}</p>}
-                  {error && <p className="mt-2 text-sm text-amber-200">{error}</p>}
+                  <ChangePasswordForm user={user} onUpdated={setUser} />
                 </div>
               )}
             </div>
@@ -513,14 +539,25 @@ export function AccountPage() {
                   <PasswordInput
                     id="account-password"
                     required
-                    minLength={6}
-                    placeholder="At least 6 characters"
+                    minLength={mode === 'register' ? 8 : 6}
+                    placeholder={mode === 'register' ? 'At least 8 characters' : 'Your password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={fieldClass}
                     autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
                   />
                 </Field>
+
+                {mode === 'login' && (
+                  <p className="text-right text-xs">
+                    <Link
+                      to={`/account/reset?from=${encodeURIComponent('/account')}`}
+                      className="text-brand-300 hover:text-brand-200"
+                    >
+                      Forgot password?
+                    </Link>
+                  </p>
+                )}
 
                 {error && (
                   <p className="rounded-xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">

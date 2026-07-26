@@ -3,13 +3,18 @@ import { motion } from 'framer-motion'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { CtaPanel } from '@/components/ui/CtaPanel'
 import { productCategories, type ProductCategory } from '@/data/products'
 import { productVisual } from '@/data/imagery'
 import { siteConfig } from '@/data/site'
-import { loadPublishedProducts, type CatalogProduct } from '@/lib/productsCatalog'
+import {
+  loadPublishedProducts,
+  staticProductsAsCatalog,
+  type CatalogProduct,
+} from '@/lib/productsCatalog'
 
 export function ProductsPage() {
-  const [products, setProducts] = useState<CatalogProduct[]>([])
+  const [products, setProducts] = useState<CatalogProduct[]>(() => staticProductsAsCatalog())
   const waHref = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
   const categories = Object.entries(productCategories) as [
     ProductCategory,
@@ -24,8 +29,12 @@ export function ProductsPage() {
     <>
       <SEO
         title="Products"
-        description="Explore Ellines Tech products — MedFlow, AfyaVox, RV22, ERP systems, and more."
+        description="Explore Ellines Tech products — MedFlow, AfyaVox, RV22, ERP systems, and more for healthcare, business, and AI."
         path="/products"
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'Products', path: '/products' },
+        ]}
       />
 
       <section className="relative overflow-hidden border-b border-white/5">
@@ -83,71 +92,70 @@ export function ProductsPage() {
 
       <section className="section-padding">
         <div className="section-container">
-          <div className="space-y-20">
-            {categories.map(([key, cat]) => {
-              const categoryProducts = products.filter((p) => p.category === key)
-              if (!categoryProducts.length) return null
-              return (
-                <div key={key} id={key} className="scroll-mt-28">
-                  <div className="mb-8 border-t border-white/10 pt-7">
-                    <div className="flex items-baseline justify-between gap-4">
-                      <h2 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                        {cat.label}
-                      </h2>
-                      <span className="font-mono text-[11px] tabular-nums tracking-[0.1em] text-slate-600">
-                        {String(categoryProducts.length).padStart(2, '0')}
-                      </span>
+          {products.length === 0 ? (
+            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.02] px-6 py-14 text-center">
+              <p className="font-display text-xl font-semibold text-white">Products updating</p>
+              <p className="mx-auto mt-3 max-w-md text-sm text-slate-400">
+                The product catalogue is refreshing. Book a walkthrough and we&apos;ll show you the
+                right platform live.
+              </p>
+              <div className="mt-8 flex justify-center">
+                <Button href="/contact#quote" icon>
+                  Book a demo
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-20">
+              {categories.map(([key, cat]) => {
+                const categoryProducts = products.filter((p) => p.category === key)
+                if (!categoryProducts.length) return null
+                return (
+                  <div key={key} id={key} className="scroll-mt-28">
+                    <div className="mb-8 border-t border-white/10 pt-7">
+                      <div className="flex items-baseline justify-between gap-4">
+                        <h2 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                          {cat.label}
+                        </h2>
+                        <span className="font-mono text-[11px] tabular-nums tracking-[0.1em] text-slate-600">
+                          {String(categoryProducts.length).padStart(2, '0')}
+                        </span>
+                      </div>
+                      <p className="mt-2 max-w-2xl text-slate-400">{cat.description}</p>
                     </div>
-                    <p className="mt-2 max-w-2xl text-slate-400">{cat.description}</p>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {categoryProducts.map((product) => {
+                        const visual = productVisual(product)
+                        return (
+                          <Card
+                            key={product.slug}
+                            title={product.name}
+                            description={product.tagline}
+                            href={`/products/${product.slug}`}
+                            tag={product.highlights?.[0]}
+                            image={visual.src}
+                            imageFit={visual.fit}
+                          />
+                        )
+                      })}
+                    </div>
                   </div>
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {categoryProducts.map((product) => {
-                      const visual = productVisual(product)
-                      return (
-                        <Card
-                          key={product.slug}
-                          title={product.name}
-                          description={product.tagline}
-                          href={`/products/${product.slug}`}
-                          tag={product.highlights?.[0]}
-                          image={visual.src}
-                          imageFit={visual.fit}
-                        />
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       </section>
 
       <section className="section-padding border-t border-white/5">
         <div className="section-container">
-          <div className="relative overflow-hidden rounded-[1.75rem] border border-brand-500/20 bg-gradient-to-br from-brand-900/50 via-slate-950 to-sky-950/60 p-8 sm:p-12">
-            <div className="pointer-events-none absolute -right-10 -top-10 h-52 w-52 rounded-full bg-brand-500/10 blur-3xl" />
-            <div className="relative max-w-xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
-                See it working
-              </p>
-              <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                Book a walkthrough of any product
-              </h2>
-              <p className="mt-4 text-slate-300">
-                We run live demos 24/7 — see the platform with your own workflows before you commit
-                to anything.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button href="/contact#quote" size="lg" icon>
-                  Book a demo
-                </Button>
-                <Button href={waHref} variant="secondary" size="lg" external>
-                  WhatsApp us
-                </Button>
-              </div>
-            </div>
-          </div>
+          <CtaPanel
+            eyebrow="See it working"
+            title="Book a walkthrough of any product"
+            description="We run live demos 24/7 — see the platform with your own workflows before you commit to anything."
+            primary={{ label: 'Book a demo', href: '/contact#quote' }}
+            secondary={{ label: 'WhatsApp us', href: waHref, external: true }}
+          />
         </div>
       </section>
     </>

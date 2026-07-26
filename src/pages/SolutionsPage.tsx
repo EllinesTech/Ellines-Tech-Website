@@ -1,8 +1,11 @@
 import { motion } from 'framer-motion'
-import { Layers, Building2, Cpu, CloudCog } from 'lucide-react'
+import { Layers, Building2, Cpu, CloudCog, ArrowRight, ShieldCheck, Clock3, Users } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
+import { CtaPanel } from '@/components/ui/CtaPanel'
 import { MediaBadge, MediaCard } from '@/components/ui/MediaCard'
+import { SectionHeader } from '@/components/ui/SectionHeader'
 import { ProcessSection } from '@/components/home/ProcessSection'
 import { siteConfig } from '@/data/site'
 import { useSiteCopy } from '@/hooks/useSiteCopy'
@@ -38,6 +41,24 @@ const solutionAreas = [
   },
 ]
 
+const trustSignals = [
+  {
+    icon: ShieldCheck,
+    title: 'Outcome-first scoping',
+    body: 'Every engagement starts with a written plan — deliverables, timeline, and investment — before we write a line of code.',
+  },
+  {
+    icon: Clock3,
+    title: 'Ship in measurable stages',
+    body: 'Demos you can react to, milestones you can track, and a clean handoff when the system goes live.',
+  },
+  {
+    icon: Users,
+    title: 'Built for African operations',
+    body: 'Healthcare, education, finance, and field-heavy businesses — designed for connectivity, compliance, and real staff workflows.',
+  },
+]
+
 export function SolutionsPage() {
   const { solutions: live } = useSiteCopy()
 
@@ -45,8 +66,12 @@ export function SolutionsPage() {
     <>
       <SEO
         title="Solutions"
-        description="Enterprise, healthcare, AI, and cloud solutions from Ellines Tech."
+        description="Enterprise, healthcare, AI, and cloud solutions from Ellines Tech — built for Kenyan and African organizations that need systems that ship."
         path="/solutions"
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'Solutions', path: '/solutions' },
+        ]}
       />
 
       <section className="relative overflow-hidden border-b border-white/5">
@@ -89,6 +114,12 @@ export function SolutionsPage() {
 
       <section className="section-padding">
         <div className="section-container">
+          <SectionHeader
+            eyebrow="Solution areas"
+            title="Four paths. One delivery standard."
+            description="Pick the lane that matches your operation — or describe a custom build and we’ll map the stack."
+            className="mb-12"
+          />
           <div className="grid gap-6 sm:grid-cols-2">
             {solutionAreas.map((area, i) => (
               <MediaCard
@@ -110,33 +141,63 @@ export function SolutionsPage() {
         </div>
       </section>
 
+      <section className="section-padding border-t border-white/5 bg-surface/35">
+        <div className="section-container">
+          <SectionHeader
+            eyebrow="Why teams choose us"
+            title="Trust signals buyers actually need"
+            description="Clarity before kickoff, measurable progress during build, and support after launch."
+            align="center"
+            className="mb-12"
+          />
+          <div className="grid gap-6 sm:grid-cols-3">
+            {trustSignals.map((item, i) => (
+              <motion.article
+                key={item.title}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.07 }}
+                className="rounded-[1.35rem] border border-white/10 bg-white/[0.02] p-6"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/15 text-brand-300">
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-5 font-display text-lg font-semibold text-white">{item.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.body}</p>
+              </motion.article>
+            ))}
+          </div>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-slate-400">
+            <Link
+              to="/industries"
+              className="inline-flex items-center gap-1.5 font-semibold text-brand-300 transition-colors hover:text-brand-200"
+            >
+              Browse industries we serve
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              to="/success-stories"
+              className="inline-flex items-center gap-1.5 font-semibold text-brand-300 transition-colors hover:text-brand-200"
+            >
+              Read measured outcomes
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <ProcessSection ctaHref="/contact#quote" />
 
       <section className="section-padding border-t border-white/5">
         <div className="section-container">
-          <div className="relative overflow-hidden rounded-[1.75rem] border border-brand-500/20 bg-gradient-to-br from-brand-900/50 via-slate-950 to-sky-950/60 p-8 sm:p-12">
-            <div className="pointer-events-none absolute -right-10 -top-10 h-52 w-52 rounded-full bg-brand-500/10 blur-3xl" />
-            <div className="relative max-w-xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
-                Custom builds
-              </p>
-              <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                Need something built for your operation?
-              </h2>
-              <p className="mt-4 text-slate-300">
-                We design bespoke systems around your industry, workflows, and constraints — not the
-                other way around.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button href="/contact#quote" size="lg" icon>
-                  Discuss your needs
-                </Button>
-                <Button href="/services" variant="secondary" size="lg">
-                  Browse services
-                </Button>
-              </div>
-            </div>
-          </div>
+          <CtaPanel
+            eyebrow="Custom builds"
+            title="Need something built for your operation?"
+            description="We design bespoke systems around your industry, workflows, and constraints — not the other way around."
+            primary={{ label: 'Discuss your needs', href: '/contact#quote' }}
+            secondary={{ label: 'Browse services', href: '/services' }}
+          />
         </div>
       </section>
     </>

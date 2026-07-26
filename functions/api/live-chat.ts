@@ -1,10 +1,19 @@
-const cors = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key, X-User-Token',
-}
+import {
+  ALLOWED_HEADERS,
+  canSeeVisitorPii,
+  cleanPlain,
+  cleanText,
+  locationLabel,
+  rateLimitByIp,
+  redactVisitor,
+  resolveActor,
+  visitorContext,
+} from '../_shared/security'
 
-const STAFF_ROLES = new Set(['staff', 'admin', 'super_admin'])
+const cors = {
+  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+  'Access-Control-Allow-Headers': ALLOWED_HEADERS,
+}
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -17,12 +26,6 @@ function id() {
   return `s_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
 }
 
-function adminOk(request, env) {
-  const key = (request.headers.get('X-Admin-Key') || '').trim()
-  const expected = String(env.ADMIN_API_KEY ?? '').trim() || 'EllinesGodMode2026'
-  return key === expected
-}
-
 async function getJson(env, key, fallback) {
   const raw = await env.ET_STORE.get(key)
   if (!raw) return fallback
@@ -33,17 +36,11 @@ async function getJson(env, key, fallback) {
   }
 }
 
-/** God Mode key OR staff/admin CMS user token */
+/** God Mode key / super admin session OR staff-admin CMS user token */
 async function agentOk(request, env) {
-  if (adminOk(request, env)) return { kind: 'god', name: 'Admin' }
-  const token = (request.headers.get('X-User-Token') || '').trim()
-  if (!token) return null
-  const session = await getJson(env, `cms:session:${token}`, null)
-  if (!session?.userId) return null
-  const users = await getJson(env, 'cms:users', [])
-  const user = users.find((u) => u.id === session.userId)
-  if (!user || user.active === false || !STAFF_ROLES.has(user.role)) return null
-  return { kind: 'staff', name: user.name || 'Staff', user }
+  const actor = await resolveActor(request, env)
+  if (!actor) return null
+  return { kind: actor.kind, name: actor.name, role: actor.role, user: actor.user, actor }
 }
 
 async function listSessions(env) {
@@ -61,7 +58,7 @@ async function saveIndex(env, sessions) {
 }
 
 async function getSession(env, sessionId) {
-  const raw = await env.ET_STORE.get(`chat:session:${sessionId}`)
+  const raw = await env.ET_STORE.get(`chat:session:${cleanPlain(sessionId, 80)}`)
   if (!raw) return null
   try {
     return JSON.parse(raw)
@@ -82,10 +79,28 @@ async function putSession(env, session) {
       updatedAt: session.updatedAt,
       createdAt: session.createdAt,
       unreadAdmin: session.unreadAdmin || 0,
+      /** Enough context for an agent to triage from the inbox list. */
+      location: locationLabel(session.visitor),
+      device: session.visitor?.device || '',
+      browser: session.visitor?.browser || '',
     },
     ...index.filter((s) => s.id !== session.id),
   ]
   await saveIndex(env, next)
+}
+
+/** Visitors never receive another visitor's context; agents get it redacted by role. */
+function sessionForAgent(session, agent) {
+  return {
+    ...session,
+    visitor: redactVisitor(session.visitor || {}, agent?.actor),
+    location: locationLabel(session.visitor),
+  }
+}
+
+function sessionForVisitor(session) {
+  const { visitor, ...safe } = session
+  return safe
 }
 
 export async function onRequestOptions() {
@@ -100,20 +115,23 @@ export async function onRequestGet(context) {
   const admin = url.searchParams.get('admin') === '1'
 
   if (admin && !sessionId) {
-    if (!(await agentOk(request, env))) return json({ error: 'unauthorized' }, 401)
+    const agent = await agentOk(request, env)
+    if (!agent) return json({ error: 'unauthorized' }, 401)
     const sessions = await listSessions(env)
-    return json({ sessions })
+    return json({ sessions, canSeeIp: canSeeVisitorPii(agent.actor) })
   }
 
   if (!sessionId) return json({ error: 'sessionId required' }, 400)
   const session = await getSession(env, sessionId)
   if (!session) return json({ error: 'not found' }, 404)
   if (admin) {
-    if (!(await agentOk(request, env))) return json({ error: 'unauthorized' }, 401)
+    const agent = await agentOk(request, env)
+    if (!agent) return json({ error: 'unauthorized' }, 401)
     session.unreadAdmin = 0
     await putSession(env, session)
+    return json({ session: sessionForAgent(session, agent), canSeeIp: canSeeVisitorPii(agent.actor) })
   }
-  return json({ session })
+  return json({ session: sessionForVisitor(session) })
 }
 
 export async function onRequestPost(context) {
@@ -123,44 +141,61 @@ export async function onRequestPost(context) {
   const action = body.action || 'message'
 
   if (action === 'create') {
+    const limited = await rateLimitByIp(env, request, 'chat-create', {
+      limit: 8,
+      windowSeconds: 600,
+    })
+    if (!limited.ok) return json({ error: 'Too many chat sessions. Try again shortly.' }, 429)
     const session = {
       id: id(),
-      visitorName: body.visitorName || 'Visitor',
+      visitorName: cleanPlain(body.visitorName, 80) || 'Visitor',
       status: 'ai',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       unreadAdmin: 0,
+      /** Edge-derived context (IP / geo / device) for the agent inbox. */
+      visitor: visitorContext(request),
       messages: [
         {
           id: id(),
           role: 'assistant',
-          text: 'Welcome to Ellines Tech live support. Ask me anything, open WhatsApp, or request a human agent.',
+          text: 'Welcome to Ellines Tech live support. I’m Ellenia — ask me anything, open WhatsApp, or request a human agent.',
           at: new Date().toISOString(),
         },
       ],
     }
     await putSession(env, session)
-    return json({ session })
+    return json({ session: sessionForVisitor(session) })
   }
 
   if (action === 'message') {
     const session = await getSession(env, body.sessionId)
     if (!session) return json({ error: 'not found' }, 404)
     let role = body.role || 'visitor'
+    let agent = null
     if (role === 'admin') {
-      if (!(await agentOk(request, env))) return json({ error: 'unauthorized' }, 401)
+      agent = await agentOk(request, env)
+      if (!agent) return json({ error: 'unauthorized' }, 401)
     } else if (role !== 'visitor' && role !== 'assistant' && role !== 'ai') {
       role = 'visitor'
     }
-    const msg = {
-      id: id(),
-      role,
-      text: String(body.text || '').slice(0, 4000),
-      at: new Date().toISOString(),
+    if (role !== 'admin') {
+      const limited = await rateLimitByIp(env, request, 'chat-message', {
+        limit: 40,
+        windowSeconds: 300,
+      })
+      if (!limited.ok) return json({ error: 'Slow down a moment.' }, 429)
     }
+    const text = cleanText(body.text, 4000)
+    if (!text) return json({ error: 'text required' }, 400)
+    const msg = { id: id(), role, text, at: new Date().toISOString() }
     session.messages.push(msg)
+    // Keep transcripts bounded so a single session can't blow the KV value cap.
+    if (session.messages.length > 300) session.messages = session.messages.slice(-300)
     session.updatedAt = msg.at
     if (role === 'visitor') {
+      // Refresh context each turn — visitors move between networks and devices.
+      session.visitor = { ...(session.visitor || {}), ...visitorContext(request) }
       session.unreadAdmin = (session.unreadAdmin || 0) + 1
       if (session.status === 'ai' && body.requestHuman) session.status = 'waiting'
     }
@@ -169,7 +204,9 @@ export async function onRequestPost(context) {
       session.unreadAdmin = 0
     }
     await putSession(env, session)
-    return json({ session })
+    return json({
+      session: agent ? sessionForAgent(session, agent) : sessionForVisitor(session),
+    })
   }
 
   if (action === 'request_human') {
@@ -177,6 +214,7 @@ export async function onRequestPost(context) {
     if (!session) return json({ error: 'not found' }, 404)
     session.status = 'waiting'
     session.updatedAt = new Date().toISOString()
+    session.visitor = { ...(session.visitor || {}), ...visitorContext(request) }
     session.messages.push({
       id: id(),
       role: 'system',
@@ -185,7 +223,7 @@ export async function onRequestPost(context) {
     })
     session.unreadAdmin = (session.unreadAdmin || 0) + 1
     await putSession(env, session)
-    return json({ session })
+    return json({ session: sessionForVisitor(session) })
   }
 
   if (action === 'claim') {
@@ -194,7 +232,7 @@ export async function onRequestPost(context) {
     const session = await getSession(env, body.sessionId)
     if (!session) return json({ error: 'not found' }, 404)
     session.status = 'live'
-    session.adminName = body.adminName || agent.name || 'Admin'
+    session.adminName = cleanPlain(body.adminName, 80) || agent.name || 'Agent'
     session.updatedAt = new Date().toISOString()
     session.messages.push({
       id: id(),
@@ -203,17 +241,18 @@ export async function onRequestPost(context) {
       at: session.updatedAt,
     })
     await putSession(env, session)
-    return json({ session })
+    return json({ session: sessionForAgent(session, agent) })
   }
 
   if (action === 'close') {
-    if (!(await agentOk(request, env))) return json({ error: 'unauthorized' }, 401)
+    const agent = await agentOk(request, env)
+    if (!agent) return json({ error: 'unauthorized' }, 401)
     const session = await getSession(env, body.sessionId)
     if (!session) return json({ error: 'not found' }, 404)
     session.status = 'closed'
     session.updatedAt = new Date().toISOString()
     await putSession(env, session)
-    return json({ session })
+    return json({ session: sessionForAgent(session, agent) })
   }
 
   return json({ error: 'unknown action' }, 400)
