@@ -4,9 +4,12 @@ import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Button } from '@/components/ui/Button'
 import { GroupEcosystem } from '@/components/home/GroupEcosystem'
 import { CompanyMaterials } from '@/components/downloads/CompanyMaterials'
+import { LocationMaps } from '@/components/LocationMaps'
 import { aboutStory } from '@/data/content'
+import { locations } from '@/data/locations'
 import { siteConfig } from '@/data/site'
 import { useSiteCopy } from '@/hooks/useSiteCopy'
+import { useSiteProfile } from '@/context/SiteProfileContext'
 import { Target, Eye, Heart, Users } from 'lucide-react'
 
 const values = [
@@ -39,32 +42,50 @@ const values = [
 export function AboutPage() {
   const { founder } = siteConfig
   const { about: liveAbout } = useSiteCopy()
+  const { profile } = useSiteProfile()
+  const waHref = `https://wa.me/${(profile.whatsapp || siteConfig.whatsapp).replace(/\D/g, '')}`
 
   return (
     <>
       <SEO
         title="About — IT Company in Kenya"
-        description="About Ellines Tech — Nairobi-based software, web design, AI, and IT consulting company serving businesses across Kenya and Africa."
+        description="About Ellines Tech — a software, web design, AI, and IT consulting company with offices in Nyeri and Nairobi, serving businesses across Kenya and Africa."
         path="/about"
       />
 
-      <section className="relative min-h-[52vh] overflow-hidden">
+      <section className="relative overflow-hidden border-b border-white/5">
         <img
           src={siteConfig.media.banners.aboutHero}
           alt="About Ellines Tech"
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          className="absolute inset-0 h-full w-full object-cover object-center opacity-50"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/78 to-slate-950/50" />
-        <div className="section-container relative flex min-h-[52vh] items-end pb-14 pt-28">
-          <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-slate-950/55" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/65" />
+        <div className="pointer-events-none absolute inset-0 mesh-bg opacity-50" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/40 to-transparent" />
+        <div className="section-container relative py-20 sm:py-24 lg:py-28">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-3xl"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-300">
               {aboutStory.eyebrow}
             </p>
-            <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 className="mt-5 font-display text-[2.5rem] font-extrabold leading-[1.02] tracking-[-0.035em] text-white sm:text-5xl lg:text-[3.75rem]">
               {liveAbout.title}
             </h1>
-            <p className="mt-4 max-w-2xl text-lg text-slate-300">{liveAbout.lead}</p>
-          </div>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300/95">{liveAbout.lead}</p>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Button href="/contact#quote" size="lg" icon>
+                Start a project
+              </Button>
+              <Button href="/services" variant="secondary" size="lg">
+                Browse services
+              </Button>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -94,18 +115,23 @@ export function AboutPage() {
             </div>
           </div>
 
-          <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {values.map((item) => (
-              <div
+          <div className="mt-16 grid gap-10 border-t border-white/10 pt-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12">
+            {values.map((item, i) => (
+              <motion.div
                 key={item.title}
-                className="rounded-2xl border border-white/10 bg-surface-elevated/50 p-6"
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06 }}
               >
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-brand-500/10 text-brand-400">
-                  <item.icon className="h-5 w-5" />
+                <div className="flex items-center gap-3">
+                  <item.icon className="h-5 w-5 text-brand-400" />
+                  <h3 className="font-display text-sm font-semibold uppercase tracking-[0.18em] text-white">
+                    {item.title}
+                  </h3>
                 </div>
-                <h3 className="font-display font-semibold text-white">{item.title}</h3>
-                <p className="mt-2 text-sm text-slate-400">{item.description}</p>
-              </div>
+                <p className="mt-3 text-sm leading-relaxed text-slate-400">{item.description}</p>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -154,11 +180,11 @@ export function AboutPage() {
           />
           <div className="grid gap-6 sm:grid-cols-3">
             {aboutStory.capabilities.map((item, i) => {
-              const images = [
-                siteConfig.media.banners.homeCraft,
-                siteConfig.media.scenes.aiVisual,
-                siteConfig.media.scenes.solutionsAi,
-              ]
+              const capabilityImages: Record<string, string> = {
+                'Web Development': siteConfig.media.scenes.webDesign,
+                'AI Development': siteConfig.media.scenes.aiVisual,
+                'Startup IT Solutions': siteConfig.media.scenes.solutionsAi,
+              }
               return (
                 <motion.article
                   key={item.title}
@@ -166,13 +192,13 @@ export function AboutPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.06 }}
-                  className="overflow-hidden rounded-[1.35rem] border border-white/10 bg-surface-elevated/30"
+                  className="group overflow-hidden rounded-[1.35rem] border border-white/10 bg-surface-elevated/30"
                 >
                   <div className="aspect-[16/10] overflow-hidden bg-slate-900">
                     <img
-                      src={images[i]}
+                      src={capabilityImages[item.title] || siteConfig.media.scenes.workspace}
                       alt=""
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                       loading="lazy"
                     />
                   </div>
@@ -268,7 +294,18 @@ export function AboutPage() {
         </div>
       </section>
 
-      <GroupEcosystem />
+      <section className="section-padding border-t border-white/5 bg-surface/30">
+        <div className="section-container">
+          <SectionHeader
+            eyebrow="Where we are"
+            title={`Based in ${locations.map((l) => l.city).join(' and ')}`}
+            description="A head office in Nyeri and a working presence in Nairobi — with remote-first delivery for clients across Kenya, Africa, and beyond."
+          />
+          <LocationMaps className="mt-12" variant="compact" />
+        </div>
+      </section>
+
+      <GroupEcosystem title={liveAbout.groupTitle} description={liveAbout.groupBody} />
 
       <section className="section-padding border-t border-white/5 bg-surface/30">
         <div className="section-container">
@@ -277,10 +314,51 @@ export function AboutPage() {
       </section>
 
       <section className="section-padding border-t border-white/5">
-        <div className="section-container text-center">
-          <Button href="/contact" size="lg" icon>
-            Work With Ellines Tech
-          </Button>
+        <div className="section-container">
+          <div className="relative overflow-hidden rounded-[2rem] border border-brand-500/20">
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-900/80 via-slate-950 to-sky-950/90" />
+            <div className="pointer-events-none absolute -right-16 top-1/2 h-64 w-64 -translate-y-1/2 opacity-20">
+              <img
+                src={siteConfig.logos.mark}
+                alt=""
+                className="h-full w-full object-contain"
+                loading="lazy"
+              />
+            </div>
+            <div className="relative p-8 sm:p-12 lg:p-16">
+              <div className="max-w-2xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
+                  Work with us
+                </p>
+                <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+                  Let&apos;s build the system your business runs on
+                </h2>
+                <p className="mt-4 max-w-xl text-lg text-slate-300">
+                  Tell us the outcome you need. We&apos;ll come back with scope, timeline, and a
+                  price — usually within a few hours.
+                </p>
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <Button href="/contact#quote" size="lg" icon>
+                    Start a project
+                  </Button>
+                  <Button href={waHref} variant="secondary" size="lg" external>
+                    WhatsApp us
+                  </Button>
+                </div>
+                <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
+                  {siteConfig.emails.map((email) => (
+                    <a
+                      key={email}
+                      href={`mailto:${email}`}
+                      className="transition-colors hover:text-brand-300"
+                    >
+                      {email}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </>

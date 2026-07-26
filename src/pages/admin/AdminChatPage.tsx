@@ -1,11 +1,33 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import type { ChatFaq } from '@/data/chatKnowledge'
+import { defaultChatFaqs } from '@/data/chatKnowledge'
 import { loadFaqs, resetFaqs, saveFaqs } from '@/lib/engagementStore'
+import { fetchChatFaqs, saveChatFaqs } from '@/lib/cmsApi'
 
 export function AdminChatPage() {
   const [faqs, setFaqs] = useState<ChatFaq[]>(() => loadFaqs())
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchChatFaqs()
+      .then((list) => {
+        if (Array.isArray(list) && list.length) {
+          const mapped = list.map((f) => ({
+            id: f.id,
+            questions: f.questions,
+            answer: f.answer,
+            links: f.links,
+          }))
+          setFaqs(mapped)
+          saveFaqs(mapped)
+        }
+      })
+      .catch((e) => setError(e instanceof Error ? e.message : 'Could not load CMS FAQs'))
+      .finally(() => setLoading(false))
+  }, [])
 
   function updateFaq(index: number, patch: Partial<ChatFaq>) {
     setFaqs((prev) => prev.map((f, i) => (i === index ? { ...f, ...patch } : f)))
@@ -29,9 +51,18 @@ export function AdminChatPage() {
     setSaved(false)
   }
 
-  function persist() {
-    saveFaqs(faqs)
-    setSaved(true)
+  async function persist() {
+    setError('')
+    try {
+      await saveChatFaqs(faqs)
+      saveFaqs(faqs)
+      setSaved(true)
+    } catch (e) {
+      // Still keep local copy so chat works on this device
+      saveFaqs(faqs)
+      setError(e instanceof Error ? e.message : 'CMS save failed — saved locally only')
+      setSaved(true)
+    }
   }
 
   return (
@@ -40,7 +71,7 @@ export function AdminChatPage() {
         <div>
           <h1 className="font-display text-3xl font-bold text-white">Chat knowledge</h1>
           <p className="mt-2 text-slate-400">
-            Train the engagement assistant. Changes apply immediately on this device.
+            Train the engagement assistant. Saves to CMS (KV) so every visitor gets the same answers.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -52,17 +83,20 @@ export function AdminChatPage() {
             variant="ghost"
             onClick={() => {
               resetFaqs()
-              setFaqs(loadFaqs())
+              setFaqs(defaultChatFaqs)
               setSaved(false)
             }}
           >
             Reset defaults
           </Button>
-          <Button type="button" onClick={persist} icon>
+          <Button type="button" onClick={() => void persist()} icon disabled={loading}>
             {saved ? 'Saved' : 'Save knowledge'}
           </Button>
         </div>
       </div>
+
+      {error && <p className="text-sm text-amber-200">{error}</p>}
+      {loading && <p className="text-sm text-slate-500">Loading CMS knowledge…</p>}
 
       <div className="space-y-4">
         {faqs.map((faq, index) => (

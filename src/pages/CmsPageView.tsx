@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
+import { ArticleShell } from '@/components/layout/ArticleShell'
 import { fetchPage, type CmsPage } from '@/lib/cmsApi'
-import { useParams, Link } from 'react-router-dom'
+import { siteConfig } from '@/data/site'
 
 export function CmsPageView() {
   const { slug } = useParams<{ slug: string }>()
@@ -22,12 +24,19 @@ export function CmsPageView() {
   if (error) {
     return (
       <section className="section-padding">
-        <div className="section-container text-center">
-          <h1 className="font-display text-3xl font-bold text-white">Page not found</h1>
-          <p className="mt-3 text-slate-400">{error}</p>
-          <Button href="/" className="mt-6">
-            Go home
-          </Button>
+        <div className="section-container max-w-xl">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-white">
+            Page not found
+          </h1>
+          <p className="mt-4 text-slate-400">{error}</p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Button href="/" icon>
+              Go home
+            </Button>
+            <Button href="/contact" variant="secondary">
+              Contact us
+            </Button>
+          </div>
         </div>
       </section>
     )
@@ -36,7 +45,12 @@ export function CmsPageView() {
   if (!page) {
     return (
       <section className="section-padding">
-        <div className="section-container text-slate-400">Loading…</div>
+        <div className="section-container max-w-3xl">
+          <div className="h-3 w-24 animate-pulse rounded-full bg-white/8" />
+          <div className="mt-6 h-10 w-3/4 animate-pulse rounded-lg bg-white/8" />
+          <div className="mt-4 h-4 w-full animate-pulse rounded-full bg-white/5" />
+          <div className="mt-2 h-4 w-2/3 animate-pulse rounded-full bg-white/5" />
+        </div>
       </section>
     )
   }
@@ -53,25 +67,34 @@ export function CmsPageView() {
         description={page.seoDescription || page.excerpt}
         path={`/p/${page.slug}`}
       />
-      <section className="section-padding">
-        <div className="section-container max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-400">
-            Ellines Tech
-          </p>
-          <h1 className="mt-3 font-display text-4xl font-bold text-white sm:text-5xl">
-            {page.title}
-          </h1>
-          {page.excerpt && <p className="mt-4 text-lg text-slate-300">{page.excerpt}</p>}
-          <div className="mt-10 space-y-5 text-slate-400 leading-relaxed">
-            {paragraphs.map((p) => (
-              <p key={p.slice(0, 24)}>{p}</p>
-            ))}
+
+      <ArticleShell
+        eyebrow={siteConfig.name}
+        title={page.title}
+        lead={page.excerpt}
+        footer={
+          <div className="mt-12 border-t border-white/10 pt-10">
+            <h2 className="font-display text-xl font-bold tracking-tight text-white sm:text-2xl">
+              Questions about this?
+            </h2>
+            <p className="mt-3 text-slate-400">
+              We&apos;re available 24/7 — reach a real person by brief, email, or WhatsApp.
+            </p>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <Button href="/contact#quote" icon>
+                Contact Ellines Tech
+              </Button>
+              <Button href="/services" variant="secondary">
+                Browse services
+              </Button>
+            </div>
           </div>
-          <Link to="/contact" className="mt-10 inline-block text-sm font-semibold text-brand-300">
-            Contact Ellines Tech →
-          </Link>
-        </div>
-      </section>
+        }
+      >
+        {paragraphs.map((paragraph) => (
+          <p key={paragraph.slice(0, 24)}>{paragraph}</p>
+        ))}
+      </ArticleShell>
     </>
   )
 }

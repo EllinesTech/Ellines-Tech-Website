@@ -10,6 +10,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize
   href?: string
   external?: boolean
+  /** Renders the link as a file download instead of a navigation. */
+  download?: boolean
   icon?: boolean
   children: React.ReactNode
 }
@@ -33,6 +35,7 @@ export function Button({
   size = 'md',
   href,
   external,
+  download,
   icon,
   className,
   children,
@@ -53,9 +56,21 @@ export function Button({
   )
 
   if (href) {
-    if (external || href.startsWith('http') || href.startsWith('mailto') || href.startsWith('tel')) {
+    if (
+      download ||
+      external ||
+      href.startsWith('http') ||
+      href.startsWith('mailto') ||
+      href.startsWith('tel')
+    ) {
       return (
-        <a href={href} className={classes} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined}>
+        <a
+          href={href}
+          className={classes}
+          download={download}
+          target={external && !download ? '_blank' : undefined}
+          rel={external ? 'noopener noreferrer' : undefined}
+        >
           {content}
         </a>
       )

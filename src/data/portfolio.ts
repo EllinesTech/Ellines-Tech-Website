@@ -70,7 +70,7 @@ export const portfolioProjects: PortfolioProject[] = [
       'End-to-end hospital management system deployed across multiple healthcare facilities.',
     technologies: ['Python', 'React', 'PostgreSQL', 'Docker'],
     results: ['40% reduction in patient wait times', 'Unified billing across departments'],
-    image: '/project-logos/brand-work-collection.png',
+    image: '/media/scenes/about.png',
   },
   {
     slug: 'eliprime-home-wellness',

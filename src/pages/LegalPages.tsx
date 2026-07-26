@@ -1,5 +1,6 @@
+import { ChevronDown } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { SEO } from '@/components/SEO'
-import { SectionHeader } from '@/components/ui/SectionHeader'
 import { siteConfig } from '@/data/site'
 import { Link } from 'react-router-dom'
 import { useSiteCopy } from '@/hooks/useSiteCopy'
@@ -23,17 +24,34 @@ function LegalShell({
   return (
     <>
       <SEO title={title} description={description} path={path} />
+      <section className="relative overflow-hidden border-b border-white/5">
+        <div className="pointer-events-none absolute inset-0 mesh-bg opacity-40" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/30 to-transparent" />
+        <div className="section-container relative max-w-3xl py-16 sm:py-20">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-300">Legal</p>
+          <h1 className="mt-4 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-[2.75rem]">
+            {title}
+          </h1>
+          <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-[0.1em] text-slate-500">
+            <span>Updated {updated}</span>
+            <span className="text-slate-700" aria-hidden>
+              /
+            </span>
+            <span>{siteConfig.name}</span>
+            <span className="text-slate-700" aria-hidden>
+              /
+            </span>
+            <span>{siteConfig.address}</span>
+          </div>
+        </div>
+      </section>
+
       <section className="section-padding">
         <div className="section-container max-w-3xl">
-          <SectionHeader
-            eyebrow="Legal"
-            title={title}
-            description={`Last updated ${updated}. ${siteConfig.name}, Nairobi, Kenya.`}
-          />
-          <div className="prose-legal mt-10 space-y-6 text-sm leading-relaxed text-slate-400 sm:text-base">
+          <div className="prose-legal space-y-6 text-sm leading-relaxed text-slate-400 sm:text-base">
             {children}
           </div>
-          <p className="mt-10 text-sm text-slate-500">
+          <p className="mt-12 border-t border-white/10 pt-8 text-sm text-slate-500">
             Related:{' '}
             <Link to="/privacy" className="text-brand-300 hover:text-brand-200">
               Privacy
@@ -63,14 +81,15 @@ export function PrivacyPage() {
       <p>
         This Privacy Policy explains how <strong className="text-slate-200">{siteConfig.name}</strong>{' '}
         (“we”, “us”) processes personal data when you use {siteConfig.url}, our chat, forms,
-        accounts, and related services. We are based in {siteConfig.address} and process data in
+        accounts, and related services. We operate from {siteConfig.headOfficeAddress}, with a
+        Nairobi presence, and process data in
         line with the <strong className="text-slate-200">Data Protection Act, 2019</strong> of Kenya
         and guidance from the Office of the Data Protection Commissioner (ODPC).
       </p>
 
       <h3 className="font-display text-lg font-semibold text-white">1. Data controller</h3>
       <p>
-        Controller: {siteConfig.name}, {siteConfig.address}. Contact:{' '}
+        Controller: {siteConfig.name}, {siteConfig.headOfficeAddress}. Contact:{' '}
         <a href={`mailto:${siteConfig.email}`} className="text-brand-300 hover:text-brand-200">
           {siteConfig.email}
         </a>
@@ -291,7 +310,7 @@ export function TermsPage() {
 
       <h3 className="font-display text-lg font-semibold text-white">1. Who we are</h3>
       <p>
-        {siteConfig.name} is a technology company based in {siteConfig.address}. Contact:{' '}
+        {siteConfig.name} is a technology company with offices in {siteConfig.address}. Contact:{' '}
         {siteConfig.email}.
       </p>
 
@@ -364,7 +383,7 @@ export function FaqPage() {
     },
     {
       q: 'Where are you based?',
-      a: 'Nairobi, Kenya — serving clients across Africa and beyond.',
+      a: 'We have two homes in Kenya: our head office at Square2 Street, Skt, Nyeri, and a Nairobi presence for client meetings and on-site work — serving clients across Africa and beyond.',
     },
     {
       q: 'How do you handle my personal data?',
@@ -380,27 +399,97 @@ export function FaqPage() {
         description="Frequently asked questions about Ellines Tech products, services, and support."
         path="/faq"
       />
+      <section className="relative overflow-hidden border-b border-white/5">
+        <img
+          src={siteConfig.media.scenes.faq}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-center opacity-40"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/92 to-slate-950/55" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/70" />
+        <div className="pointer-events-none absolute inset-0 mesh-bg opacity-55" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/40 to-transparent" />
+        <div className="pointer-events-none absolute -left-40 top-0 h-[26rem] w-[26rem] rounded-full bg-brand-500/12 blur-[110px]" />
+
+        <div className="section-container relative py-20 sm:py-24 lg:py-28">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-3xl"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-300">Help</p>
+            <h1 className="mt-5 font-display text-[2.5rem] font-extrabold leading-[1.02] tracking-[-0.035em] text-white sm:text-5xl lg:text-[3.75rem]">
+              Frequently asked
+              <span className="mt-1 block text-gradient">questions</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300/95">
+              Quick answers about what we build, how we work, and how to reach us.
+            </p>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Button href="/contact#quote" size="lg" icon>
+                Send a brief
+              </Button>
+              <Button
+                href={`https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`}
+                variant="secondary"
+                size="lg"
+                external
+              >
+                WhatsApp us
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       <section className="section-padding">
         <div className="section-container max-w-3xl">
-          <SectionHeader
-            eyebrow="Help"
-            title="Frequently asked questions"
-            description="Quick answers — or open chat to ask anything else."
-            align="center"
-            className="mb-12"
-          />
-          <div className="space-y-4">
-            {faqs.map((item) => (
-              <details
+          <div className="divide-y divide-white/10 border-y border-white/10">
+            {faqs.map((item, i) => (
+              <motion.details
                 key={item.q}
-                className="group rounded-2xl border border-white/10 bg-surface-elevated/40 px-5 py-4 open:border-brand-400/25"
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: Math.min(i, 6) * 0.04 }}
+                className="group py-5"
               >
-                <summary className="cursor-pointer list-none font-display font-semibold text-white">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-display font-semibold text-white transition-colors hover:text-brand-200">
                   {item.q}
+                  <ChevronDown className="h-4.5 w-4.5 shrink-0 text-slate-500 transition-transform duration-300 group-open:rotate-180 group-open:text-brand-300" />
                 </summary>
-                <p className="mt-3 text-sm leading-relaxed text-slate-400">{item.a}</p>
-              </details>
+                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-400">{item.a}</p>
+              </motion.details>
             ))}
+          </div>
+
+          <div className="mt-14 relative overflow-hidden rounded-[1.75rem] border border-brand-500/20 bg-gradient-to-br from-brand-900/50 via-slate-950 to-sky-950/60 p-7 sm:p-10">
+            <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-brand-500/10 blur-3xl" />
+            <div className="relative">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
+                Still stuck?
+              </p>
+              <h2 className="mt-4 font-display text-xl font-bold tracking-tight text-white sm:text-2xl">
+                Still have a question?
+              </h2>
+              <p className="mt-3 text-slate-300">
+                We&apos;re available 24/7 — send a brief or message us directly and a real person will
+                answer.
+              </p>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                <Button href="/contact#quote" icon>
+                  Send a brief
+                </Button>
+                <Button
+                  href={`https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`}
+                  variant="secondary"
+                  external
+                >
+                  WhatsApp us
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </section>

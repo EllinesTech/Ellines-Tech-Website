@@ -3,10 +3,12 @@ import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react
 import {
   Building2,
   Briefcase,
+  Bell,
   Home,
   Inbox,
   LogOut,
   ArrowLeft,
+  MessageCircle,
   Receipt,
   ShoppingBag,
   Download,
@@ -16,12 +18,14 @@ import { Button } from '@/components/ui/Button'
 import { Logo } from '@/components/ui/Logo'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import { CompanyMaterials } from '@/components/downloads/CompanyMaterials'
+import { AdminLiveChatPage } from '@/pages/admin/AdminLiveChatPage'
 import {
   loginCustomer,
   fetchLeads,
   fetchInvoices,
   fetchActivity,
   fetchShop,
+  fetchNotifications,
   updateLeadStatus,
   updateProfile,
 } from '@/lib/cmsApi'
@@ -39,11 +43,13 @@ import { cn } from '@/lib/utils'
 const staffNav = [
   { to: '/staff', label: 'Overview', icon: Home, end: true },
   { to: '/staff/leads', label: 'Leads', icon: Inbox },
+  { to: '/staff/live-chat', label: 'Live Chat', icon: MessageCircle },
   { to: '/staff/careers', label: 'Careers', icon: Briefcase },
   { to: '/staff/clients', label: 'Clients', icon: Building2 },
   { to: '/staff/invoices', label: 'Invoices', icon: Receipt },
   { to: '/staff/pricing', label: 'Pricing packages', icon: ShoppingBag },
   { to: '/staff/materials', label: 'Company materials', icon: Download },
+  { to: '/staff/notifications', label: 'Notifications', icon: Bell },
   { to: '/staff/profile', label: 'Profile', icon: User },
 ]
 
@@ -75,7 +81,7 @@ export function StaffLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4 font-ui">
       <form
         onSubmit={onSubmit}
         className="w-full max-w-md rounded-[1.5rem] border border-white/10 bg-surface-elevated/70 p-8 shadow-2xl"
@@ -140,7 +146,7 @@ export function StaffLayout() {
 
   return (
     <RequireStaff>
-      <div className="flex min-h-screen bg-[#050b14] text-slate-100">
+      <div className="flex min-h-screen bg-[#050b14] font-ui text-slate-100">
         <aside
           className={cn(
             'fixed inset-y-0 left-0 z-40 w-64 overflow-y-auto border-r border-white/10 bg-[#071018] px-3 py-4 transition lg:static lg:translate-x-0',
@@ -243,10 +249,13 @@ export function StaffOverviewPage() {
     invoices: 0,
     unpaid: 0,
   })
+  const [activity, setActivity] = useState<
+    { id: string; at: string; message?: string; type?: string }[]
+  >([])
 
   useEffect(() => {
     Promise.all([fetchLeads(), fetchInvoices(), fetchActivity()])
-      .then(([leads, invoices]) => {
+      .then(([leads, invoices, acts]) => {
         const open = leads.filter(
           (l: { status?: string }) =>
             !['won', 'lost', 'closed'].includes(String(l.status || '')),
@@ -260,6 +269,7 @@ export function StaffOverviewPage() {
           invoices: invoices.length,
           unpaid,
         })
+        setActivity(acts.slice(0, 8))
       })
       .catch(() => undefined)
   }, [])
@@ -295,12 +305,28 @@ export function StaffOverviewPage() {
         <Button href="/staff/leads" size="sm">
           Work leads
         </Button>
-        <Button href="/staff/materials" size="sm" variant="secondary">
-          Share company materials
+        <Button href="/staff/live-chat" size="sm" variant="secondary">
+          Live chat queue
         </Button>
-        <Button href="/pricing" size="sm" variant="ghost">
-          Public pricing
+        <Button href="/staff/materials" size="sm" variant="ghost">
+          Share materials
         </Button>
+      </div>
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+        <h3 className="font-display text-lg font-semibold text-white">Recent activity</h3>
+        <ul className="mt-3 space-y-2 text-sm">
+          {activity.map((a) => (
+            <li key={a.id} className="border-b border-white/5 pb-2 text-slate-400">
+              <span className="text-slate-200">{a.message || a.type || 'Update'}</span>
+              <span className="ml-2 text-xs text-slate-600">
+                {a.at ? new Date(a.at).toLocaleString() : ''}
+              </span>
+            </li>
+          ))}
+          {activity.length === 0 && (
+            <li className="text-slate-500">No recent activity yet.</li>
+          )}
+        </ul>
       </div>
     </div>
   )
@@ -323,6 +349,7 @@ export function StaffLeadsPage() {
   >([])
   const [error, setError] = useState('')
   const [saving, setSaving] = useState('')
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
     fetchLeads()
@@ -342,13 +369,36 @@ export function StaffLeadsPage() {
     }
   }
 
+  const visible = leads.filter((l) => {
+    if (filter === 'all') return true
+    if (filter === 'open') return !['won', 'lost', 'closed'].includes(String(l.status || ''))
+    return (l.status || 'new') === filter
+  })
+
   return (
     <div className="space-y-4">
       <h2 className="font-display text-2xl font-bold text-white">Leads & requests</h2>
       <p className="text-sm text-slate-400">Update status as you contact and qualify each lead.</p>
+      <div className="flex flex-wrap gap-2">
+        {['all', 'open', 'new', 'contacted', 'qualified', 'won', 'lost'].map((f) => (
+          <button
+            key={f}
+            type="button"
+            onClick={() => setFilter(f)}
+            className={cn(
+              'rounded-lg border px-3 py-1 text-xs capitalize transition',
+              filter === f
+                ? 'border-brand-400/40 bg-brand-500/15 text-brand-200'
+                : 'border-white/10 text-slate-400 hover:bg-white/5',
+            )}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
       {error && <p className="text-sm text-amber-200">{error}</p>}
       <ul className="space-y-2">
-        {leads.slice(0, 120).map((l) => (
+        {visible.slice(0, 120).map((l) => (
           <li key={l.id} className="rounded-xl border border-white/10 px-4 py-3 text-sm">
             <p className="font-medium text-white">
               {l.name || l.email}{' '}
@@ -380,8 +430,8 @@ export function StaffLeadsPage() {
             </div>
           </li>
         ))}
-        {leads.length === 0 && !error && (
-          <li className="text-sm text-slate-500">No leads yet.</li>
+        {visible.length === 0 && !error && (
+          <li className="text-sm text-slate-500">No leads in this filter.</li>
         )}
       </ul>
     </div>
@@ -389,16 +439,32 @@ export function StaffLeadsPage() {
 }
 
 export function StaffClientsPage() {
-  const [leads, setLeads] = useState<
-    { email: string; name: string; company?: string; phone?: string; leads: number }[]
+  const [contacts, setContacts] = useState<
+    {
+      email: string
+      name: string
+      company?: string
+      phone?: string
+      leads: number
+      invoices: number
+      unpaid: number
+    }[]
   >([])
 
   useEffect(() => {
-    fetchLeads()
-      .then((list) => {
+    Promise.all([fetchLeads(), fetchInvoices()])
+      .then(([list, invoices]) => {
         const map = new Map<
           string,
-          { email: string; name: string; company?: string; phone?: string; leads: number }
+          {
+            email: string
+            name: string
+            company?: string
+            phone?: string
+            leads: number
+            invoices: number
+            unpaid: number
+          }
         >()
         for (const l of list) {
           const email = String(l.email || '').toLowerCase()
@@ -406,6 +472,8 @@ export function StaffClientsPage() {
           const prev = map.get(email)
           if (prev) {
             prev.leads += 1
+            if (!prev.company && l.company) prev.company = l.company
+            if (!prev.phone && l.phone) prev.phone = l.phone
           } else {
             map.set(email, {
               email,
@@ -413,10 +481,32 @@ export function StaffClientsPage() {
               company: l.company,
               phone: l.phone,
               leads: 1,
+              invoices: 0,
+              unpaid: 0,
             })
           }
         }
-        setLeads([...map.values()])
+        for (const inv of invoices) {
+          const email = String(inv.clientEmail || '').toLowerCase()
+          if (!email) continue
+          const prev = map.get(email)
+          if (prev) {
+            prev.invoices += 1
+            if (inv.status === 'sent' || inv.status === 'draft') prev.unpaid += 1
+            if (!prev.name && inv.clientName) prev.name = inv.clientName
+          } else {
+            map.set(email, {
+              email,
+              name: inv.clientName || email,
+              leads: 0,
+              invoices: 1,
+              unpaid: inv.status === 'sent' || inv.status === 'draft' ? 1 : 0,
+            })
+          }
+        }
+        setContacts(
+          [...map.values()].sort((a, b) => b.leads + b.invoices - (a.leads + a.invoices)),
+        )
       })
       .catch(() => undefined)
   }, [])
@@ -424,9 +514,11 @@ export function StaffClientsPage() {
   return (
     <div className="space-y-4">
       <h2 className="font-display text-2xl font-bold text-white">Clients</h2>
-      <p className="text-sm text-slate-400">Unique contacts from live leads and purchase requests.</p>
+      <p className="text-sm text-slate-400">
+        Contacts from leads and invoices — use this list when following up.
+      </p>
       <ul className="space-y-2">
-        {leads.map((c) => (
+        {contacts.map((c) => (
           <li key={c.email} className="rounded-xl border border-white/10 px-4 py-3 text-sm">
             <p className="text-white">{c.name}</p>
             <p className="text-slate-400">
@@ -434,10 +526,13 @@ export function StaffClientsPage() {
               {c.company ? ` · ${c.company}` : ''}
               {c.phone ? ` · ${c.phone}` : ''}
             </p>
-            <p className="text-xs text-slate-600">{c.leads} request(s)</p>
+            <p className="mt-1 text-xs text-slate-600">
+              {c.leads} request(s) · {c.invoices} invoice(s)
+              {c.unpaid ? ` · ${c.unpaid} unpaid/draft` : ''}
+            </p>
           </li>
         ))}
-        {leads.length === 0 && <li className="text-sm text-slate-500">No clients yet.</li>}
+        {contacts.length === 0 && <li className="text-sm text-slate-500">No clients yet.</li>}
       </ul>
     </div>
   )
@@ -503,6 +598,44 @@ export function StaffMaterialsPage() {
       />
     </div>
   )
+}
+
+export function StaffNotificationsPage() {
+  const [items, setItems] = useState<{ id: string; title: string; body: string; at: string }[]>([])
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetchNotifications()
+      .then(setItems)
+      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'))
+  }, [])
+
+  return (
+    <div className="space-y-4">
+      <h2 className="font-display text-2xl font-bold text-white">Notifications</h2>
+      <p className="text-sm text-slate-400">System notices for leads, invoices, and applications.</p>
+      {error && <p className="text-sm text-amber-200">{error}</p>}
+      <ul className="space-y-2">
+        {items.map((n) => (
+          <li key={n.id} className="rounded-xl border border-white/10 px-4 py-3 text-sm">
+            <p className="text-white">{n.title}</p>
+            <p className="text-slate-400">{n.body}</p>
+            <p className="mt-1 text-xs text-slate-600">
+              {n.at ? new Date(n.at).toLocaleString() : ''}
+            </p>
+          </li>
+        ))}
+        {items.length === 0 && !error && (
+          <li className="text-sm text-slate-500">No notifications yet.</li>
+        )}
+      </ul>
+    </div>
+  )
+}
+
+export function StaffLiveChatPage() {
+  const user = loadAuthUser()
+  return <AdminLiveChatPage agentName={user?.name || 'Staff'} />
 }
 
 export function StaffProfilePage() {

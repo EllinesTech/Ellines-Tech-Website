@@ -15,7 +15,7 @@ const CONTACT = {
   url: 'https://tech.ellines.co.ke',
   email: 'info@tech.ellines.co.ke',
   phones: '+254 728 807 213 · +254 748 255 466',
-  address: 'Nairobi, Kenya',
+  address: 'Square2 Street, Skt, Nyeri, Kenya · Nairobi, Kenya',
   founder: 'Elijah Mwangi M',
   motto: 'Your Idea. Our Code.',
 }

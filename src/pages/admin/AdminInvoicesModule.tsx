@@ -29,7 +29,7 @@ export function AdminInvoicesModule() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [paymentRef, setPaymentRef] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState('M-Pesa')
+  const [paymentMethod, setPaymentMethod] = useState('Paystack')
 
   async function load() {
     try {
@@ -53,7 +53,8 @@ export function AdminInvoicesModule() {
       <div>
         <h2 className="font-display text-2xl font-bold text-white">Invoices & Receipts</h2>
         <p className="mt-1 text-sm text-slate-400">
-          Create invoices for clients, mark them paid after payment, and auto-issue receipts.
+          Create invoices for clients. Clients can pay via Paystack on the public invoice link
+          (full balance or 50% deposit). You can also mark paid manually after offline payment.
         </p>
       </div>
       {error && <p className="text-sm text-amber-200">{error}</p>}
@@ -278,7 +279,7 @@ export function AdminInvoicesModule() {
           </ul>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             <input
-              placeholder="Payment method (M-Pesa / Bank)"
+              placeholder="Payment method (Paystack / M-Pesa / Bank)"
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
               className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-xs text-white"

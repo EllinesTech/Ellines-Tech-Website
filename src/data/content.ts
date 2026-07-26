@@ -56,7 +56,7 @@ export const valueProps = [
     title: 'Business Growth Planning',
     description:
       'Strategy and technology planning that identifies opportunities and turns them into actionable roadmaps you can execute.',
-    image: '/media/scenes/growth.png',
+    image: '/media/scenes/about.png',
   },
   {
     icon: 'Shield' as const,
@@ -70,7 +70,7 @@ export const valueProps = [
     title: 'Expert Tech Services',
     description:
       'Ongoing expertise across software, AI, cloud, and digital delivery — so your technology keeps performing as you scale.',
-    image: '/media/scenes/ai.png',
+    image: '/media/scenes/workspace.png',
   },
 ] as const
 

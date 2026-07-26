@@ -1,6 +1,6 @@
-import { Outlet } from 'react-router-dom'
 import { Header } from './Header'
 import { Footer } from './Footer'
+import { PageTransition } from './PageTransition'
 import { ChatWidget } from '@/components/engagement/ChatWidget'
 import { AnnouncementBar } from '@/components/engagement/AnnouncementBar'
 import { VisitTracker } from '@/components/VisitTracker'
@@ -15,8 +15,8 @@ export function Layout() {
       <HashScroll />
       <AnnouncementBar />
       <Header />
-      <main className="flex-1 pt-16 lg:pt-[4.25rem]">
-        <Outlet />
+      <main className="relative flex-1 pt-16 lg:pt-[4.25rem]">
+        <PageTransition />
       </main>
       <Footer />
       <ChatWidget />

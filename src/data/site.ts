@@ -1,16 +1,22 @@
+import { locationLine, locations, primaryLocation } from './locations'
+
 export const siteConfig = {
   name: 'Ellines Tech',
   tagline: 'IT, Web Design & Consulting in Kenya',
   motto: 'Your Idea. Our Code.',
   description:
-    'Ellines Tech is a Kenya-based IT company offering software development, web design, AI, IT consulting, digital marketing, and career documents for businesses across Nairobi and Africa.',
+    'Ellines Tech is a Kenya-based IT company offering software development, web design, AI, IT consulting, digital marketing, and career documents — with offices in Nyeri and Nairobi serving businesses across Africa.',
   url: 'https://tech.ellines.co.ke',
   email: 'info@tech.ellines.co.ke',
   emails: ['info@ellines.co.ke', 'info@tech.ellines.co.ke'] as const,
   phones: ['+254 728 807 213', '+254 748 255 466'] as const,
   phone: '+254 728 807 213',
   whatsapp: '+254748255466',
-  address: 'Nairobi, Kenya',
+  /** Short two-city line — see src/data/locations.ts for the full address records. */
+  address: locationLine,
+  /** Full street address of the head office, for invoices and structured data. */
+  headOfficeAddress: primaryLocation.address,
+  locations,
   founder: {
     name: 'Elijah Mwangi M',
     role: 'Founder, Ellines Group',
@@ -92,14 +98,20 @@ export const siteConfig = {
     scenes: {
       aboutTeam: '/media/scenes/about.png',
       heroTech: '/media/scenes/hero-tech.png',
-      serviceTech: '/media/scenes/solutions.png',
-      solutionsAi: '/media/scenes/ai.png',
+      /** Services page hero — distinct from Home/Solutions */
+      serviceTech: '/media/scenes/web.png',
+      /** Startup / solutions atmosphere — must stay distinct from aiVisual */
+      solutionsAi: '/media/scenes/hero-tech.png',
       uiDesign: '/media/scenes/strategy.png',
       webDesign: '/media/scenes/web.png',
       aiVisual: '/media/scenes/ai.png',
       workspace: '/media/scenes/workspace.png',
       contact: '/media/scenes/growth.png',
-      growth: '/media/scenes/growth.png',
+      /** Industries hero — distinct from Contact growth scene */
+      growth: '/media/scenes/about.png',
+      portfolio: '/media/scenes/strategy.png',
+      faq: '/media/scenes/workspace.png',
+      solutionsHero: '/media/scenes/solutions.png',
     },
     banners: {
       homeStory: '/media/banners/home-story.png',

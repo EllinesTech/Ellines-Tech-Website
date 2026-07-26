@@ -1,4 +1,5 @@
-import { getAdminApiKey } from '@/lib/engagementStore'
+import { getAdminApiKey, isAdminAuthed } from '@/lib/engagementStore'
+import { loadAuthToken } from '@/lib/auth'
 
 export type LiveRole = 'visitor' | 'admin' | 'assistant' | 'system' | 'ai'
 
@@ -32,10 +33,14 @@ export interface LiveSessionSummary {
 
 const base = '/api/live-chat'
 
-function adminHeaders(json = false): HeadersInit {
-  return json
-    ? { 'Content-Type': 'application/json', 'X-Admin-Key': getAdminApiKey() }
-    : { 'X-Admin-Key': getAdminApiKey() }
+/** God Mode key when admin session active; otherwise staff CMS token */
+function agentHeaders(json = false): HeadersInit {
+  const token = loadAuthToken() || ''
+  const headers: Record<string, string> = {}
+  if (json) headers['Content-Type'] = 'application/json'
+  if (isAdminAuthed()) headers['X-Admin-Key'] = getAdminApiKey()
+  if (token) headers['X-User-Token'] = token
+  return headers
 }
 
 export async function createLiveSession(visitorName?: string): Promise<LiveSession> {
@@ -52,7 +57,7 @@ export async function createLiveSession(visitorName?: string): Promise<LiveSessi
 export async function getLiveSession(sessionId: string, admin = false): Promise<LiveSession> {
   const res = await fetch(
     `${base}?sessionId=${encodeURIComponent(sessionId)}${admin ? '&admin=1' : ''}`,
-    admin ? { headers: adminHeaders() } : undefined,
+    admin ? { headers: agentHeaders() } : undefined,
   )
   const data = await res.json()
   if (!res.ok) throw new Error(data.error || 'Failed to load session')
@@ -60,7 +65,7 @@ export async function getLiveSession(sessionId: string, admin = false): Promise<
 }
 
 export async function listLiveSessions(): Promise<LiveSessionSummary[]> {
-  const res = await fetch(`${base}?admin=1`, { headers: adminHeaders() })
+  const res = await fetch(`${base}?admin=1`, { headers: agentHeaders() })
   const data = await res.json()
   if (!res.ok) throw new Error(data.error || 'Failed to list sessions')
   return data.sessions || []
@@ -73,9 +78,7 @@ export async function postLiveMessage(
   requestHuman = false,
 ): Promise<LiveSession> {
   const headers =
-    role === 'admin'
-      ? adminHeaders(true)
-      : { 'Content-Type': 'application/json' }
+    role === 'admin' ? agentHeaders(true) : { 'Content-Type': 'application/json' }
   const res = await fetch(base, {
     method: 'POST',
     headers,
@@ -100,11 +103,22 @@ export async function requestHumanAgent(sessionId: string): Promise<LiveSession>
 export async function claimLiveSession(sessionId: string, adminName = 'Admin'): Promise<LiveSession> {
   const res = await fetch(base, {
     method: 'POST',
-    headers: adminHeaders(true),
+    headers: agentHeaders(true),
     body: JSON.stringify({ action: 'claim', sessionId, adminName }),
   })
   const data = await res.json()
   if (!res.ok) throw new Error(data.error || 'Failed to claim')
+  return data.session
+}
+
+export async function closeLiveSession(sessionId: string): Promise<LiveSession> {
+  const res = await fetch(base, {
+    method: 'POST',
+    headers: agentHeaders(true),
+    body: JSON.stringify({ action: 'close', sessionId }),
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || 'Failed to close')
   return data.session
 }
 

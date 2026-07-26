@@ -10,6 +10,7 @@ import {
   Briefcase,
   Building2,
   CircleHelp,
+  CreditCard,
   Database,
   FilePen,
   Globe,
@@ -88,6 +89,7 @@ const iconMap: Record<string, React.ElementType> = {
   Palette,
   Shield,
   Puzzle,
+  CreditCard,
   ScrollText,
   Database,
   Zap,
@@ -116,7 +118,7 @@ export function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4 font-ui">
       <form
         onSubmit={onSubmit}
         className="w-full max-w-md rounded-[1.5rem] border border-white/10 bg-surface-elevated/70 p-8 shadow-2xl"
@@ -173,7 +175,7 @@ export function AdminLayout() {
 
   return (
     <RequireAdmin>
-      <div className="flex min-h-screen bg-[#050b14] text-slate-100">
+      <div className="flex min-h-screen bg-[#050b14] font-ui text-slate-100">
         <aside
           className={cn(
             'fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto border-r border-white/10 bg-[#071018] px-3 py-4 transition lg:static lg:translate-x-0',

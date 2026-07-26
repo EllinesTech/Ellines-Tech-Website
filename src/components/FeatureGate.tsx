@@ -31,29 +31,35 @@ export function FeatureGate({
     return (
       <>
         <SEO title={title} description={description} />
-        <section className="section-padding">
-          <div className="section-container max-w-lg text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-400">
-              Ellines Tech
-            </p>
-            <h1 className="mt-3 font-display text-3xl font-bold text-white">{title}</h1>
-            <p className="mt-3 text-slate-400">{description}</p>
-            <div className="mt-8 flex justify-center gap-3">
-              <Button href="/" variant="secondary">
-                Back home
-              </Button>
-              {settings.contactEnabled && feature !== 'contactEnabled' && (
-                <Button href="/contact" variant="outline">
-                  Contact us
+        <section className="relative overflow-hidden">
+          <div className="pointer-events-none absolute inset-0 mesh-bg opacity-50" />
+          <div className="pointer-events-none absolute inset-0 hero-grid" />
+          <div className="section-container relative flex min-h-[60vh] flex-col justify-center py-20">
+            <div className="max-w-lg">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
+                Ellines Tech
+              </p>
+              <h1 className="mt-4 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                {title}
+              </h1>
+              <p className="mt-4 text-lg leading-relaxed text-slate-400">{description}</p>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <Button href="/" icon>
+                  Back home
                 </Button>
-              )}
+                {settings.contactEnabled && feature !== 'contactEnabled' && (
+                  <Button href="/contact" variant="secondary">
+                    Contact us
+                  </Button>
+                )}
+              </div>
+              <p className="mt-8 text-sm text-slate-500">
+                Looking for something else?{' '}
+                <Link to="/about" className="text-brand-300 hover:text-brand-200">
+                  Learn about Ellines Tech
+                </Link>
+              </p>
             </div>
-            <p className="mt-6 text-xs text-slate-600">
-              Looking for something else?{' '}
-              <Link to="/about" className="text-brand-300 hover:underline">
-                Learn about Ellines Tech
-              </Link>
-            </p>
           </div>
         </section>
       </>

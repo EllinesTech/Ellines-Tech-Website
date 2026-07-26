@@ -4,10 +4,11 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Briefcase, Check, ChevronDown, GraduationCap, Heart, Upload, Users, X } from 'lucide-react'
 import { SEO } from '@/components/SEO'
 import { FeatureGate } from '@/components/FeatureGate'
-import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Button } from '@/components/ui/Button'
+import { Field, fieldClass } from '@/components/ui/Field'
 import { PrivacyConsentField } from '@/components/PrivacyConsentField'
 import { fetchJobs, submitJobApplication, type JobPosting } from '@/lib/cmsApi'
+import { siteConfig } from '@/data/site'
 import { cn } from '@/lib/utils'
 
 const benefits = [
@@ -24,16 +25,13 @@ const GENERAL_JOB: JobPosting = {
   title: 'General interest',
   department: 'Talent',
   type: 'Open application',
-  location: 'Kenya / Remote',
+  location: 'Nyeri / Nairobi / Remote',
   description:
     "No perfect match right now? Share your background and we'll keep you in mind for future roles.",
   status: 'published',
   createdAt: '',
   updatedAt: '',
 }
-
-const fieldClass =
-  'mt-1.5 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white outline-none transition focus:border-brand-400/40'
 
 function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -149,20 +147,20 @@ function ApplyForm({
         </button>
       </div>
 
-      <form onSubmit={submit} className="mt-6 grid gap-4 sm:grid-cols-2">
-        <label className="block text-sm text-slate-400">
-          Full name *
+      <form onSubmit={submit} className="mt-7 grid gap-5 sm:grid-cols-2">
+        <Field label="Full name" htmlFor="applicant-name">
           <input
+            id="applicant-name"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
             className={fieldClass}
             autoComplete="name"
           />
-        </label>
-        <label className="block text-sm text-slate-400">
-          Email *
+        </Field>
+        <Field label="Email" htmlFor="applicant-email">
           <input
+            id="applicant-email"
             required
             type="email"
             value={email}
@@ -170,10 +168,10 @@ function ApplyForm({
             className={fieldClass}
             autoComplete="email"
           />
-        </label>
-        <label className="block text-sm text-slate-400 sm:col-span-2">
-          Phone
+        </Field>
+        <Field label="Phone" htmlFor="applicant-phone" optional className="sm:col-span-2">
           <input
+            id="applicant-phone"
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
@@ -181,10 +179,15 @@ function ApplyForm({
             autoComplete="tel"
             placeholder="+254…"
           />
-        </label>
-        <label className="block text-sm text-slate-400 sm:col-span-2">
-          Why are you interested? / Cover letter *
+        </Field>
+        <Field
+          label="Why are you interested?"
+          htmlFor="applicant-cover"
+          className="sm:col-span-2"
+          hint="A short cover note beats a long one — tell us what you've built."
+        >
           <textarea
+            id="applicant-cover"
             required
             rows={5}
             value={coverLetter}
@@ -192,29 +195,32 @@ function ApplyForm({
             className={fieldClass}
             placeholder="Tell us about your background and why this role fits."
           />
-        </label>
-        <label className="block text-sm text-slate-400">
-          Portfolio URL
+        </Field>
+        <Field label="Portfolio URL" htmlFor="applicant-portfolio" optional>
           <input
+            id="applicant-portfolio"
             type="url"
             value={portfolioUrl}
             onChange={(e) => setPortfolioUrl(e.target.value)}
             className={fieldClass}
             placeholder="https://"
           />
-        </label>
-        <label className="block text-sm text-slate-400">
-          LinkedIn
+        </Field>
+        <Field label="LinkedIn" htmlFor="applicant-linkedin" optional>
           <input
+            id="applicant-linkedin"
             type="url"
             value={linkedinUrl}
             onChange={(e) => setLinkedinUrl(e.target.value)}
             className={fieldClass}
             placeholder="https://linkedin.com/in/…"
           />
-        </label>
+        </Field>
         <div className="sm:col-span-2">
-          <p className="text-sm text-slate-400">Resume / CV (optional, max 900KB)</p>
+          <p className="text-[13px] font-medium text-slate-300">
+            Resume / CV{' '}
+            <span className="text-slate-600">— optional, max 900KB</span>
+          </p>
           <input
             ref={fileRef}
             type="file"
@@ -225,7 +231,7 @@ function ApplyForm({
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="mt-1.5 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-4 py-4 text-sm text-slate-300 transition hover:border-brand-400/40 hover:text-white"
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-4 py-4 text-sm text-slate-300 transition hover:border-brand-400/40 hover:text-white"
           >
             <Upload className="h-4 w-4 text-brand-400" />
             {resumeName || 'Upload PDF, DOC, or TXT'}
@@ -409,105 +415,135 @@ function CareersContent() {
   }
 
   return (
-    <section className="section-padding">
-      <div className="section-container">
-        <SectionHeader
-          eyebrow="Careers"
-          title="Build the Future With Us"
-          description="Join a team of passionate technologists building Africa's digital infrastructure."
-          align="center"
-          className="mb-16"
+    <>
+      <section className="relative overflow-hidden border-b border-white/5">
+        <img
+          src={siteConfig.media.scenes.workspace}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-center opacity-40"
         />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/92 to-slate-950/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/70" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/40 to-transparent" />
 
-        <div className="mb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {benefits.map((item, i) => (
-            <motion.div
-              key={item.title}
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-              className="rounded-2xl border border-white/10 bg-surface-elevated/50 p-6 text-center"
-            >
-              <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-500/10 text-brand-400">
-                <item.icon className="h-5 w-5" />
-              </div>
-              <h3 className="font-display font-semibold text-white">{item.title}</h3>
-              <p className="mt-2 text-sm text-slate-400">{item.description}</p>
-            </motion.div>
-          ))}
+        <div className="section-container relative py-20 sm:py-24">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-300">
+              Careers
+            </p>
+            <h1 className="mt-5 font-display text-[2.5rem] font-extrabold leading-[1.03] tracking-[-0.035em] text-white sm:text-5xl lg:text-[3.5rem]">
+              Build the future
+              <span className="mt-1 block text-gradient">with us</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300/95">
+              Join a team of technologists building Africa&apos;s digital infrastructure — software,
+              AI, and systems that businesses depend on every day.
+            </p>
+          </motion.div>
         </div>
+      </section>
 
-        <h2 className="font-display text-2xl font-bold text-white">Open Positions</h2>
-        <p className="mt-2 max-w-2xl text-sm text-slate-400">
-          Apply directly on this page — no email required. Upload a resume if you have one, or share
-          your LinkedIn / portfolio.
-        </p>
+      <section className="border-b border-white/5 bg-surface/40">
+        <div className="section-container py-12 sm:py-14">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10">
+            {benefits.map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06 }}
+                className="border-l border-white/10 pl-5"
+              >
+                <item.icon className="h-5 w-5 text-brand-400" />
+                <h3 className="mt-4 font-display font-semibold text-white">{item.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-        <div className="mt-6 space-y-4">
-          {loading && <p className="text-sm text-slate-500">Loading openings…</p>}
-          {!loading && jobs.length === 0 && (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-              <p className="text-sm text-slate-400">
-                No open roles right now. You can still send a general interest application — we&apos;ll
-                reach out when something fits.
-              </p>
+      <section className="section-padding">
+        <div className="section-container">
+          <h2 className="font-display text-2xl font-bold text-white sm:text-3xl">
+            Open positions
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm text-slate-400">
+            Apply directly on this page — no email required. Upload a resume if you have one, or
+            share your LinkedIn / portfolio.
+          </p>
+
+          <div className="mt-6 space-y-4">
+            {loading && <p className="text-sm text-slate-500">Loading openings…</p>}
+            {!loading && jobs.length === 0 && (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                <p className="text-sm text-slate-400">
+                  No open roles right now. You can still send a general interest application —
+                  we&apos;ll reach out when something fits.
+                </p>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="mt-4"
+                  variant={activeJob?.id === 'general' ? 'primary' : 'outline'}
+                  onClick={() => openApply(GENERAL_JOB)}
+                >
+                  Apply generally
+                </Button>
+              </div>
+            )}
+            {jobs.map((job) => (
+              <JobCard
+                key={job.id}
+                job={job}
+                active={activeJob?.id === job.id}
+                expanded={expandedId === job.id}
+                onToggleExpand={() => setExpandedId((id) => (id === job.id ? null : job.id))}
+                onApply={() => openApply(job)}
+              />
+            ))}
+          </div>
+
+          {!loading && jobs.length > 0 && (
+            <div className="mt-8 flex flex-col items-start gap-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-200">Don&apos;t see your role?</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Send a general interest application and we&apos;ll keep you in the talent pool.
+                </p>
+              </div>
               <Button
                 type="button"
                 size="sm"
-                className="mt-4"
-                variant={activeJob?.id === 'general' ? 'primary' : 'outline'}
+                variant={activeJob?.id === 'general' ? 'primary' : 'secondary'}
                 onClick={() => openApply(GENERAL_JOB)}
               >
-                Apply generally
+                General application
               </Button>
             </div>
           )}
-          {jobs.map((job) => (
-            <JobCard
-              key={job.id}
-              job={job}
-              active={activeJob?.id === job.id}
-              expanded={expandedId === job.id}
-              onToggleExpand={() => setExpandedId((id) => (id === job.id ? null : job.id))}
-              onApply={() => openApply(job)}
-            />
-          ))}
-        </div>
 
-        {!loading && jobs.length > 0 && (
-          <div className="mt-8 flex flex-col items-start gap-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-200">Don&apos;t see your role?</p>
-              <p className="mt-1 text-xs text-slate-500">
-                Send a general interest application and we&apos;ll keep you in the talent pool.
-              </p>
-            </div>
-            <Button
-              type="button"
-              size="sm"
-              variant={activeJob?.id === 'general' ? 'primary' : 'secondary'}
-              onClick={() => openApply(GENERAL_JOB)}
-            >
-              General application
-            </Button>
+          <div ref={formRef} className="mt-10 scroll-mt-24">
+            <AnimatePresence mode="wait">
+              {activeJob && (
+                <ApplyForm
+                  key={activeJob.id}
+                  job={activeJob}
+                  onClose={closeApply}
+                  onSuccess={() => setDone(true)}
+                />
+              )}
+            </AnimatePresence>
           </div>
-        )}
-
-        <div ref={formRef} className="mt-10 scroll-mt-24">
-          <AnimatePresence mode="wait">
-            {activeJob && (
-              <ApplyForm
-                key={activeJob.id}
-                job={activeJob}
-                onClose={closeApply}
-                onSuccess={() => setDone(true)}
-              />
-            )}
-          </AnimatePresence>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   )
 }
 

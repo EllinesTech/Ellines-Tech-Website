@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Check, ChevronRight } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { SEO } from '@/components/SEO'
 import { Button } from '@/components/ui/Button'
+import { Field, fieldClass, selectClass } from '@/components/ui/Field'
+import { cn } from '@/lib/utils'
 import {
   starterPricingPackages,
   groupPricingPackages,
   type PricingPackage,
 } from '@/data/pricingPackages'
 import { fetchShop, submitServiceRequest } from '@/lib/cmsApi'
+import { isInstantCheckoutPackage } from '@/lib/checkoutPackages'
+import { startPaystackCheckout } from '@/lib/paystackApi'
 import { loadPublishedServices, type CatalogService } from '@/lib/servicesCatalog'
 import { siteConfig } from '@/data/site'
 
@@ -59,6 +63,8 @@ export function RequestServicePage() {
   const [done, setDone] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [privacyOk, setPrivacyOk] = useState(false)
+  const [wantPayNow, setWantPayNow] = useState(params.get('pay') === '1')
+  const [currency, setCurrency] = useState<'KES' | 'USD'>('KES')
 
   useEffect(() => {
     fetchShop()
@@ -81,6 +87,13 @@ export function RequestServicePage() {
     [services, serviceSlug],
   )
 
+  const canInstantPay =
+    intent === 'buy' && Boolean(selectedPackage && isInstantCheckoutPackage(selectedPackage))
+
+  useEffect(() => {
+    if (!canInstantPay) setWantPayNow(false)
+  }, [canInstantPay])
+
   async function submit() {
     setError('')
     if (!privacyOk) {
@@ -89,6 +102,26 @@ export function RequestServicePage() {
     }
     setSubmitting(true)
     try {
+      if (wantPayNow && selectedPackage && canInstantPay) {
+        await startPaystackCheckout({
+          type: 'checkout',
+          email,
+          name,
+          phone,
+          company,
+          packageId: selectedPackage.id,
+          currency,
+          brand: 'tech',
+          packageSnapshot: {
+            id: selectedPackage.id,
+            name: selectedPackage.name,
+            price: selectedPackage.price,
+            currency: selectedPackage.currency || 'KES',
+            category: selectedPackage.category,
+          },
+        })
+        return
+      }
       await submitServiceRequest({
         name,
         email,
@@ -176,26 +209,40 @@ export function RequestServicePage() {
             A short brief so we can quote accurately — same flow used by modern product studios.
           </p>
 
-          <ol className="mt-8 flex flex-wrap gap-2">
+          <ol className="mt-10 flex items-center gap-2 sm:gap-3">
             {steps.map((label, i) => (
-              <li
-                key={label}
-                className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
-                  i === step
-                    ? 'bg-brand-500/20 text-brand-200'
-                    : i < step
-                      ? 'bg-white/10 text-white'
-                      : 'bg-white/[0.03] text-slate-500'
-                }`}
-              >
-                <span>{i + 1}</span>
-                {label}
-                {i < steps.length - 1 && <ChevronRight className="h-3 w-3 opacity-40" />}
+              <li key={label} className="flex flex-1 items-center gap-2 last:flex-none sm:gap-3">
+                <span
+                  className={cn(
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border font-display text-xs font-bold transition-colors',
+                    i < step && 'border-brand-400/40 bg-brand-500/20 text-brand-200',
+                    i === step && 'border-brand-400/60 bg-brand-400 text-slate-950',
+                    i > step && 'border-white/10 bg-white/[0.03] text-slate-500',
+                  )}
+                >
+                  {i < step ? <Check className="h-4 w-4" /> : i + 1}
+                </span>
+                <span
+                  className={cn(
+                    'hidden text-[11px] font-semibold uppercase tracking-[0.14em] sm:block',
+                    i === step ? 'text-white' : 'text-slate-500',
+                  )}
+                >
+                  {label}
+                </span>
+                {i < steps.length - 1 && (
+                  <span
+                    className={cn(
+                      'h-px flex-1 transition-colors',
+                      i < step ? 'bg-brand-400/40' : 'bg-white/10',
+                    )}
+                  />
+                )}
               </li>
             ))}
           </ol>
 
-          <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-6 sm:p-8">
+          <div className="mt-8 rounded-[1.5rem] border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.015] p-6 sm:p-8">
             {step === 0 && (
               <div className="space-y-4">
                 <h2 className="font-display text-xl font-semibold text-white">What do you need?</h2>
@@ -291,12 +338,13 @@ export function RequestServicePage() {
                       Or pick a service line
                     </p>
                     <select
+                      aria-label="Service line"
                       value={serviceSlug}
                       onChange={(e) => {
                         setServiceSlug(e.target.value)
                         if (e.target.value) setPackageId('')
                       }}
-                      className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2.5 text-sm text-white"
+                      className={selectClass}
                     >
                       <option value="">Select service…</option>
                       {services.map((s) => (
@@ -332,66 +380,95 @@ export function RequestServicePage() {
             {step === 2 && (
               <div className="space-y-4">
                 <h2 className="font-display text-xl font-semibold text-white">Your details</h2>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <input
-                    required
-                    placeholder="Full name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white"
-                  />
-                  <input
-                    required
-                    type="email"
-                    placeholder="Work email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white"
-                  />
-                  <input
-                    placeholder="Phone / WhatsApp"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white"
-                  />
-                  <input
-                    placeholder="Company (optional)"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                    className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white"
-                  />
-                  <select
-                    value={budget}
-                    onChange={(e) => setBudget(e.target.value)}
-                    className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2.5 text-sm text-white"
-                  >
-                    <option value="">Budget range</option>
-                    {budgets.map((b) => (
-                      <option key={b} value={b}>
-                        {b}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={timeline}
-                    onChange={(e) => setTimeline(e.target.value)}
-                    className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2.5 text-sm text-white"
-                  >
-                    <option value="">Timeline</option>
-                    {timelines.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Full name" htmlFor="req-name">
+                    <input
+                      id="req-name"
+                      required
+                      placeholder="Amina Wanjiku"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className={fieldClass}
+                      autoComplete="name"
+                    />
+                  </Field>
+                  <Field label="Work email" htmlFor="req-email">
+                    <input
+                      id="req-email"
+                      required
+                      type="email"
+                      placeholder="you@company.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={fieldClass}
+                      autoComplete="email"
+                    />
+                  </Field>
+                  <Field label="Phone / WhatsApp" htmlFor="req-phone" optional>
+                    <input
+                      id="req-phone"
+                      placeholder="+254 …"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className={fieldClass}
+                      autoComplete="tel"
+                    />
+                  </Field>
+                  <Field label="Company" htmlFor="req-company" optional>
+                    <input
+                      id="req-company"
+                      placeholder="Your company"
+                      value={company}
+                      onChange={(e) => setCompany(e.target.value)}
+                      className={fieldClass}
+                    />
+                  </Field>
+                  <Field label="Budget range" htmlFor="req-budget" optional>
+                    <select
+                      id="req-budget"
+                      value={budget}
+                      onChange={(e) => setBudget(e.target.value)}
+                      className={selectClass}
+                    >
+                      <option value="">Select a range…</option>
+                      {budgets.map((b) => (
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="Timeline" htmlFor="req-timeline" optional>
+                    <select
+                      id="req-timeline"
+                      value={timeline}
+                      onChange={(e) => setTimeline(e.target.value)}
+                      className={selectClass}
+                    >
+                      <option value="">Select a timeline…</option>
+                      {timelines.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
                 </div>
-                <textarea
-                  rows={4}
-                  placeholder="Describe goals, constraints, or links to references…"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white"
-                />
+                <Field
+                  label="Project notes"
+                  htmlFor="req-message"
+                  optional
+                  hint="Goals, constraints, or links to references — the more context, the sharper the quote."
+                >
+                  <textarea
+                    id="req-message"
+                    rows={4}
+                    placeholder="Describe goals, constraints, or links to references…"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className={fieldClass}
+                  />
+                </Field>
                 <div className="flex flex-wrap gap-2">
                   <Button type="button" variant="secondary" onClick={() => setStep(1)}>
                     Back
@@ -460,9 +537,45 @@ export function RequestServicePage() {
                   )}
                 </dl>
                 <p className="text-xs text-slate-500">
-                  Payment instructions (M-Pesa / invoice) are shared after we confirm scope. No card
-                  charge on this form.
+                  {wantPayNow && canInstantPay
+                    ? 'You will be redirected to Paystack to pay this fixed package now. Custom project work still uses the request → invoice path.'
+                    : 'Payment instructions (M-Pesa / invoice) are shared after we confirm scope. No card charge on this form unless you choose Pay now on an eligible package.'}
                 </p>
+                {canInstantPay && (
+                  <div className="space-y-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                    <label className="flex items-start gap-3 text-sm text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={wantPayNow}
+                        onChange={(e) => setWantPayNow(e.target.checked)}
+                        className="mt-1 accent-cyan-400"
+                      />
+                      <span>
+                        Pay now with Paystack ({selectedPackage?.currency}{' '}
+                        {Number(selectedPackage?.price || 0).toLocaleString()})
+                      </span>
+                    </label>
+                    {wantPayNow && (
+                      <label className="block text-xs text-slate-400">
+                        Charge currency
+                        <select
+                          value={currency}
+                          onChange={(e) =>
+                            setCurrency(e.target.value === 'USD' ? 'USD' : 'KES')
+                          }
+                          className="mt-1 w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-sm text-white"
+                        >
+                          <option value="KES">KES (default)</option>
+                          <option value="USD">USD</option>
+                        </select>
+                        <span className="mt-1 block text-[11px] text-slate-600">
+                          Package catalogue prices are in KES; choosing USD charges the same numeric
+                          amount in USD (confirm with the team if unsure).
+                        </span>
+                      </label>
+                    )}
+                  </div>
+                )}
                 <label className="flex items-start gap-3 text-sm leading-relaxed text-slate-400">
                   <input
                     type="checkbox"
@@ -488,13 +601,25 @@ export function RequestServicePage() {
                     Back
                   </Button>
                   <Button type="button" onClick={submit} disabled={submitting || !privacyOk} icon>
-                    {submitting ? 'Sending…' : intent === 'buy' ? 'Submit purchase request' : 'Submit request'}
+                    {submitting
+                      ? wantPayNow && canInstantPay
+                        ? 'Opening Paystack…'
+                        : 'Sending…'
+                      : wantPayNow && canInstantPay
+                        ? 'Pay with Paystack'
+                        : intent === 'buy'
+                          ? 'Submit purchase request'
+                          : 'Submit request'}
                   </Button>
                 </div>
               </div>
             )}
 
-            {error && <p className="mt-4 text-sm text-amber-200">{error}</p>}
+            {error && (
+              <p className="mt-5 rounded-xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                {error}
+              </p>
+            )}
           </div>
 
           <p className="mt-6 text-center text-sm text-slate-500">

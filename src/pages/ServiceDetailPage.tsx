@@ -71,6 +71,8 @@ export function ServiceDetailPage() {
       <section className="relative overflow-hidden border-b border-white/5">
         <img src={scene} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/85 to-slate-950/55" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/40 to-transparent" />
         <div className="section-container relative py-16 sm:py-20 lg:py-24">
           <Link
             to="/services"
@@ -119,13 +121,13 @@ export function ServiceDetailPage() {
                 Practical deliverables under {category.label.toLowerCase()} — scoped to your goals
                 and executed from idea to handoff.
               </p>
-              <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+              <ul className="mt-8 grid gap-x-10 sm:grid-cols-2">
                 {service.offerings.map((item) => (
                   <li
                     key={item}
-                    className="flex items-start gap-3 rounded-2xl border border-white/10 bg-surface-elevated/40 p-4"
+                    className="flex items-start gap-3 border-t border-white/8 py-4 first:border-t-0 sm:[&:nth-child(2)]:border-t-0"
                   >
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-400" />
+                    <CheckCircle2 className="mt-0.5 h-4.5 w-4.5 shrink-0 text-brand-400" />
                     <span className="text-sm leading-relaxed text-slate-300">{item}</span>
                   </li>
                 ))}
@@ -144,22 +146,41 @@ export function ServiceDetailPage() {
                   We execute meticulously from start to finish — clear communication, modern
                   tooling, and outcomes aligned with your vision.
                 </p>
-                <div className="mt-6 space-y-2 text-sm text-slate-400">
-                  <p>
-                    Motto:{' '}
-                    <span className="font-medium text-slate-200">{siteConfig.motto}</span>
-                  </p>
-                  <p>
-                    Based in {siteConfig.address} · {siteConfig.phones[0]}
-                  </p>
+                <dl className="mt-6 divide-y divide-white/8 border-y border-white/8 text-sm">
+                  <div className="flex items-baseline justify-between gap-4 py-3">
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Based in
+                    </dt>
+                    <dd className="text-slate-200">{siteConfig.address}</dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-4 py-3">
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Availability
+                    </dt>
+                    <dd className="text-slate-200">{siteConfig.hours.label} · 24/7</dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-4 py-3">
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Direct line
+                    </dt>
+                    <dd>
+                      <a
+                        href={`tel:${siteConfig.phones[0].replace(/\s/g, '')}`}
+                        className="text-slate-200 transition-colors hover:text-brand-300"
+                      >
+                        {siteConfig.phones[0]}
+                      </a>
+                    </dd>
+                  </div>
+                </dl>
+                <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                  <Button href={`/request?intent=request&service=${service.slug}`} icon>
+                    Start this service
+                  </Button>
+                  <Button href="/contact#quote" variant="secondary">
+                    Ask a question
+                  </Button>
                 </div>
-                <Button
-                  href={`/request?intent=request&service=${service.slug}`}
-                  className="mt-8 w-full sm:w-auto"
-                  icon
-                >
-                  Start this service
-                </Button>
               </div>
             </aside>
           </div>

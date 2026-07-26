@@ -1,5 +1,5 @@
 import { Facebook, Github, Instagram, Linkedin } from 'lucide-react'
-import { siteConfig } from '@/data/site'
+import { useSiteProfile } from '@/context/SiteProfileContext'
 import { cn } from '@/lib/utils'
 
 function XIcon({ className }: { className?: string }) {
@@ -25,12 +25,14 @@ interface SocialLinksProps {
 }
 
 export function SocialLinks({ className, showLabels, size = 'md' }: SocialLinksProps) {
+  const { profile } = useSiteProfile()
   const box = size === 'sm' ? 'h-9 w-9' : 'h-10 w-10'
   const icon = size === 'sm' ? 'h-4 w-4' : 'h-4.5 w-4.5 h-[1.1rem] w-[1.1rem]'
+  const links = profile.socialLinks?.length ? profile.socialLinks : []
 
   return (
     <div className={cn('flex flex-wrap items-center gap-2', className)}>
-      {siteConfig.socialLinks.map((item) => {
+      {links.map((item) => {
         const Icon = iconMap[item.id] ?? Github
         return (
           <a

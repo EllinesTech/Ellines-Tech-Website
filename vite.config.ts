@@ -19,6 +19,10 @@ export default defineConfig({
         target: 'http://127.0.0.1:8788',
         changeOrigin: true,
       },
+      '/pay': {
+        target: 'http://127.0.0.1:8788',
+        changeOrigin: true,
+      },
     },
   },
   preview: {
@@ -27,6 +31,10 @@ export default defineConfig({
     // Same as server: vite preview alone has no Workers; proxy to `dev:api`
     proxy: {
       '/api': {
+        target: 'http://127.0.0.1:8788',
+        changeOrigin: true,
+      },
+      '/pay': {
         target: 'http://127.0.0.1:8788',
         changeOrigin: true,
       },

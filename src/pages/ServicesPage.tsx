@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import { SEO } from '@/components/SEO'
-import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { ProcessSection } from '@/components/home/ProcessSection'
 import { serviceCategories, type ServiceCategory } from '@/data/services'
+import { siteConfig } from '@/data/site'
 import {
   loadPublishedServices,
   serviceImage,
@@ -38,6 +39,7 @@ const iconMap: Record<string, React.ElementType> = {
 
 export function ServicesPage() {
   const [services, setServices] = useState<CatalogService[]>([])
+  const waHref = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
   const categories = Object.entries(serviceCategories) as [
     ServiceCategory,
     (typeof serviceCategories)[ServiceCategory],
@@ -56,22 +58,54 @@ export function ServicesPage() {
       />
 
       <section className="relative overflow-hidden border-b border-white/5">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(34,211,238,0.1),_transparent_55%)]" />
-        <div className="section-container relative section-padding pb-14">
-          <SectionHeader
-            eyebrow="Our Services"
-            title="Technology services built to ship"
-            description="Design, development, AI, marketing, security, and career documents — scoped professionally with transparent pricing."
-            align="center"
-            className="mb-10"
-          />
-          <div className="flex flex-wrap justify-center gap-3">
-            <Button href="/request" icon>
-              Request a service
-            </Button>
-            <Button href="/pricing" variant="secondary">
-              Product pricing
-            </Button>
+        <img
+          src={siteConfig.media.scenes.serviceTech}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-center opacity-35"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/92 to-slate-950/55" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/70" />
+        <div className="pointer-events-none absolute inset-0 mesh-bg opacity-50" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/40 to-transparent" />
+
+        <div className="section-container relative py-20 sm:py-24">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-3xl"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-300">
+              Our services
+            </p>
+            <h1 className="mt-5 font-display text-[2.5rem] font-extrabold leading-[1.03] tracking-[-0.035em] text-white sm:text-5xl lg:text-[3.5rem]">
+              Technology services
+              <span className="mt-1 block text-gradient">built to ship</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300/95">
+              Design, development, AI, marketing, security, and career documents — scoped
+              professionally with transparent pricing.
+            </p>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <Button href="/request" size="lg" icon>
+                Request a service
+              </Button>
+              <Button href="/pricing" variant="secondary" size="lg">
+                Product pricing
+              </Button>
+            </div>
+          </motion.div>
+
+          <div className="mt-12 flex flex-wrap gap-2 border-t border-white/8 pt-8">
+            {categories.map(([key, cat]) => (
+              <a
+                key={key}
+                href={`#${key}`}
+                className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-slate-300 transition-all hover:border-brand-500/30 hover:bg-brand-500/10 hover:text-brand-300"
+              >
+                {cat.label}
+              </a>
+            ))}
           </div>
         </div>
       </section>
@@ -99,10 +133,11 @@ export function ServicesPage() {
                       <Card
                         key={service.slug}
                         title={service.name}
-                        description={
+                        description={service.description}
+                        tag={
                           service.startingPrice != null && service.startingPrice > 0
-                            ? `${service.description} From KES ${service.startingPrice.toLocaleString()}.`
-                            : service.description
+                            ? `From KES ${service.startingPrice.toLocaleString()}`
+                            : undefined
                         }
                         href={`/services/${service.slug}`}
                         image={serviceImage(service)}
@@ -117,6 +152,34 @@ export function ServicesPage() {
       </section>
 
       <ProcessSection />
+
+      <section className="section-padding border-t border-white/5">
+        <div className="section-container">
+          <div className="relative overflow-hidden rounded-[1.75rem] border border-brand-500/20 bg-gradient-to-br from-brand-900/50 via-slate-950 to-sky-950/60 p-8 sm:p-12">
+            <div className="pointer-events-none absolute -right-10 -top-10 h-52 w-52 rounded-full bg-brand-500/10 blur-3xl" />
+            <div className="relative max-w-xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
+                Not sure which service fits?
+              </p>
+              <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                Describe the outcome — we&apos;ll scope the work
+              </h2>
+              <p className="mt-4 text-slate-300">
+                Send a short brief and we&apos;ll recommend the right service and price. Replies
+                within a few hours, 24/7.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Button href="/contact#quote" size="lg" icon>
+                  Send a brief
+                </Button>
+                <Button href={waHref} variant="secondary" size="lg" external>
+                  WhatsApp us
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   )
 }

@@ -1,12 +1,14 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { Mail, Phone, MapPin, MessageCircle, Clock3 } from 'lucide-react'
+import { Mail, Phone, MapPin, MessageCircle } from 'lucide-react'
 import { filterFooterNavigation, footerSectionLabels } from '@/data/navigation'
 import { siteConfig, technologies } from '@/data/site'
+import { directionsUrl, locations } from '@/data/locations'
 import { Logo } from '@/components/ui/Logo'
 import { SocialLinks } from '@/components/engagement/SocialLinks'
 import { NewsletterSignup } from '@/components/NewsletterSignup'
 import { useSiteFeatures } from '@/context/SiteFeaturesContext'
+import { useSiteProfile } from '@/context/SiteProfileContext'
 
 function FooterLink({ href, label }: { href: string; label: string }) {
   const external = href.startsWith('http')
@@ -30,12 +32,25 @@ function FooterLink({ href, label }: { href: string; label: string }) {
 }
 
 export function Footer() {
-  const waHref = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
+  const { profile } = useSiteProfile()
+  const waHref = `https://wa.me/${(profile.whatsapp || siteConfig.whatsapp).replace(/\D/g, '')}`
   const { settings } = useSiteFeatures()
   const footerNav = useMemo(() => filterFooterNavigation(settings), [settings])
+  const emails = useMemo(() => {
+    const primary = profile.email || siteConfig.email
+    return [primary, ...siteConfig.emails.filter((e) => e !== primary)]
+  }, [profile.email])
+  const phones = useMemo(() => {
+    const primary = profile.phone || siteConfig.phone
+    const wa = profile.whatsapp || siteConfig.phones[1]
+    return [primary, ...siteConfig.phones.filter((p) => p !== primary && p !== wa), wa].filter(
+      (p, i, arr) => p && arr.indexOf(p) === i,
+    )
+  }, [profile.phone, profile.whatsapp])
 
   return (
-    <footer className="border-t border-white/5 bg-surface/80">
+    <footer className="relative border-t border-white/5 bg-surface/80">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/25 to-transparent" />
       <div className="section-container section-padding">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-4">
@@ -47,39 +62,62 @@ export function Footer() {
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
               {siteConfig.hours.label} · 24/7
             </div>
-            <div className="mt-6 space-y-2.5 text-sm text-slate-400">
-              {siteConfig.emails.map((email) => (
+            <div className="mt-6 space-y-2 text-sm text-slate-400">
+              {emails.map((email) => (
                 <a
                   key={email}
                   href={`mailto:${email}`}
-                  className="flex items-center gap-2 transition-colors hover:text-brand-300"
+                  className="flex items-center gap-2.5 transition-colors hover:text-brand-300"
                 >
-                  <Mail className="h-4 w-4 shrink-0" /> {email}
+                  <Mail className="h-4 w-4 shrink-0 text-slate-600" /> {email}
                 </a>
               ))}
-              {siteConfig.phones.map((phone) => (
+              {phones.map((phone) => (
                 <a
                   key={phone}
                   href={`tel:${phone.replace(/\s/g, '')}`}
-                  className="flex items-center gap-2 transition-colors hover:text-brand-300"
+                  className="flex items-center gap-2.5 transition-colors hover:text-brand-300"
                 >
-                  <Phone className="h-4 w-4 shrink-0" /> {phone}
+                  <Phone className="h-4 w-4 shrink-0 text-slate-600" /> {phone}
                 </a>
               ))}
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-2">
               <a
                 href={waHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 transition-colors hover:text-brand-300"
+                className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-200 transition-colors hover:bg-emerald-500/15"
               >
-                <MessageCircle className="h-4 w-4 shrink-0" /> WhatsApp
+                <MessageCircle className="h-4 w-4" /> WhatsApp us
               </a>
-              <p className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 shrink-0" /> {siteConfig.address}
-              </p>
-              <p className="flex items-center gap-2">
-                <Clock3 className="h-4 w-4 shrink-0" /> {siteConfig.hours.detail}
-              </p>
+              <Link
+                to="/contact#quote"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/12 bg-white/[0.04] px-3.5 py-2 text-xs font-semibold text-slate-200 transition-colors hover:border-brand-400/30 hover:text-brand-200"
+              >
+                Send a brief
+              </Link>
+            </div>
+
+            <div className="mt-5 flex items-start gap-2.5 text-xs leading-relaxed text-slate-500">
+              <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <div className="space-y-1">
+                {locations.map((location) => (
+                  <p key={location.id}>
+                    <a
+                      href={directionsUrl(location)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="transition-colors hover:text-brand-300"
+                    >
+                      <span className="font-semibold text-slate-400">{location.city}</span> ·{' '}
+                      {location.address}
+                    </a>
+                  </p>
+                ))}
+                <p>{siteConfig.hours.detail}</p>
+              </div>
             </div>
             <SocialLinks className="mt-6" size="sm" />
             {settings.newsletterEnabled && (
@@ -116,13 +154,15 @@ export function Footer() {
           <p className="mb-4 text-xs font-medium uppercase tracking-wider text-slate-500">
             Technologies We Use
           </p>
-          <div className="flex flex-wrap gap-2">
-            {technologies.map((tech) => (
-              <span
-                key={tech}
-                className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-400"
-              >
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[11px] uppercase tracking-[0.1em] text-slate-500">
+            {technologies.map((tech, i) => (
+              <span key={tech} className="inline-flex items-center gap-3">
                 {tech}
+                {i < technologies.length - 1 && (
+                  <span className="text-slate-700" aria-hidden>
+                    /
+                  </span>
+                )}
               </span>
             ))}
           </div>

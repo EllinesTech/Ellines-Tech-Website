@@ -23,22 +23,33 @@ import { SectionHeader } from '@/components/ui/SectionHeader'
 import { SEO } from '@/components/SEO'
 import { HeroVisual } from '@/components/home/HeroVisual'
 import { GroupEcosystem } from '@/components/home/GroupEcosystem'
-import { products } from '@/data/products'
 import { serviceCategories } from '@/data/services'
 import { industries } from '@/data/industries'
-import { portfolioProjects } from '@/data/portfolio'
-import { clientBrands } from '@/data/clients'
-import { homeCopy, testimonials, valueProps as valuePropData } from '@/data/content'
+import { homeCopy, testimonials as defaultTestimonials, valueProps as valuePropData } from '@/data/content'
 import { siteConfig } from '@/data/site'
+import { cn } from '@/lib/utils'
 import { useSiteCopy } from '@/hooks/useSiteCopy'
+import { useSiteProfile } from '@/context/SiteProfileContext'
 import { ProcessSection } from '@/components/home/ProcessSection'
 import { TechMarquee } from '@/components/home/TechMarquee'
 import { NewsletterSignup } from '@/components/NewsletterSignup'
+import { fetchReviews } from '@/lib/cmsApi'
 import {
   loadPublishedServices,
   staticServicesAsCatalog,
   type CatalogService,
 } from '@/lib/servicesCatalog'
+import {
+  loadPublishedProducts,
+  staticProductsAsCatalog,
+  type CatalogProduct,
+} from '@/lib/productsCatalog'
+import {
+  loadPublishedPortfolio,
+  staticPortfolioAsCatalog,
+  type CatalogProject,
+} from '@/lib/portfolioCatalog'
+import { loadClientBrands, staticClientBrands, type CatalogClientBrand } from '@/lib/clientBrandsCatalog'
 
 const iconMap: Record<string, React.ElementType> = {
   Code2,
@@ -74,19 +85,48 @@ const valueProps = valuePropData.map((item) => ({
 
 export function HomePage() {
   const [services, setServices] = useState<CatalogService[]>(() => staticServicesAsCatalog())
-  const featuredProducts = products.filter((p) => p.highlights && p.image).slice(0, 4)
-  const featuredPortfolio = portfolioProjects.slice(0, 6)
-  const waHref = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
+  const [featuredProducts, setFeaturedProducts] = useState<CatalogProduct[]>(() =>
+    staticProductsAsCatalog()
+      .filter((p) => p.highlights && p.image)
+      .slice(0, 4),
+  )
+  const [featuredPortfolio, setFeaturedPortfolio] = useState<CatalogProject[]>(() =>
+    staticPortfolioAsCatalog().slice(0, 6),
+  )
+  const [brands, setBrands] = useState<CatalogClientBrand[]>(() => staticClientBrands())
+  const [testimonials, setTestimonials] = useState<{ quote: string; name: string; role: string }[]>(
+    () => defaultTestimonials.map((t) => ({ quote: t.quote, name: t.name, role: t.role })),
+  )
+  const { profile } = useSiteProfile()
+  const waHref = `https://wa.me/${(profile.whatsapp || siteConfig.whatsapp).replace(/\D/g, '')}`
   const { home: liveHome } = useSiteCopy()
 
   useEffect(() => {
     void loadPublishedServices().then(setServices)
+    void loadPublishedProducts().then((list) =>
+      setFeaturedProducts(list.filter((p) => p.highlights && p.image).slice(0, 4)),
+    )
+    void loadPublishedPortfolio().then((list) => setFeaturedPortfolio(list.slice(0, 6)))
+    void loadClientBrands().then(setBrands)
+    void fetchReviews()
+      .then((list) => {
+        if (Array.isArray(list) && list.length) {
+          setTestimonials(
+            list.map((r) => ({
+              quote: String((r as { quote?: string }).quote || ''),
+              name: String((r as { name?: string }).name || ''),
+              role: String((r as { role?: string }).role || ''),
+            })),
+          )
+        }
+      })
+      .catch(() => undefined)
   }, [])
 
   return (
     <>
       <SEO
-        description="Ellines Tech — Kenya IT company for software development, web design, AI, IT consulting, digital marketing, and career documents. Nairobi · Your Idea. Our Code."
+        description="Ellines Tech — Kenya IT company for software development, web design, AI, IT consulting, digital marketing, and career documents. Nyeri & Nairobi · Your Idea. Our Code."
         path="/"
       />
 
@@ -153,10 +193,17 @@ export function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="grid grid-cols-2 gap-8 sm:grid-cols-4"
+            className="grid grid-cols-2 gap-y-8 sm:grid-cols-4"
           >
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center sm:text-left">
+            {stats.map((stat, i) => (
+              <div
+                key={stat.label}
+                className={cn(
+                  'text-center sm:px-6 sm:text-left sm:first:pl-0',
+                  i % 2 === 1 && 'border-l border-white/10',
+                  i > 0 && 'sm:border-l sm:border-white/10',
+                )}
+              >
                 <p className="font-display text-4xl font-bold tracking-tight text-gradient sm:text-5xl">
                   {stat.value}
                 </p>
@@ -246,7 +293,11 @@ export function HomePage() {
       </section>
 
       {/* Ellines Group — Tech, Haven, Rattan */}
-      <GroupEcosystem className="bg-surface/35" />
+      <GroupEcosystem
+        className="bg-surface/35"
+        title={liveHome.groupTitle}
+        description={liveHome.groupBody}
+      />
 
       {/* Brands we built & worked with */}
       <section className="section-padding border-t border-white/5">
@@ -258,25 +309,25 @@ export function HomePage() {
             align="center"
             className="mb-12"
           />
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
-            {clientBrands.map((brand, i) => (
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+            {brands.map((brand, i) => (
               <motion.div
                 key={brand.id}
                 initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.04 }}
-                className="flex flex-col items-center gap-3 rounded-2xl border border-white/8 bg-white/[0.02] px-3 py-5 text-center"
+                className="group flex flex-col items-center gap-3 text-center"
               >
                 <div className="flex h-16 w-full items-center justify-center">
                   <img
                     src={brand.logo}
                     alt={brand.name}
-                    className="max-h-12 w-auto max-w-[85%] object-contain"
+                    className="max-h-12 w-auto max-w-[85%] object-contain opacity-75 transition duration-500 group-hover:scale-[1.04] group-hover:opacity-100"
                     loading="lazy"
                   />
                 </div>
-                <p className="font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                <p className="font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600 transition-colors group-hover:text-slate-400">
                   {brand.name}
                 </p>
               </motion.div>
@@ -540,7 +591,7 @@ export function HomePage() {
                 </h2>
                 <p className="mt-4 text-lg text-slate-300">
                   We&apos;re here 24/7 for demos and services. Request a quote or WhatsApp us at{' '}
-                  {siteConfig.phones[1]}.
+                  {profile.whatsapp || siteConfig.phones[1]}.
                 </p>
                 <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                   <Button href="/request" size="lg" icon>

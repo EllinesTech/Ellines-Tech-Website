@@ -7,16 +7,18 @@ import { cn } from '@/lib/utils'
 interface GroupEcosystemProps {
   className?: string
   compact?: boolean
+  title?: string
+  description?: string
 }
 
-export function GroupEcosystem({ className, compact }: GroupEcosystemProps) {
+export function GroupEcosystem({ className, compact, title, description }: GroupEcosystemProps) {
   return (
     <section className={cn('section-padding border-t border-white/5', className)}>
       <div className="section-container">
         <SectionHeader
           eyebrow="Company group"
-          title={siteConfig.group.name}
-          description={siteConfig.group.description}
+          title={title || siteConfig.group.name}
+          description={description || siteConfig.group.description}
           align="center"
           className="mb-12 lg:mb-16"
         />

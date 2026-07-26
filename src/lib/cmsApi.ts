@@ -260,6 +260,120 @@ export async function deleteMediaItem(id: string) {
   })
 }
 
+export type CmsProduct = {
+  id: string
+  slug: string
+  name: string
+  category: string
+  tagline: string
+  description: string
+  features: string[]
+  highlights?: string[]
+  image?: string
+  imageFit?: 'cover' | 'contain'
+  status: 'published' | 'draft'
+}
+
+export type CmsPortfolioProject = {
+  id: string
+  slug: string
+  name: string
+  category: string
+  client?: string
+  description: string
+  technologies: string[]
+  results?: string[]
+  logo?: string
+  image?: string
+  status: 'published' | 'draft'
+}
+
+export type SiteProfile = {
+  email: string
+  phone: string
+  whatsapp: string
+  address: string
+  socialLinks: { id: string; label: string; handle: string; href: string }[]
+}
+
+export type ChatFaqRecord = {
+  id: string
+  questions: string[]
+  answer: string
+  links?: { label: string; href: string }[]
+}
+
+export async function fetchCmsProducts(publishedOnly = true): Promise<CmsProduct[]> {
+  const data = await cmsFetch(
+    `resource=products${publishedOnly ? '&published=1' : ''}`,
+    publishedOnly ? undefined : { headers: elevatedHeaders() },
+  )
+  return (data.products || []) as CmsProduct[]
+}
+
+export async function fetchCmsProduct(slug: string): Promise<CmsProduct> {
+  const data = await cmsFetch(`resource=products&slug=${encodeURIComponent(slug)}`)
+  return data.product as CmsProduct
+}
+
+export async function saveProducts(products: CmsProduct[]) {
+  return cmsFetch('resource=products', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'save_products', products }),
+  })
+}
+
+export async function fetchPortfolio(publishedOnly = true): Promise<CmsPortfolioProject[]> {
+  const data = await cmsFetch(
+    `resource=portfolio${publishedOnly ? '&published=1' : ''}`,
+    publishedOnly ? undefined : { headers: elevatedHeaders() },
+  )
+  return (data.projects || []) as CmsPortfolioProject[]
+}
+
+export async function savePortfolio(projects: CmsPortfolioProject[]) {
+  return cmsFetch('resource=portfolio', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'save_portfolio', projects }),
+  })
+}
+
+export async function fetchSiteProfile(): Promise<SiteProfile> {
+  const data = await cmsFetch('resource=site-profile')
+  return data.profile as SiteProfile
+}
+
+export async function saveSiteProfile(profile: SiteProfile) {
+  return cmsFetch('resource=site-profile', {
+    method: 'POST',
+    headers: adminHeaders(true),
+    body: JSON.stringify({ action: 'save_site_profile', profile }),
+  })
+}
+
+export async function fetchChatFaqs(): Promise<ChatFaqRecord[]> {
+  const data = await cmsFetch('resource=chat-faqs')
+  return (data.faqs || []) as ChatFaqRecord[]
+}
+
+export async function saveChatFaqs(faqs: ChatFaqRecord[]) {
+  return cmsFetch('resource=chat-faqs', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'save_chat_faqs', faqs }),
+  })
+}
+
+export async function fetchPresence(): Promise<{
+  online: { sessionId: string; path: string; at: string }[]
+  count: number
+}> {
+  const data = await cmsFetch('resource=presence', { headers: elevatedHeaders() })
+  return { online: data.online || [], count: data.count || 0 }
+}
+
 import type { KnowledgeArticle } from '@/data/knowledge'
 
 export type { KnowledgeArticle }
@@ -316,6 +430,14 @@ export async function fetchNotifications() {
   return data.notifications || []
 }
 
+export async function createNotification(title: string, body: string) {
+  return cmsFetch('resource=notifications', {
+    method: 'POST',
+    headers: elevatedHeaders(true),
+    body: JSON.stringify({ action: 'notify', title, body }),
+  })
+}
+
 export async function fetchAnalytics() {
   const data = await cmsFetch('resource=analytics', { headers: elevatedHeaders() })
   return data.analytics
@@ -359,11 +481,28 @@ export async function loginCustomer(input: { email: string; password: string }) 
 
 export async function trackVisit(path: string) {
   try {
-    await cmsFetch('resource=analytics', {
+    let sessionId = ''
+    try {
+      sessionId = localStorage.getItem('et_visitor_sid') || ''
+      if (!sessionId) {
+        sessionId = `vis_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
+        localStorage.setItem('et_visitor_sid', sessionId)
+      }
+    } catch {
+      sessionId = `vis_${Date.now().toString(36)}`
+    }
+    const data = await cmsFetch('resource=analytics', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'track_visit', path }),
+      body: JSON.stringify({ action: 'track_visit', path, sessionId }),
     })
+    if (data?.sessionId) {
+      try {
+        localStorage.setItem('et_visitor_sid', data.sessionId)
+      } catch {
+        /* ignore */
+      }
+    }
   } catch {
     /* ignore */
   }
@@ -430,6 +569,9 @@ export type Invoice = {
   paymentMethod?: string
   paymentRef?: string
   receiptNumber?: string | null
+  amountPaid?: number
+  lastPaymentAt?: string | null
+  lastPaymentType?: string
 }
 
 export async function fetchInvoices(): Promise<Invoice[]> {
@@ -553,6 +695,50 @@ export async function saveSiteSettings(settings: SiteFeatureSettings) {
     method: 'POST',
     headers: adminHeaders(true),
     body: JSON.stringify({ action: 'save_settings', settings }),
+  })
+}
+
+export type PaymentMethodsConfig = {
+  currency: string
+  merchantEmail: string
+  mode: 'sandbox' | 'live'
+  mpesa: {
+    enabled: boolean
+    paybill: string
+    accountName: string
+    tillNumber: string
+    consumerKey: string
+    consumerSecret: string
+    passkey: string
+    shortcode: string
+  }
+  paypal: {
+    enabled: boolean
+    clientId: string
+    clientSecret: string
+    merchantEmail: string
+  }
+  paystack: {
+    enabled: boolean
+    publicKey: string
+    secretKey: string
+    webhookSecret?: string
+    merchantEmail: string
+  }
+  notes: string
+  updatedAt: string
+}
+
+export async function fetchPaymentMethods(): Promise<PaymentMethodsConfig> {
+  const data = await cmsFetch('resource=payments', { headers: adminHeaders() })
+  return data.payments as PaymentMethodsConfig
+}
+
+export async function savePaymentMethods(payments: PaymentMethodsConfig) {
+  return cmsFetch('resource=payments', {
+    method: 'POST',
+    headers: adminHeaders(true),
+    body: JSON.stringify({ action: 'save_payments', payments }),
   })
 }
 

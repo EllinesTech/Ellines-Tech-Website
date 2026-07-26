@@ -70,9 +70,10 @@ export async function loadServiceBySlug(slug: string): Promise<CatalogService | 
 }
 
 export function serviceImage(service: CatalogService): string {
+  // Prefer the canonical per-slug map so stale CMS seeds cannot reintroduce shared posters.
   return (
-    service.image ||
     servicePosterMap[service.slug] ||
+    service.image ||
     '/media/posters/packages/shop_starter_web.jpg'
   )
 }

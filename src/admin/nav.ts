@@ -59,6 +59,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { to: '/admin/design', label: 'Design Studio', icon: 'Palette' },
       { to: '/admin/security', label: 'Security', icon: 'Shield' },
       { to: '/admin/integrations', label: 'Integrations', icon: 'Puzzle' },
+      { to: '/admin/payments', label: 'Payment methods', icon: 'CreditCard' },
       { to: '/admin/logs', label: 'System Logs', icon: 'ScrollText' },
       { to: '/admin/backup', label: 'Backup & Restore', icon: 'Database' },
     ],

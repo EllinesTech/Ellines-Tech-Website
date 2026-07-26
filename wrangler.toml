@@ -11,3 +11,8 @@ id = "02eb0fb499854c3aa4cbed95c63486d9"
 # Workers AI is bound in the Cloudflare Pages dashboard (name: AI), not here.
 # A toml [ai] binding forces remote auth and blocks local `wrangler pages dev`
 # without CLOUDFLARE_API_TOKEN. `/api/ai` already falls back when unbound.
+
+# Paystack secrets (set in Cloudflare Pages → Settings → Environment variables):
+#   PAYSTACK_SECRET_KEY        (required for live charges; never commit)
+#   PAYSTACK_WEBHOOK_SECRET    (optional; falls back to secret key)
+#   PAYSTACK_HUB_ORIGIN        (optional; default request origin, prod: https://ellines.co.ke)

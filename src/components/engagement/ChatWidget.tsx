@@ -11,8 +11,9 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { siteConfig } from '@/data/site'
-import { answerQuestion, loadFaqs } from '@/lib/engagementStore'
+import { answerQuestion, loadFaqs, saveFaqs } from '@/lib/engagementStore'
 import { useSiteFeatures } from '@/context/SiteFeaturesContext'
+import { useSiteProfile } from '@/context/SiteProfileContext'
 import {
   askAi,
   createLiveSession,
@@ -21,6 +22,7 @@ import {
   requestHumanAgent,
   type LiveSession,
 } from '@/lib/liveChatApi'
+import { fetchChatFaqs } from '@/lib/cmsApi'
 import { cn } from '@/lib/utils'
 
 type Mode = 'ai' | 'human' | 'whatsapp'
@@ -39,6 +41,7 @@ const SESSION_KEY = 'et_live_session_id'
 
 export function ChatWidget() {
   const { settings } = useSiteFeatures()
+  const { profile } = useSiteProfile()
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<Mode>('ai')
   const [input, setInput] = useState('')
@@ -52,11 +55,31 @@ export function ChatWidget() {
     },
   ])
   const endRef = useRef<HTMLDivElement>(null)
-  const waBase = `https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`
+  const waBase = `https://wa.me/${(profile.whatsapp || siteConfig.whatsapp).replace(/\D/g, '')}`
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, open, session?.messages.length])
+
+  // Hydrate chat knowledge from CMS (falls back to localStorage / defaults)
+  useEffect(() => {
+    let cancelled = false
+    void fetchChatFaqs()
+      .then((list) => {
+        if (cancelled || !Array.isArray(list) || !list.length) return
+        const mapped = list.map((f) => ({
+          id: f.id,
+          questions: f.questions,
+          answer: f.answer,
+          links: f.links,
+        }))
+        saveFaqs(mapped)
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   // Poll live session when in human mode
   useEffect(() => {

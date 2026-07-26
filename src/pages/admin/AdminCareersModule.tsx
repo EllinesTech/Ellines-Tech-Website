@@ -29,7 +29,7 @@ export function AdminCareersModule() {
     title: '',
     department: '',
     type: 'Full-time',
-    location: 'Nairobi',
+    location: 'Nyeri / Nairobi',
     description: '',
     status: 'published' as 'draft' | 'published',
   })
@@ -96,7 +96,7 @@ export function AdminCareersModule() {
         title: '',
         department: '',
         type: 'Full-time',
-        location: 'Nairobi',
+        location: 'Nyeri / Nairobi',
         description: '',
         status: 'published',
       })

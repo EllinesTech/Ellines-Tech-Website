@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { siteConfig } from '@/data/site'
+import { locationCities, locations, primaryLocation } from '@/data/locations'
 
 interface SEOProps {
   title?: string
@@ -63,8 +64,10 @@ export function SEO({
         : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
     )
     setMeta('author', siteConfig.name)
-    setMeta('geo.region', 'KE-30')
-    setMeta('geo.placename', 'Nairobi')
+    setMeta('geo.region', 'KE')
+    setMeta('geo.placename', locationCities.join('; '))
+    setMeta('geo.position', `${primaryLocation.coords.lat};${primaryLocation.coords.lng}`)
+    setMeta('ICBM', `${primaryLocation.coords.lat}, ${primaryLocation.coords.lng}`)
     setMeta('og:title', pageTitle, true)
     setMeta('og:description', pageDescription, true)
     setMeta('og:url', url, true)
@@ -101,11 +104,29 @@ export function SEO({
       image: `${siteConfig.url}/logos/logo-full-bg.png`,
       email: siteConfig.email,
       telephone: siteConfig.phone.replace(/\s+/g, ''),
-      address: {
+      address: locations.map((loc) => ({
         '@type': 'PostalAddress',
-        addressLocality: 'Nairobi',
-        addressCountry: 'KE',
-      },
+        ...(loc.street ? { streetAddress: loc.street } : {}),
+        addressLocality: loc.city,
+        addressRegion: loc.region,
+        addressCountry: loc.countryCode,
+      })),
+      location: locations.map((loc) => ({
+        '@type': 'Place',
+        name: `${siteConfig.name} — ${loc.city}`,
+        address: {
+          '@type': 'PostalAddress',
+          ...(loc.street ? { streetAddress: loc.street } : {}),
+          addressLocality: loc.city,
+          addressRegion: loc.region,
+          addressCountry: loc.countryCode,
+        },
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: loc.coords.lat,
+          longitude: loc.coords.lng,
+        },
+      })),
       areaServed: ['KE', 'Africa'],
       parentOrganization: {
         '@type': 'Organization',
@@ -123,48 +144,57 @@ export function SEO({
 
     setJsonLd('ld-local', {
       '@context': 'https://schema.org',
-      '@type': 'LocalBusiness',
-      '@id': `${siteConfig.url}/#localbusiness`,
-      name: siteConfig.name,
-      url: siteConfig.url,
-      image: `${siteConfig.url}/logos/logo-full-bg.png`,
-      email: siteConfig.email,
-      telephone: siteConfig.phone.replace(/\s+/g, ''),
-      priceRange: '$$',
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: 'Nairobi',
-        addressCountry: 'KE',
-        streetAddress: siteConfig.address,
-      },
-      openingHoursSpecification: {
-        '@type': 'OpeningHoursSpecification',
-        dayOfWeek: [
-          'Monday',
-          'Tuesday',
-          'Wednesday',
-          'Thursday',
-          'Friday',
-          'Saturday',
-          'Sunday',
+      '@graph': locations.map((loc) => ({
+        '@type': 'LocalBusiness',
+        '@id': `${siteConfig.url}/#localbusiness-${loc.id}`,
+        name: `${siteConfig.name} — ${loc.city}`,
+        branchOf: { '@id': `${siteConfig.url}/#organization` },
+        url: siteConfig.url,
+        image: `${siteConfig.url}/logos/logo-full-bg.png`,
+        email: siteConfig.email,
+        telephone: siteConfig.phone.replace(/\s+/g, ''),
+        priceRange: '$$',
+        address: {
+          '@type': 'PostalAddress',
+          ...(loc.street ? { streetAddress: loc.street } : {}),
+          addressLocality: loc.city,
+          addressRegion: loc.region,
+          addressCountry: loc.countryCode,
+        },
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: loc.coords.lat,
+          longitude: loc.coords.lng,
+        },
+        openingHoursSpecification: {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: [
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday',
+            'Sunday',
+          ],
+          opens: '00:00',
+          closes: '23:59',
+        },
+        areaServed: {
+          '@type': 'Country',
+          name: 'Kenya',
+        },
+        knowsAbout: [
+          'Software development',
+          'Web design',
+          'IT consulting',
+          'Artificial intelligence',
+          'Digital marketing',
+          'Cyber security',
+          'Resume and CV services',
         ],
-        opens: '00:00',
-        closes: '23:59',
-      },
-      areaServed: {
-        '@type': 'Country',
-        name: 'Kenya',
-      },
-      knowsAbout: [
-        'Software development',
-        'Web design',
-        'IT consulting',
-        'Artificial intelligence',
-        'Digital marketing',
-        'Cyber security',
-        'Resume and CV services',
-      ],
-      parentOrganization: { '@id': `${siteConfig.url}/#organization` },
+        parentOrganization: { '@id': `${siteConfig.url}/#organization` },
+      })),
     })
 
     setJsonLd('ld-website', {

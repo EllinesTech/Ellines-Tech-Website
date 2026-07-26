@@ -133,7 +133,11 @@ export function AdminSettingsPage() {
       <div className="rounded-2xl border border-white/10 bg-surface-elevated/40 p-6">
         <h2 className="font-display text-lg font-semibold text-white">Verified social handles</h2>
         <p className="mt-2 text-sm text-slate-400">
-          Live profiles confirmed online for Ellines Tech.
+          Live profiles from Email Config / Social Media. Edit them in{' '}
+          <a href="/admin/social" className="text-brand-300">
+            Social Media
+          </a>
+          .
         </p>
         <SocialLinks className="mt-5" showLabels />
       </div>

@@ -139,7 +139,7 @@ function defaultSiteProfile() {
     email: 'info@tech.ellines.co.ke',
     phone: '+254 728 807 213',
     whatsapp: '+254748255466',
-    address: 'Nairobi, Kenya',
+    address: 'Nyeri & Nairobi, Kenya',
     socialLinks: [
       {
         id: 'facebook',
@@ -168,6 +168,53 @@ function defaultSiteProfile() {
 async function loadSiteProfile(env) {
   const stored = await getJson(env, 'cms:site-profile', null)
   return { ...defaultSiteProfile(), ...(stored && typeof stored === 'object' ? stored : {}) }
+}
+
+/** Payment methods — Paystack live defaults for Ellines Group (secret via env or admin). */
+function defaultPaymentMethods() {
+  return {
+    currency: 'KES',
+    merchantEmail: 'ellines.group@gmail.com',
+    mode: 'live',
+    mpesa: {
+      enabled: false,
+      paybill: '',
+      accountName: '',
+      tillNumber: '',
+      consumerKey: '',
+      consumerSecret: '',
+      passkey: '',
+      shortcode: '',
+    },
+    paypal: {
+      enabled: false,
+      clientId: '',
+      clientSecret: '',
+      merchantEmail: 'ellines.group@gmail.com',
+    },
+    paystack: {
+      enabled: true,
+      publicKey: 'pk_live_081be2d1bdd05a16be4cc91b1267553a6444b463',
+      secretKey: '',
+      webhookSecret: '',
+      merchantEmail: 'ellines.group@gmail.com',
+    },
+    notes: '',
+    updatedAt: '',
+  }
+}
+
+async function loadPaymentMethods(env) {
+  const stored = await getJson(env, 'cms:payments', null)
+  const base = defaultPaymentMethods()
+  if (!stored || typeof stored !== 'object') return base
+  return {
+    ...base,
+    ...stored,
+    mpesa: { ...base.mpesa, ...(stored.mpesa || {}) },
+    paypal: { ...base.paypal, ...(stored.paypal || {}) },
+    paystack: { ...base.paystack, ...(stored.paystack || {}) },
+  }
 }
 
 function defaultChatFaqs() {
@@ -593,6 +640,58 @@ export async function onRequestGet(context) {
     return json({ media: await loadMediaExtras(env) })
   }
 
+  if (resource === 'products') {
+    const list = await loadProductsCatalog(env)
+    if (slug) {
+      const product = list.find((p) => p.slug === slug)
+      if (!product) return json({ error: 'not found' }, 404)
+      if (product.status !== 'published' && !(await staffOrGod(request, env))) {
+        return json({ error: 'not found' }, 404)
+      }
+      return json({ product })
+    }
+    const publishedOnly = url.searchParams.get('published') === '1'
+    if (!publishedOnly && !(await staffOrGod(request, env))) {
+      return json({ error: 'unauthorized' }, 401)
+    }
+    return json({
+      products: publishedOnly ? list.filter((p) => p.status === 'published') : list,
+    })
+  }
+
+  if (resource === 'portfolio') {
+    const list = await loadPortfolioCatalog(env)
+    const publishedOnly = url.searchParams.get('published') === '1'
+    if (!publishedOnly && !(await staffOrGod(request, env))) {
+      return json({ error: 'unauthorized' }, 401)
+    }
+    return json({
+      projects: publishedOnly ? list.filter((p) => p.status !== 'draft') : list,
+    })
+  }
+
+  if (resource === 'site-profile') {
+    return json({ profile: await loadSiteProfile(env) })
+  }
+
+  if (resource === 'payments') {
+    // Full payment config is God Mode only (keys / till numbers). Public gets enabled flags later.
+    if (!isGodMode(request, env)) return json({ error: 'unauthorized' }, 401)
+    return json({ payments: await loadPaymentMethods(env) })
+  }
+
+  if (resource === 'chat-faqs') {
+    return json({ faqs: await loadChatFaqs(env) })
+  }
+
+  if (resource === 'presence') {
+    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
+    const presence = await getJson(env, 'cms:presence', [])
+    const cutoff = Date.now() - 5 * 60 * 1000
+    const online = presence.filter((p) => new Date(p.at).getTime() >= cutoff)
+    return json({ online, count: online.length })
+  }
+
   if (resource === 'knowledge') {
     const articles = await loadKnowledgeArticles(env)
     if (slug) {
@@ -627,11 +726,23 @@ export async function onRequestGet(context) {
     if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
     const visitors = await getJson(env, 'cms:visitors', { total: 0, today: 0, pages: {} })
     const sessions = await getJson(env, 'chat:index', [])
+    const presence = await getJson(env, 'cms:presence', [])
+    const cutoff = Date.now() - 5 * 60 * 1000
+    const onlineNow = presence.filter((p) => new Date(p.at).getTime() >= cutoff).length
+    const leads = await getJson(env, 'cms:leads', [])
+    const shop = await getJson(env, 'cms:shop-products', [])
+    const services = await loadServicesCatalog(env)
+    const products = await loadProductsCatalog(env)
     return json({
       analytics: {
         visitors,
-        liveChats: sessions.length,
+        liveChats: sessions.filter((s) => s.status === 'live').length,
         waitingChats: sessions.filter((s) => s.status === 'waiting').length,
+        onlineNow,
+        leadsTotal: leads.length,
+        shopPublished: (shop || []).filter((p) => p.status === 'published').length,
+        servicesPublished: services.filter((s) => s.status === 'published').length,
+        productsPublished: products.filter((p) => p.status === 'published').length,
       },
     })
   }
@@ -921,7 +1032,7 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
   }
 
   if (action === 'track_visit') {
-    const visitors = await getJson(env, 'cms:visitors', { total: 0, today: 0, day: '', pages: {} })
+    const visitors = await getJson(env, 'cms:visitors', { total: 0, today: 0, pages: {} })
     const day = new Date().toISOString().slice(0, 10)
     if (visitors.day !== day) {
       visitors.day = day
@@ -932,7 +1043,19 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     const path = body.path || '/'
     visitors.pages[path] = (visitors.pages[path] || 0) + 1
     await putJson(env, 'cms:visitors', visitors)
-    return json({ ok: true })
+
+    // Lightweight presence for Online Users (5-minute window)
+    const sid = String(body.sessionId || body.visitorId || '').slice(0, 64) || id('vis')
+    const presence = await getJson(env, 'cms:presence', [])
+    const nowIso = new Date().toISOString()
+    const next = presence.filter((p) => new Date(p.at).getTime() >= Date.now() - 10 * 60 * 1000)
+    const idx = next.findIndex((p) => p.sessionId === sid)
+    const entry = { sessionId: sid, path, at: nowIso }
+    if (idx >= 0) next[idx] = entry
+    else next.unshift(entry)
+    await putJson(env, 'cms:presence', next.slice(0, 200))
+
+    return json({ ok: true, sessionId: sid })
   }
 
   if (action === 'register') {
@@ -1169,6 +1292,67 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     return json({ ok: true, settings: next })
   }
 
+  if (action === 'save_payments') {
+    if (!godOnly) return json({ error: 'Not authorized' }, 403)
+    const incoming = body.payments || {}
+    const base = defaultPaymentMethods()
+    const existing = await loadPaymentMethods(env)
+    const nextSecret =
+      incoming.paystack?.secretKey != null && String(incoming.paystack.secretKey).trim()
+        ? String(incoming.paystack.secretKey).trim()
+        : String(existing.paystack?.secretKey || '')
+    const nextWebhook =
+      incoming.paystack?.webhookSecret != null && String(incoming.paystack.webhookSecret).trim()
+        ? String(incoming.paystack.webhookSecret).trim()
+        : String(existing.paystack?.webhookSecret || '')
+    const next = {
+      ...base,
+      currency: String(incoming.currency || base.currency).slice(0, 8),
+      merchantEmail: String(incoming.merchantEmail || base.merchantEmail).trim().slice(0, 120),
+      mode: incoming.mode === 'live' ? 'live' : 'sandbox',
+      mpesa: {
+        ...base.mpesa,
+        ...(incoming.mpesa || {}),
+        enabled: Boolean(incoming.mpesa?.enabled),
+        paybill: String(incoming.mpesa?.paybill || '').trim().slice(0, 40),
+        accountName: String(incoming.mpesa?.accountName || '').trim().slice(0, 80),
+        tillNumber: String(incoming.mpesa?.tillNumber || '').trim().slice(0, 40),
+        consumerKey: String(incoming.mpesa?.consumerKey || '').trim().slice(0, 200),
+        consumerSecret: String(incoming.mpesa?.consumerSecret || '').trim().slice(0, 200),
+        passkey: String(incoming.mpesa?.passkey || '').trim().slice(0, 200),
+        shortcode: String(incoming.mpesa?.shortcode || '').trim().slice(0, 40),
+      },
+      paypal: {
+        ...base.paypal,
+        ...(incoming.paypal || {}),
+        enabled: Boolean(incoming.paypal?.enabled),
+        clientId: String(incoming.paypal?.clientId || '').trim().slice(0, 200),
+        clientSecret: String(incoming.paypal?.clientSecret || '').trim().slice(0, 200),
+        merchantEmail: String(incoming.paypal?.merchantEmail || base.paypal.merchantEmail)
+          .trim()
+          .slice(0, 120),
+      },
+      paystack: {
+        ...base.paystack,
+        ...(incoming.paystack || {}),
+        enabled: Boolean(incoming.paystack?.enabled),
+        publicKey: String(incoming.paystack?.publicKey || base.paystack.publicKey || '')
+          .trim()
+          .slice(0, 200),
+        secretKey: nextSecret.slice(0, 200),
+        webhookSecret: nextWebhook.slice(0, 200),
+        merchantEmail: String(incoming.paystack?.merchantEmail || base.paystack.merchantEmail)
+          .trim()
+          .slice(0, 120),
+      },
+      notes: String(incoming.notes || '').slice(0, 1000),
+      updatedAt: new Date().toISOString(),
+    }
+    await putJson(env, 'cms:payments', next)
+    await logActivity(env, { type: 'payments', message: 'Updated payment method settings' })
+    return json({ ok: true, payments: next })
+  }
+
   if (action === 'save_job') {
     const item = body.job || body.item
     if (!item?.title) return json({ error: 'title required' }, 400)
@@ -1304,6 +1488,128 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     return json({ ok: true, services: normalized })
   }
 
+  if (action === 'save_products') {
+    const incoming = Array.isArray(body.products) ? body.products : null
+    if (!incoming) return json({ error: 'products array required' }, 400)
+    const normalized = incoming
+      .map((p) => {
+        const slug = String(p.slug || '')
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '')
+        return {
+          id: p.id || id('prod'),
+          slug,
+          name: String(p.name || 'Untitled product').trim(),
+          category: String(p.category || 'digital'),
+          tagline: String(p.tagline || ''),
+          description: String(p.description || ''),
+          features: Array.isArray(p.features)
+            ? p.features.map((f) => String(f).trim()).filter(Boolean)
+            : String(p.featuresText || '')
+                .split('\n')
+                .map((f) => f.trim())
+                .filter(Boolean),
+          highlights: Array.isArray(p.highlights)
+            ? p.highlights.map((h) => String(h).trim()).filter(Boolean)
+            : [],
+          image: String(p.image || ''),
+          imageFit: p.imageFit === 'contain' ? 'contain' : 'cover',
+          status: p.status === 'draft' ? 'draft' : 'published',
+        }
+      })
+      .filter((p) => p.slug && p.name)
+    await putJson(env, 'cms:products', normalized)
+    await logActivity(env, { type: 'products', message: `Updated products catalogue (${normalized.length})` })
+    return json({ ok: true, products: normalized })
+  }
+
+  if (action === 'save_portfolio') {
+    const incoming = Array.isArray(body.projects) ? body.projects : null
+    if (!incoming) return json({ error: 'projects array required' }, 400)
+    const normalized = incoming
+      .map((p) => {
+        const slug = String(p.slug || '')
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '')
+        return {
+          id: p.id || id('pf'),
+          slug,
+          name: String(p.name || 'Untitled project').trim(),
+          category: String(p.category || 'web'),
+          client: String(p.client || ''),
+          description: String(p.description || ''),
+          technologies: Array.isArray(p.technologies)
+            ? p.technologies.map((t) => String(t).trim()).filter(Boolean)
+            : String(p.technologiesText || '')
+                .split(',')
+                .map((t) => t.trim())
+                .filter(Boolean),
+          results: Array.isArray(p.results)
+            ? p.results.map((r) => String(r).trim()).filter(Boolean)
+            : String(p.resultsText || '')
+                .split('\n')
+                .map((r) => r.trim())
+                .filter(Boolean),
+          logo: String(p.logo || ''),
+          image: String(p.image || ''),
+          status: p.status === 'draft' ? 'draft' : 'published',
+        }
+      })
+      .filter((p) => p.slug && p.name)
+    await putJson(env, 'cms:portfolio', normalized)
+    await logActivity(env, { type: 'portfolio', message: `Updated portfolio (${normalized.length})` })
+    return json({ ok: true, projects: normalized })
+  }
+
+  if (action === 'save_site_profile') {
+    if (!godOnly) return json({ error: 'Not authorized' }, 403)
+    const profile = { ...defaultSiteProfile(), ...(body.profile || {}) }
+    if (Array.isArray(body.profile?.socialLinks)) {
+      profile.socialLinks = body.profile.socialLinks
+        .map((s) => ({
+          id: String(s.id || id('social')).slice(0, 40),
+          label: String(s.label || '').trim(),
+          handle: String(s.handle || '').trim(),
+          href: String(s.href || '').trim(),
+        }))
+        .filter((s) => s.label && s.href)
+    }
+    profile.email = String(profile.email || '').trim()
+    profile.phone = String(profile.phone || '').trim()
+    profile.whatsapp = String(profile.whatsapp || '').replace(/\s/g, '')
+    profile.address = String(profile.address || '').trim()
+    await putJson(env, 'cms:site-profile', profile)
+    await logActivity(env, { type: 'profile', message: 'Updated site contact & social profile' })
+    return json({ ok: true, profile })
+  }
+
+  if (action === 'save_chat_faqs') {
+    const faqs = Array.isArray(body.faqs) ? body.faqs : null
+    if (!faqs) return json({ error: 'faqs array required' }, 400)
+    const normalized = faqs.map((f) => ({
+      id: String(f.id || id('faq')),
+      questions: Array.isArray(f.questions)
+        ? f.questions.map((q) => String(q).trim()).filter(Boolean)
+        : String(f.questionsText || '')
+            .split(',')
+            .map((q) => q.trim())
+            .filter(Boolean),
+      answer: String(f.answer || ''),
+      links: Array.isArray(f.links)
+        ? f.links
+            .map((l) => ({ label: String(l.label || ''), href: String(l.href || '') }))
+            .filter((l) => l.label && l.href)
+        : [],
+    }))
+    await putJson(env, 'cms:chat-faqs', normalized)
+    await logActivity(env, { type: 'chat', message: `Updated chat knowledge (${normalized.length} FAQs)` })
+    return json({ ok: true, faqs: normalized })
+  }
+
   if (action === 'save_media_item') {
     const list = await loadMediaExtras(env)
     const item = body.item || {}
@@ -1427,6 +1733,8 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
       siteCopy: await getJson(env, 'cms:site-copy', {}),
       shop: await getJson(env, 'cms:shop-products', []),
       services: await getJson(env, 'cms:services', []),
+      products: await getJson(env, 'cms:products', []),
+      portfolio: await getJson(env, 'cms:portfolio', []),
       mediaExtras: await getJson(env, 'cms:media-extras', []),
       knowledge: await getJson(env, 'cms:knowledge', []),
       downloads: await getJson(env, 'cms:downloads', []),
@@ -1435,6 +1743,9 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
       leads: await getJson(env, 'cms:leads', []),
       invoices: await getJson(env, 'cms:invoices', []),
       settings: await getJson(env, 'cms:settings', defaultSiteSettings()),
+      siteProfile: await getJson(env, 'cms:site-profile', defaultSiteProfile()),
+      payments: await loadPaymentMethods(env),
+      chatFaqs: await getJson(env, 'cms:chat-faqs', []),
       jobs: await getJson(env, 'cms:jobs', []),
       applications: await getJson(env, 'cms:applications', []),
     }
@@ -1450,6 +1761,8 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     if (backup.siteCopy) await putJson(env, 'cms:site-copy', backup.siteCopy)
     if (backup.shop) await putJson(env, 'cms:shop-products', backup.shop)
     if (backup.services) await putJson(env, 'cms:services', backup.services)
+    if (backup.products) await putJson(env, 'cms:products', backup.products)
+    if (backup.portfolio) await putJson(env, 'cms:portfolio', backup.portfolio)
     if (backup.mediaExtras) await putJson(env, 'cms:media-extras', backup.mediaExtras)
     if (backup.knowledge) await putJson(env, 'cms:knowledge', backup.knowledge)
     if (backup.downloads) await putJson(env, 'cms:downloads', backup.downloads)
@@ -1458,6 +1771,9 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     if (backup.leads) await putJson(env, 'cms:leads', backup.leads)
     if (backup.invoices) await putJson(env, 'cms:invoices', backup.invoices)
     if (backup.settings) await putJson(env, 'cms:settings', backup.settings)
+    if (backup.siteProfile) await putJson(env, 'cms:site-profile', backup.siteProfile)
+    if (backup.payments) await putJson(env, 'cms:payments', backup.payments)
+    if (backup.chatFaqs) await putJson(env, 'cms:chat-faqs', backup.chatFaqs)
     if (backup.jobs) await putJson(env, 'cms:jobs', backup.jobs)
     if (backup.applications) await putJson(env, 'cms:applications', backup.applications)
     await logActivity(env, { type: 'system', message: 'Restored latest backup' })
@@ -1502,6 +1818,9 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
       paymentMethod: input.paymentMethod || '',
       paymentRef: input.paymentRef || '',
       receiptNumber: input.receiptNumber || null,
+      amountPaid: Number((input.amountPaid ?? (existing >= 0 ? invoices[existing].amountPaid : 0)) || 0),
+      lastPaymentAt: input.lastPaymentAt || (existing >= 0 ? invoices[existing].lastPaymentAt : null) || null,
+      lastPaymentType: input.lastPaymentType || (existing >= 0 ? invoices[existing].lastPaymentType : '') || '',
     }
     if (existing >= 0) invoices[existing] = { ...invoices[existing], ...record }
     else invoices.unshift(record)
@@ -1526,6 +1845,7 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
       paidAt: new Date().toISOString(),
       paymentMethod: body.paymentMethod || invoices[idx].paymentMethod || 'M-Pesa / Bank',
       paymentRef: body.paymentRef || invoices[idx].paymentRef || '',
+      amountPaid: Number(invoices[idx].total || 0),
       receiptNumber,
       updatedAt: new Date().toISOString(),
     }

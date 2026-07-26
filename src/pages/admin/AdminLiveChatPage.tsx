@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import {
   claimLiveSession,
+  closeLiveSession,
   getLiveSession,
   listLiveSessions,
   postLiveMessage,
@@ -10,7 +11,7 @@ import {
 } from '@/lib/liveChatApi'
 import { cn } from '@/lib/utils'
 
-export function AdminLiveChatPage() {
+export function AdminLiveChatPage({ agentName = 'Admin' }: { agentName?: string }) {
   const [sessions, setSessions] = useState<LiveSessionSummary[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [session, setSession] = useState<LiveSession | null>(null)
@@ -68,13 +69,22 @@ export function AdminLiveChatPage() {
     refreshList()
   }
 
+  const waiting = sessions.filter((s) => s.status === 'waiting').length
+
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="font-display text-2xl font-bold text-white">Live Chat</h2>
-        <p className="mt-1 text-sm text-slate-400">
-          Talk to website visitors in real time when they choose “Talk to a human”.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="font-display text-2xl font-bold text-white">Live Chat</h2>
+          <p className="mt-1 text-sm text-slate-400">
+            Talk to website visitors in real time when they choose “Talk to a human”.
+          </p>
+        </div>
+        {waiting > 0 && (
+          <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-100">
+            {waiting} waiting
+          </p>
+        )}
       </div>
       {error && (
         <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
@@ -128,23 +138,43 @@ export function AdminLiveChatPage() {
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
                 <div>
                   <p className="font-semibold text-white">{session.visitorName}</p>
-                  <p className="text-xs text-slate-500">{session.status}</p>
+                  <p className="text-xs text-slate-500">
+                    {session.status}
+                    {session.adminName ? ` · ${session.adminName}` : ''}
+                  </p>
                 </div>
-                {session.status !== 'live' && session.status !== 'closed' && (
-                  <Button
-                    type="button"
-                    onClick={async () => {
-                      const s = await claimLiveSession(session.id, 'Admin')
-                      setSession(s)
-                      refreshList()
-                    }}
-                  >
-                    Claim & join
-                  </Button>
-                )}
+                <div className="flex flex-wrap gap-2">
+                  {session.status !== 'live' && session.status !== 'closed' && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={async () => {
+                        const s = await claimLiveSession(session.id, agentName)
+                        setSession(s)
+                        refreshList()
+                      }}
+                    >
+                      Claim & join
+                    </Button>
+                  )}
+                  {session.status !== 'closed' && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={async () => {
+                        const s = await closeLiveSession(session.id)
+                        setSession(s)
+                        refreshList()
+                      }}
+                    >
+                      Close
+                    </Button>
+                  )}
+                </div>
               </div>
               <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
                 {session.messages.map((m) => (
@@ -182,9 +212,12 @@ export function AdminLiveChatPage() {
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   placeholder="Message visitor…"
-                  className="h-11 flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none focus:border-brand-400/40"
+                  disabled={session.status === 'closed'}
+                  className="h-11 flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none focus:border-brand-400/40 disabled:opacity-50"
                 />
-                <Button type="submit">Send</Button>
+                <Button type="submit" disabled={session.status === 'closed'}>
+                  Send
+                </Button>
               </form>
             </>
           )}

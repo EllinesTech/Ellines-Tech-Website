@@ -64,7 +64,7 @@ export function defaultServices() {
       "Interaction design",
       "Design handoff"
     ],
-    "image": "/media/posters/packages/shop_uiux.jpg",
+    "image": "/media/posters/packages/shop_mobile_app.jpg",
     "startingPrice": null,
     "pricingGroupId": "",
     "status": "published"
@@ -200,7 +200,7 @@ export function defaultServices() {
       "Campaign strategy",
       "Growth roadmaps"
     ],
-    "image": "/media/posters/packages/shop_digital_marketing.jpg",
+    "image": "/media/posters/packages/shop_digital_marketing_growth.jpg",
     "startingPrice": null,
     "pricingGroupId": "",
     "status": "published"

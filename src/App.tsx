@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { SiteFeaturesProvider } from '@/context/SiteFeaturesContext'
+import { SiteProfileProvider } from '@/context/SiteProfileContext'
 import { FeatureGate } from '@/components/FeatureGate'
 import { HomePage } from '@/pages/HomePage'
 import { AboutPage } from '@/pages/AboutPage'
@@ -24,6 +25,7 @@ import { ShopPage as PricingPage } from '@/pages/ShopPage'
 import { AccountPage } from '@/pages/AccountPage'
 import { RequestServicePage } from '@/pages/RequestServicePage'
 import { InvoicePublicPage } from '@/pages/InvoicePublicPage'
+import { PayResultPage } from '@/pages/PayResultPage'
 import { AdminLoginPage, AdminLayout } from '@/pages/admin/AdminShell'
 import { AdminOverviewPage } from '@/pages/admin/AdminOverviewPage'
 import { AdminLiveChatPage } from '@/pages/admin/AdminLiveChatPage'
@@ -39,6 +41,8 @@ import {
   StaffPricingPage,
   StaffMaterialsPage,
   StaffProfilePage,
+  StaffNotificationsPage,
+  StaffLiveChatPage,
 } from '@/pages/staff/StaffShell'
 
 function Module({ name }: { name: string }) {
@@ -72,6 +76,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <SiteFeaturesProvider>
+        <SiteProfileProvider>
         <Routes>
           <Route path="admin/login" element={<AdminLoginPage />} />
           <Route path="admin" element={<AdminLayout />}>
@@ -110,6 +115,7 @@ export default function App() {
             <Route path="design" element={<Module name="design" />} />
             <Route path="security" element={<Module name="security" />} />
             <Route path="integrations" element={<Module name="integrations" />} />
+            <Route path="payments" element={<Module name="payments" />} />
             <Route path="logs" element={<Module name="logs" />} />
             <Route path="backup" element={<Module name="backup" />} />
             <Route path="god-mode" element={<Module name="god-mode" />} />
@@ -125,6 +131,8 @@ export default function App() {
             <Route path="pricing" element={<StaffPricingPage />} />
             <Route path="materials" element={<StaffMaterialsPage />} />
             <Route path="careers" element={<AdminCareersModule />} />
+            <Route path="live-chat" element={<StaffLiveChatPage />} />
+            <Route path="notifications" element={<StaffNotificationsPage />} />
             <Route path="profile" element={<StaffProfilePage />} />
           </Route>
 
@@ -174,6 +182,7 @@ export default function App() {
             <Route path="account" element={<AccountPage />} />
             <Route path="p/:slug" element={<CmsPageView />} />
             <Route path="invoice/:id" element={<InvoicePublicPage />} />
+            <Route path="pay/result" element={<PayResultPage />} />
             <Route path="solutions" element={<SolutionsPage />} />
             <Route path="industries" element={<IndustriesPage />} />
             <Route path="portfolio" element={<PortfolioPage />} />
@@ -223,6 +232,7 @@ export default function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
+        </SiteProfileProvider>
       </SiteFeaturesProvider>
     </BrowserRouter>
   )

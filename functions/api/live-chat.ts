@@ -1,8 +1,10 @@
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key, X-User-Token',
 }
+
+const STAFF_ROLES = new Set(['staff', 'admin', 'super_admin'])
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -19,6 +21,29 @@ function adminOk(request, env) {
   const key = (request.headers.get('X-Admin-Key') || '').trim()
   const expected = String(env.ADMIN_API_KEY ?? '').trim() || 'EllinesGodMode2026'
   return key === expected
+}
+
+async function getJson(env, key, fallback) {
+  const raw = await env.ET_STORE.get(key)
+  if (!raw) return fallback
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return fallback
+  }
+}
+
+/** God Mode key OR staff/admin CMS user token */
+async function agentOk(request, env) {
+  if (adminOk(request, env)) return { kind: 'god', name: 'Admin' }
+  const token = (request.headers.get('X-User-Token') || '').trim()
+  if (!token) return null
+  const session = await getJson(env, `cms:session:${token}`, null)
+  if (!session?.userId) return null
+  const users = await getJson(env, 'cms:users', [])
+  const user = users.find((u) => u.id === session.userId)
+  if (!user || user.active === false || !STAFF_ROLES.has(user.role)) return null
+  return { kind: 'staff', name: user.name || 'Staff', user }
 }
 
 async function listSessions(env) {
@@ -75,7 +100,7 @@ export async function onRequestGet(context) {
   const admin = url.searchParams.get('admin') === '1'
 
   if (admin && !sessionId) {
-    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    if (!(await agentOk(request, env))) return json({ error: 'unauthorized' }, 401)
     const sessions = await listSessions(env)
     return json({ sessions })
   }
@@ -84,7 +109,7 @@ export async function onRequestGet(context) {
   const session = await getSession(env, sessionId)
   if (!session) return json({ error: 'not found' }, 404)
   if (admin) {
-    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    if (!(await agentOk(request, env))) return json({ error: 'unauthorized' }, 401)
     session.unreadAdmin = 0
     await putSession(env, session)
   }
@@ -123,7 +148,7 @@ export async function onRequestPost(context) {
     if (!session) return json({ error: 'not found' }, 404)
     let role = body.role || 'visitor'
     if (role === 'admin') {
-      if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+      if (!(await agentOk(request, env))) return json({ error: 'unauthorized' }, 401)
     } else if (role !== 'visitor' && role !== 'assistant' && role !== 'ai') {
       role = 'visitor'
     }
@@ -155,7 +180,7 @@ export async function onRequestPost(context) {
     session.messages.push({
       id: id(),
       role: 'system',
-      text: 'Visitor requested a human agent. An Ellines Tech admin will join shortly.',
+      text: 'Visitor requested a human agent. An Ellines Tech team member will join shortly.',
       at: session.updatedAt,
     })
     session.unreadAdmin = (session.unreadAdmin || 0) + 1
@@ -164,11 +189,12 @@ export async function onRequestPost(context) {
   }
 
   if (action === 'claim') {
-    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    const agent = await agentOk(request, env)
+    if (!agent) return json({ error: 'unauthorized' }, 401)
     const session = await getSession(env, body.sessionId)
     if (!session) return json({ error: 'not found' }, 404)
     session.status = 'live'
-    session.adminName = body.adminName || 'Admin'
+    session.adminName = body.adminName || agent.name || 'Admin'
     session.updatedAt = new Date().toISOString()
     session.messages.push({
       id: id(),
@@ -181,7 +207,7 @@ export async function onRequestPost(context) {
   }
 
   if (action === 'close') {
-    if (!adminOk(request, env)) return json({ error: 'unauthorized' }, 401)
+    if (!(await agentOk(request, env))) return json({ error: 'unauthorized' }, 401)
     const session = await getSession(env, body.sessionId)
     if (!session) return json({ error: 'not found' }, 404)
     session.status = 'closed'

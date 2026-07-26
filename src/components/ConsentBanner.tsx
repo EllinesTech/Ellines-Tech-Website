@@ -39,7 +39,8 @@ export function ConsentBanner() {
           Cookies & personal data
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-300">
-          Ellines Tech (Nairobi, Kenya) uses necessary cookies to run this site. With your consent we
+          Ellines Tech (Nyeri &amp; Nairobi, Kenya) uses necessary cookies to run this site. With
+          your consent we
           also use analytics and functional storage (including chat continuity) under the{' '}
           <strong className="font-medium text-slate-100">Kenya Data Protection Act, 2019</strong>.
           Read our{' '}

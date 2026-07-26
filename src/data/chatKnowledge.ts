@@ -73,9 +73,9 @@ export const defaultChatFaqs: ChatFaq[] = [
   },
   {
     id: 'location',
-    questions: ['where', 'location', 'address', 'nairobi', 'kenya', 'office'],
+    questions: ['where', 'location', 'address', 'nyeri', 'nairobi', 'kenya', 'office', 'offices'],
     answer:
-      'Ellines Tech is based in Nairobi, Kenya, and serves clients across Africa and globally.',
+      'We have two locations in Kenya — our head office at Square2 Street, Skt, Nyeri, and a Nairobi presence for client meetings and on-site work. We serve clients across Africa and globally.',
     links: [{ label: 'Contact', href: '/contact' }],
   },
   {

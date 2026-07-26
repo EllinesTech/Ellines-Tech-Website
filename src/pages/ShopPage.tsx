@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { SEO } from '@/components/SEO'
-import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Button } from '@/components/ui/Button'
 import { fetchShop } from '@/lib/cmsApi'
 import { loadAuthUser } from '@/lib/auth'
@@ -14,6 +14,7 @@ import {
   type PricingServiceGroup,
 } from '@/data/pricingPackages'
 import { packagePosterMap, posterForPackage } from '@/data/posterMap'
+import { isInstantCheckoutPackage } from '@/lib/checkoutPackages'
 import { cn } from '@/lib/utils'
 
 function normalizePackages(list: PricingPackage[]): PricingPackage[] {
@@ -174,9 +175,18 @@ function ServicePricingCard({
             )}
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
+            {selected && isInstantCheckoutPackage(selected) ? (
+              <Button
+                href={`/request?intent=buy&package=${encodeURIComponent(selected.id)}&pay=1`}
+                size="sm"
+              >
+                Pay now
+              </Button>
+            ) : null}
             <Button
               href={`/request?intent=buy&package=${encodeURIComponent(selected?.id || '')}`}
               size="sm"
+              variant={selected && isInstantCheckoutPackage(selected) ? 'secondary' : 'primary'}
             >
               Buy / request
             </Button>
@@ -240,39 +250,60 @@ export function PricingPage() {
         description="Transparent Ellines Tech pricing in Kenya — web design, software, IT consulting, design, tax returns, and career document packages with clear options and budgets."
         path={seoPath}
       />
+      <section className="relative overflow-hidden border-b border-white/5">
+        <div className="pointer-events-none absolute inset-0 mesh-bg opacity-60" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-400/40 to-transparent" />
+        <div className="pointer-events-none absolute -left-32 top-0 h-80 w-80 rounded-full bg-brand-500/12 blur-[100px] " />
+        <div className="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-sky-600/10 blur-[110px]" />
+        <div className="section-container relative py-20 sm:py-24">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-3xl"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-300">
+              Product pricing
+            </p>
+            <h1 className="mt-5 font-display text-[2.5rem] font-extrabold leading-[1.03] tracking-[-0.035em] text-white sm:text-5xl lg:text-[3.5rem]">
+              Services with
+              <span className="mt-1 block text-gradient">options that fit</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300/95">
+              Every card holds multiple tiers — pick by experience band, scope, or pocket. We
+              confirm your selection, then share payment details.
+            </p>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <Button href="/request?intent=buy" size="lg" icon>
+                Buy a package
+              </Button>
+              <Button href="/request?intent=quote" variant="secondary" size="lg">
+                Custom quote
+              </Button>
+            </div>
+            {!user && (
+              <p className="mt-8 text-sm text-slate-400">
+                <Link to="/account" className="font-semibold text-brand-300">
+                  Create a client account
+                </Link>{' '}
+                to track packages, requests, and invoices.
+              </p>
+            )}
+          </motion.div>
+        </div>
+      </section>
+
       <section className="section-padding">
         <div className="section-container">
-          <SectionHeader
-            eyebrow="Product pricing"
-            title="Services with options that fit"
-            description="Each card holds multiple tiers — pick by experience band, scope, or pocket. We confirm the selected option, then share payment details."
-            align="center"
-            className="mb-8"
-          />
-          <div className="mb-10 flex flex-wrap justify-center gap-3">
-            <Button href="/request?intent=buy" icon>
-              Buy a package
-            </Button>
-            <Button href="/request?intent=quote" variant="secondary">
-              Custom quote
-            </Button>
-            <Button href="/account" variant="ghost">
-              Client login
-            </Button>
-          </div>
-          {error && <p className="mb-6 text-center text-sm text-amber-200">{error}</p>}
-          {!user && (
-            <p className="mb-8 text-center text-sm text-slate-400">
-              <Link to="/account" className="font-semibold text-brand-300">
-                Create a client account
-              </Link>{' '}
-              to track packages, requests, and invoices.
+          {error && (
+            <p className="mb-8 rounded-xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+              {error}
             </p>
           )}
 
           {categories.length > 0 && (
             <nav
-              className="mb-10 flex flex-wrap justify-center gap-x-1 gap-y-1 border-b border-white/10"
+              className="mb-10 flex flex-wrap gap-x-1 gap-y-1 border-b border-white/10"
               aria-label="Filter by category"
             >
               {['All', ...categories].map((cat) => {

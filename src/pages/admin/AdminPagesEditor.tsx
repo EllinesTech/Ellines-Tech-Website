@@ -68,7 +68,8 @@ export function AdminPagesEditor() {
         <div>
           <h2 className="font-display text-2xl font-bold text-white">Page Editor</h2>
           <p className="mt-1 text-sm text-slate-400">
-            Create pages, publish them to the site, and edit core Home/About copy.
+            Create custom pages at /p/:slug, publish them live, and edit core Home / About / Contact /
+            Solutions copy.
           </p>
         </div>
         <div className="flex gap-2">
@@ -84,7 +85,7 @@ export function AdminPagesEditor() {
             onClick={() => setTab('core')}
             className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${tab === 'core' ? 'bg-brand-500/20 text-brand-200' : 'text-slate-400'}`}
           >
-            Home & About copy
+            Home, About, Contact & Solutions
           </button>
         </div>
       </div>
@@ -215,12 +216,16 @@ export function AdminPagesEditor() {
           <p className="text-sm text-slate-400">
             These fields override Home and About messaging when set.
           </p>
-          {(['home', 'about'] as const).map((section) => {
+          {(['home', 'about', 'contact', 'solutions'] as const).map((section) => {
             const block = (siteCopy[section] as Record<string, string>) || {}
             const fields =
               section === 'home'
-                ? ['heroHeadline', 'heroSub', 'storyTitle', 'storyBody']
-                : ['title', 'lead']
+                ? ['heroHeadline', 'heroSub', 'storyTitle', 'storyBody', 'groupTitle', 'groupBody']
+                : section === 'about'
+                  ? ['title', 'lead', 'groupTitle', 'groupBody']
+                  : section === 'contact'
+                    ? ['title', 'lead', 'formNote']
+                    : ['title', 'lead']
             return (
               <div key={section} className="rounded-xl border border-white/10 p-4">
                 <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-brand-300">

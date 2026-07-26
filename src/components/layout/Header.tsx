@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, ChevronDown } from 'lucide-react'
+import { Menu, X, ChevronDown, ArrowRight } from 'lucide-react'
 import {
   primaryNavigation,
   moreNavigation,
@@ -57,7 +57,7 @@ function MegaMenuPanel({
           onClick={onClose}
         >
           View all services
-          <span aria-hidden="true">→</span>
+          <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>
       </div>
     </div>
@@ -204,10 +204,11 @@ function MobileNavItem({
           ))}
           <Link
             to={item.href}
-            className="block rounded-lg px-2 py-1.5 text-sm font-medium text-brand-300 hover:text-brand-200"
+            className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-brand-300 hover:text-brand-200"
             onClick={onNavigate}
           >
-            View all services →
+            View all services
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </Link>
         </div>
       )}

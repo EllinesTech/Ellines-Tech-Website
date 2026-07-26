@@ -1,12 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { adminNavGroups } from '@/admin/nav'
-import { products } from '@/data/products'
-import { portfolioProjects } from '@/data/portfolio'
-import { clientBrands } from '@/data/clients'
-import { siteConfig } from '@/data/site'
 import { testimonials as defaultTestimonials } from '@/data/content'
-import { SocialLinks } from '@/components/engagement/SocialLinks'
 import { Button } from '@/components/ui/Button'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import { MediaPicker } from '@/components/admin/MediaPicker'
@@ -19,13 +14,22 @@ import { AdminCareersModule } from '@/pages/admin/AdminCareersModule'
 import { AdminInvoicesModule } from '@/pages/admin/AdminInvoicesModule'
 import { AdminReportsModule } from '@/pages/admin/AdminReportsModule'
 import { AdminServicesModule } from '@/pages/admin/AdminServicesModule'
+import { AdminPaymentsModule } from '@/pages/admin/AdminPaymentsModule'
+import {
+  OnlineUsersModule,
+  PortfolioEditor,
+  ProductsEditor,
+  SiteProfileEditor,
+} from '@/pages/admin/AdminCatalogEditors'
 import {
   backupCms,
   createAdminUser,
   fetchActivity,
   fetchAnalytics,
+  fetchInvoices,
   fetchLeads,
   fetchNewsletter,
+  createNotification,
   fetchNotifications,
   fetchReviews,
   deleteMediaItem,
@@ -44,6 +48,13 @@ import {
   type CmsMediaItem,
   type CmsUser,
 } from '@/lib/cmsApi'
+import {
+  loadClientBrands,
+  saveClientBrands,
+  staticClientBrands,
+  type CatalogClientBrand,
+} from '@/lib/clientBrandsCatalog'
+import { listLiveSessions } from '@/lib/liveChatApi'
 import { starterPricingPackages } from '@/data/pricingPackages'
 import { getSiteMediaLibrary, type SiteMediaItem } from '@/data/siteMediaLibrary'
 import { leadStatusOptions } from '@/data/downloads'
@@ -808,18 +819,26 @@ function AnalyticsModule({ title = 'Analytics' }: { title?: string }) {
     visitors?: { total: number; today: number; pages?: Record<string, number> }
     liveChats?: number
     waitingChats?: number
+    onlineNow?: number
+    leadsTotal?: number
   } | null>(null)
   const [error, setError] = useState('')
+
   useEffect(() => {
-    fetchAnalytics()
-      .then(setData)
-      .catch((e) => setError(e instanceof Error ? e.message : 'Failed'))
+    function load() {
+      fetchAnalytics()
+        .then(setData)
+        .catch((e) => setError(e instanceof Error ? e.message : 'Failed'))
+    }
+    load()
+    const t = setInterval(load, 15000)
+    return () => clearInterval(t)
   }, [])
   const pages = Object.entries(data?.visitors?.pages || {}).sort((a, b) => b[1] - a[1])
   return (
-    <Panel title={title} description="Visit counts and live chat demand.">
+    <Panel title={title} description="Live visit counts, presence, and chat demand (auto-refresh 15s).">
       <Err message={error} />
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-white/10 p-4">
           <p className="text-xs text-slate-500">Total visits</p>
           <p className="mt-1 text-2xl font-bold text-white">{data?.visitors?.total ?? '—'}</p>
@@ -827,6 +846,10 @@ function AnalyticsModule({ title = 'Analytics' }: { title?: string }) {
         <div className="rounded-xl border border-white/10 p-4">
           <p className="text-xs text-slate-500">Today</p>
           <p className="mt-1 text-2xl font-bold text-white">{data?.visitors?.today ?? '—'}</p>
+        </div>
+        <div className="rounded-xl border border-white/10 p-4">
+          <p className="text-xs text-slate-500">Online now</p>
+          <p className="mt-1 text-2xl font-bold text-white">{data?.onlineNow ?? 0}</p>
         </div>
         <div className="rounded-xl border border-white/10 p-4">
           <p className="text-xs text-slate-500">Live / waiting chats</p>
@@ -897,6 +920,7 @@ function ReviewsModule() {
                   setReviews(next)
                 }}
                 className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                placeholder="Name"
               />
               <input
                 value={r.role}
@@ -906,25 +930,47 @@ function ReviewsModule() {
                   setReviews(next)
                 }}
                 className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                placeholder="Role / company"
               />
             </div>
+            <button
+              type="button"
+              className="text-xs text-rose-300"
+              onClick={() => setReviews(reviews.filter((_, i) => i !== idx))}
+            >
+              Remove
+            </button>
           </li>
         ))}
       </ul>
-      <Button
-        type="button"
-        className="mt-4"
-        onClick={async () => {
-          try {
-            await saveReviews(reviews)
-            setMessage('Reviews saved')
-          } catch (e) {
-            setError(e instanceof Error ? e.message : 'Failed')
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() =>
+            setReviews((list) => [
+              ...list,
+              { id: `rev_${Date.now()}`, quote: '', name: '', role: '' },
+            ])
           }
-        }}
-      >
-        Save reviews
-      </Button>
+        >
+          Add review
+        </Button>
+        <Button
+          type="button"
+          onClick={async () => {
+            try {
+              await saveReviews(reviews)
+              setMessage('Reviews saved — live on Home')
+              setError('')
+            } catch (e) {
+              setError(e instanceof Error ? e.message : 'Failed')
+            }
+          }}
+        >
+          Save reviews
+        </Button>
+      </div>
     </Panel>
   )
 }
@@ -937,10 +983,27 @@ function NewsletterModule() {
       .then(setSubs)
       .catch((e) => setError(e instanceof Error ? e.message : 'Failed'))
   }, [])
+
+  function exportCsv() {
+    const rows = ['email,subscribed_at', ...subs.map((s) => `${s.email},${s.at}`)]
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `newsletter-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <Panel title="Newsletter" description="Email subscribers collected from the site.">
       <Err message={error} />
-      <p className="mb-3 text-sm text-slate-400">{subs.length} subscribers</p>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-slate-400">{subs.length} subscribers</p>
+        <Button type="button" variant="secondary" size="sm" onClick={exportCsv} disabled={!subs.length}>
+          Export CSV
+        </Button>
+      </div>
       <ul className="max-h-96 space-y-1 overflow-auto text-sm">
         {subs.map((s) => (
           <li key={s.id} className="flex justify-between gap-3 border-b border-white/5 py-1.5">
@@ -955,17 +1018,69 @@ function NewsletterModule() {
 
 function NotificationsModule() {
   const [items, setItems] = useState<{ id: string; title: string; body: string; at: string }[]>([])
+  const [title, setTitle] = useState('')
+  const [body, setBody] = useState('')
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+
+  async function load() {
+    try {
+      setItems(await fetchNotifications())
+      setError('')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load')
+    }
+  }
+
   useEffect(() => {
-    fetchNotifications().then(setItems).catch(() => undefined)
+    void load()
   }, [])
+
   return (
-    <Panel title="Notifications" description="System notices for the admin panel.">
+    <Panel title="Notifications" description="System notices for admin and staff panels.">
+      <Err message={error} />
+      <Msg message={message} />
+      <div className="mb-5 grid gap-2 rounded-xl border border-white/10 p-4 sm:grid-cols-2">
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Title"
+          className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+        />
+        <input
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder="Body"
+          className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+        />
+        <Button
+          type="button"
+          onClick={async () => {
+            if (!title.trim()) {
+              setError('Title is required')
+              return
+            }
+            try {
+              await createNotification(title.trim(), body.trim())
+              setTitle('')
+              setBody('')
+              setMessage('Notification posted')
+              await load()
+            } catch (e) {
+              setError(e instanceof Error ? e.message : 'Failed to post')
+            }
+          }}
+        >
+          Post notification
+        </Button>
+      </div>
       <ul className="space-y-2">
         {items.length === 0 && <li className="text-sm text-slate-500">No notifications.</li>}
         {items.map((n) => (
           <li key={n.id} className="rounded-xl border border-white/10 px-3 py-2 text-sm">
             <p className="text-white">{n.title}</p>
             <p className="text-slate-400">{n.body}</p>
+            <p className="mt-1 text-[11px] text-slate-600">{new Date(n.at).toLocaleString()}</p>
           </li>
         ))}
       </ul>
@@ -1073,6 +1188,13 @@ function FaqModule() {
               className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
               placeholder="Answer"
             />
+            <button
+              type="button"
+              className="text-xs text-rose-300"
+              onClick={() => setItems(items.filter((_, i) => i !== idx))}
+            >
+              Remove
+            </button>
           </li>
         ))}
       </ul>
@@ -1090,7 +1212,8 @@ function FaqModule() {
             try {
               const copy = await fetchSiteCopy()
               await saveSiteCopy({ ...copy, faq: items })
-              setMessage('FAQ saved')
+              setMessage('FAQ saved — live on /faq')
+              setError('')
             } catch (e) {
               setError(e instanceof Error ? e.message : 'Failed')
             }
@@ -1105,16 +1228,34 @@ function FaqModule() {
 
 function ClientsCrmModule() {
   const [contacts, setContacts] = useState<
-    { email: string; name: string; company?: string; phone?: string; leads: number }[]
+    {
+      email: string
+      name: string
+      company?: string
+      phone?: string
+      leads: number
+      invoices: number
+      unpaid: number
+    }[]
   >([])
+  const [brands, setBrands] = useState<CatalogClientBrand[]>(() => staticClientBrands())
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
 
   useEffect(() => {
-    fetchLeads()
-      .then((list) => {
+    Promise.all([fetchLeads(), fetchInvoices(), loadClientBrands()])
+      .then(([list, invoices, brandList]) => {
         const map = new Map<
           string,
-          { email: string; name: string; company?: string; phone?: string; leads: number }
+          {
+            email: string
+            name: string
+            company?: string
+            phone?: string
+            leads: number
+            invoices: number
+            unpaid: number
+          }
         >()
         for (const l of list) {
           const email = String(l.email || '').toLowerCase()
@@ -1131,10 +1272,32 @@ function ClientsCrmModule() {
               company: l.company,
               phone: l.phone,
               leads: 1,
+              invoices: 0,
+              unpaid: 0,
             })
           }
         }
-        setContacts([...map.values()].sort((a, b) => b.leads - a.leads))
+        for (const inv of invoices) {
+          const email = String(inv.clientEmail || '').toLowerCase()
+          if (!email) continue
+          const prev = map.get(email)
+          if (prev) {
+            prev.invoices += 1
+            if (inv.status === 'sent' || inv.status === 'draft') prev.unpaid += 1
+          } else {
+            map.set(email, {
+              email,
+              name: inv.clientName || email,
+              leads: 0,
+              invoices: 1,
+              unpaid: inv.status === 'sent' || inv.status === 'draft' ? 1 : 0,
+            })
+          }
+        }
+        setContacts(
+          [...map.values()].sort((a, b) => b.leads + b.invoices - (a.leads + a.invoices)),
+        )
+        setBrands(brandList)
       })
       .catch((e) => setError(e instanceof Error ? e.message : 'Failed'))
   }, [])
@@ -1143,7 +1306,7 @@ function ClientsCrmModule() {
     <div className="space-y-6">
       <Panel
         title="Client contacts"
-        description="Unique emails from leads and purchase requests — live CRM view from cms:leads."
+        description="Unique emails from leads and invoices — live CRM view."
       >
         <Err message={error} />
         <ul className="space-y-2">
@@ -1158,18 +1321,327 @@ function ClientsCrmModule() {
                 {c.company ? ` · ${c.company}` : ''}
                 {c.phone ? ` · ${c.phone}` : ''}
               </p>
-              <p className="text-xs text-slate-600">{c.leads} lead(s)</p>
+              <p className="text-xs text-slate-600">
+                {c.leads} lead(s) · {c.invoices} invoice(s)
+                {c.unpaid ? ` · ${c.unpaid} unpaid/draft` : ''}
+              </p>
             </li>
           ))}
         </ul>
       </Panel>
-      <Panel title="Featured brand marks" description="Logos shown on the public Clients page.">
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {clientBrands.map((c) => (
-            <li key={c.id} className="rounded-xl border border-white/10 p-3 text-sm text-white">
-              {c.name}
+      <Panel
+        title="Featured brand marks"
+        description="Logos shown on /clients and Home. Saves to CMS site copy."
+      >
+        <Msg message={message} />
+        <ul className="space-y-3">
+          {brands.map((b, idx) => (
+            <li key={b.id} className="grid gap-2 rounded-xl border border-white/10 p-3 sm:grid-cols-2">
+              <input
+                value={b.name}
+                onChange={(e) => {
+                  const next = [...brands]
+                  next[idx] = { ...b, name: e.target.value }
+                  setBrands(next)
+                }}
+                className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                placeholder="Brand name"
+              />
+              <input
+                value={b.logo}
+                onChange={(e) => {
+                  const next = [...brands]
+                  next[idx] = { ...b, logo: e.target.value }
+                  setBrands(next)
+                }}
+                className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+                placeholder="/client-logos/…"
+              />
+              <input
+                value={b.work}
+                onChange={(e) => {
+                  const next = [...brands]
+                  next[idx] = { ...b, work: e.target.value }
+                  setBrands(next)
+                }}
+                className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white sm:col-span-2"
+                placeholder="Work summary"
+              />
+              <div className="flex items-center justify-between gap-2 sm:col-span-2">
+                <select
+                  value={b.category}
+                  onChange={(e) => {
+                    const next = [...brands]
+                    next[idx] = {
+                      ...b,
+                      category: e.target.value as CatalogClientBrand['category'],
+                    }
+                    setBrands(next)
+                  }}
+                  className="rounded-lg border border-white/10 bg-slate-900 px-2 py-1.5 text-sm text-white"
+                >
+                  {(
+                    [
+                      'hospitality',
+                      'healthcare',
+                      'retail',
+                      'events',
+                      'services',
+                      'group',
+                    ] as const
+                  ).map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="text-xs text-rose-300"
+                  onClick={() => setBrands(brands.filter((_, i) => i !== idx))}
+                >
+                  Remove
+                </button>
+              </div>
             </li>
           ))}
+        </ul>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() =>
+              setBrands((list) => [
+                ...list,
+                {
+                  id: `brand_${Date.now().toString(36)}`,
+                  name: 'New brand',
+                  logo: '/client-logos/ellines-consultancy.png',
+                  category: 'services',
+                  work: '',
+                },
+              ])
+            }
+          >
+            Add brand
+          </Button>
+          <Button
+            type="button"
+            onClick={async () => {
+              try {
+                await saveClientBrands(brands)
+                setMessage('Brand marks saved — live on /clients & Home')
+                setError('')
+              } catch (e) {
+                setError(e instanceof Error ? e.message : 'Save failed')
+              }
+            }}
+          >
+            Save brand marks
+          </Button>
+          <Link to="/clients" className="self-center text-sm text-brand-300">
+            View /clients →
+          </Link>
+        </div>
+      </Panel>
+    </div>
+  )
+}
+
+function PermissionsModule() {
+  const rows = [
+    {
+      lane: 'God Mode (/admin)',
+      who: 'Owner password',
+      can: 'Full CMS, users, settings, payments, backup, live chat',
+    },
+    {
+      lane: 'Staff (/staff)',
+      who: 'staff · admin · super_admin CMS users',
+      can: 'Leads, clients, invoices, careers, live chat, pricing view, materials',
+    },
+    {
+      lane: 'Client (/account)',
+      who: 'customer role',
+      can: 'Own requests, invoices, profile, materials, support links',
+    },
+  ]
+  return (
+    <div className="space-y-6">
+      <Panel
+        title="Permissions"
+        description="How access lanes map to capabilities. Fine-grained job-title ACL is not enabled — titles are labels only."
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[32rem] text-left text-sm">
+            <thead>
+              <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-slate-500">
+                <th className="py-2 pr-3">Lane</th>
+                <th className="py-2 pr-3">Who</th>
+                <th className="py-2">Can access</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.lane} className="border-b border-white/5 align-top text-slate-300">
+                  <td className="py-3 pr-3 font-medium text-white">{r.lane}</td>
+                  <td className="py-3 pr-3">{r.who}</td>
+                  <td className="py-3">{r.can}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <Link to="/admin/users" className="mt-4 inline-block text-sm text-brand-300">
+          → Manage users & roles
+        </Link>
+      </Panel>
+    </div>
+  )
+}
+
+function DesignStudioModule() {
+  const [heroSub, setHeroSub] = useState('')
+  const [groupTitle, setGroupTitle] = useState('')
+  const [groupBody, setGroupBody] = useState('')
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    fetchSiteCopy()
+      .then((copy) => {
+        const home = (copy as { home?: Record<string, string> }).home || {}
+        setHeroSub(home.heroSub || '')
+        setGroupTitle(home.groupTitle || '')
+        setGroupBody(home.groupBody || '')
+      })
+      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load'))
+  }, [])
+
+  return (
+    <div className="space-y-6">
+      <Panel
+        title="Design Studio"
+        description="Quick brand messaging for the first viewport and group section. Full page copy lives in Page Editor."
+      >
+        <Err message={error} />
+        <Msg message={message} />
+        <p className="mb-3 text-xs text-slate-500">
+          Fonts: Outfit (display) + DM Sans (body) · Accent: cyan brand scale on deep slate
+        </p>
+        <label className="mb-3 block text-xs text-slate-400">
+          Home hero supporting line
+          <textarea
+            value={heroSub}
+            onChange={(e) => setHeroSub(e.target.value)}
+            rows={2}
+            className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+          />
+        </label>
+        <label className="mb-3 block text-xs text-slate-400">
+          Group section title
+          <input
+            value={groupTitle}
+            onChange={(e) => setGroupTitle(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+          />
+        </label>
+        <label className="mb-3 block text-xs text-slate-400">
+          Group section description
+          <textarea
+            value={groupBody}
+            onChange={(e) => setGroupBody(e.target.value)}
+            rows={3}
+            className="mt-1 w-full rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5 text-sm text-white"
+          />
+        </label>
+        <Button
+          type="button"
+          onClick={async () => {
+            try {
+              const copy = (await fetchSiteCopy()) as { home?: Record<string, string> }
+              await saveSiteCopy({
+                ...copy,
+                home: {
+                  ...(copy.home || {}),
+                  heroSub,
+                  groupTitle,
+                  groupBody,
+                },
+              })
+              setMessage('Design copy saved — live on Home')
+              setError('')
+            } catch (e) {
+              setError(e instanceof Error ? e.message : 'Save failed')
+            }
+          }}
+        >
+          Save design copy
+        </Button>
+        <div className="mt-4 flex flex-wrap gap-3 text-sm">
+          <Link to="/admin/pages" className="text-brand-300">
+            → Page Editor
+          </Link>
+          <Link to="/admin/shop" className="text-brand-300">
+            → Product Pricing
+          </Link>
+          <Link to="/admin/media" className="text-brand-300">
+            → Site Photos
+          </Link>
+          <Link to="/admin/site-controls" className="text-brand-300">
+            → Announcement banner
+          </Link>
+        </div>
+      </Panel>
+    </div>
+  )
+}
+
+function MessagesModule() {
+  const [waiting, setWaiting] = useState(0)
+  const [live, setLive] = useState(0)
+  const [notes, setNotes] = useState<{ id: string; title: string; body: string; at: string }[]>(
+    [],
+  )
+
+  useEffect(() => {
+    listLiveSessions()
+      .then((sessions) => {
+        setWaiting(sessions.filter((s) => s.status === 'waiting').length)
+        setLive(sessions.filter((s) => s.status === 'live').length)
+      })
+      .catch(() => undefined)
+    fetchNotifications()
+      .then((n) => setNotes(n.slice(0, 6)))
+      .catch(() => undefined)
+  }, [])
+
+  return (
+    <div className="space-y-6">
+      <Panel title="Messages" description="Visitor chat queue and recent system notices.">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-white/10 p-4">
+            <p className="text-xs uppercase tracking-wider text-slate-500">Waiting chats</p>
+            <p className="mt-1 font-display text-2xl font-bold text-white">{waiting}</p>
+          </div>
+          <div className="rounded-xl border border-white/10 p-4">
+            <p className="text-xs uppercase tracking-wider text-slate-500">Live chats</p>
+            <p className="mt-1 font-display text-2xl font-bold text-white">{live}</p>
+          </div>
+        </div>
+        <Link to="/admin/live-chat" className="mt-4 inline-block text-sm text-brand-300">
+          → Open Live Chat inbox
+        </Link>
+      </Panel>
+      <Panel title="Recent notifications" description="Leads, invoices, and applications.">
+        <ul className="space-y-2">
+          {notes.map((n) => (
+            <li key={n.id} className="rounded-xl border border-white/10 px-3 py-2 text-sm">
+              <p className="text-white">{n.title}</p>
+              <p className="text-slate-400">{n.body}</p>
+            </li>
+          ))}
+          {notes.length === 0 && <li className="text-sm text-slate-500">No notifications.</li>}
         </ul>
       </Panel>
     </div>
@@ -1187,55 +1659,30 @@ export function AdminModulePage({ module }: { module: string }) {
   if (module === 'reports') return <AdminReportsModule />
   if (module === 'activity' || module === 'logs') return <ActivityModule />
   if (module === 'leads') return <LeadsModule />
-  if (module === 'users' || module === 'permissions') return <UsersModule />
+  if (module === 'users') return <UsersModule />
+  if (module === 'permissions') return <PermissionsModule />
   if (module === 'shop') return <ShopModule />
   if (module === 'analytics' || module === 'visitors')
     return (
       <AnalyticsModule title={module === 'visitors' ? 'Site Visitors' : 'Analytics'} />
     )
   if (module === 'online') {
-    return (
-      <div className="space-y-4">
-        <AnalyticsModule title="Online / live demand" />
-        <Link to="/admin/live-chat" className="inline-block text-sm text-brand-300">
-          Open Live Chat →
-        </Link>
-      </div>
-    )
+    return <OnlineUsersModule />
   }
   if (module === 'reviews' || module === 'testimonials') return <ReviewsModule />
   if (module === 'newsletter') return <NewsletterModule />
   if (module === 'notifications') return <NotificationsModule />
   if (module === 'backup') return <BackupModule />
   if (module === 'faq') return <FaqModule />
+  if (module === 'payments') return <AdminPaymentsModule />
   if (module === 'messages') {
-    return (
-      <Panel title="Messages" description="Visitor messages arrive through Live Chat.">
-        <p className="text-sm text-slate-400">
-          Human handoff and AI chat share one queue. Open Live Chat to reply in real time.
-        </p>
-        <Link to="/admin/live-chat" className="mt-3 inline-block text-sm text-brand-300">
-          → Live Chat
-        </Link>
-      </Panel>
-    )
+    return <MessagesModule />
   }
 
   if (module === 'products') {
     return (
       <div className="space-y-8">
-        <Panel title="Flagship products" description="Marketing product pages on the live site.">
-          <ul className="space-y-2">
-            {products.map((p) => (
-              <li key={p.slug} className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-white">{p.name}</span>
-                <Link className="text-brand-300" to={`/products/${p.slug}`}>
-                  Open
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Panel>
+        <ProductsEditor />
         <ShopModule />
       </div>
     )
@@ -1246,17 +1693,7 @@ export function AdminModulePage({ module }: { module: string }) {
   }
 
   if (module === 'portfolio') {
-    return (
-      <Panel title="Portfolio" description="Projects shown publicly.">
-        <ul className="space-y-2">
-          {portfolioProjects.map((p) => (
-            <li key={p.slug} className="text-sm text-white">
-              {p.name}
-            </li>
-          ))}
-        </ul>
-      </Panel>
-    )
+    return <PortfolioEditor />
   }
 
   if (module === 'clients') {
@@ -1268,72 +1705,51 @@ export function AdminModulePage({ module }: { module: string }) {
   }
 
   if (module === 'social') {
-    return (
-      <Panel title="Social Media" description="Verified Ellines Tech handles.">
-        <SocialLinks showLabels />
-        <ul className="mt-4 space-y-2 text-sm text-slate-400">
-          {siteConfig.socialLinks.map((s) => (
-            <li key={s.id}>
-              {s.label}: {s.handle}
-            </li>
-          ))}
-        </ul>
-      </Panel>
-    )
+    return <SiteProfileEditor mode="social" />
   }
 
-  if (module === 'email' || module === 'integrations') {
+  if (module === 'email') {
+    return <SiteProfileEditor mode="email" />
+  }
+
+  if (module === 'integrations') {
     return (
       <Panel
-        title={module === 'email' ? 'Email Config' : 'Integrations'}
+        title="Integrations"
         description="Live endpoints and channels wired into Ellines Tech."
       >
         <ul className="space-y-2 text-sm text-slate-300">
-          <li>Public email: {siteConfig.email}</li>
-          <li>WhatsApp: {siteConfig.whatsapp}</li>
+          <li>Public email / WhatsApp → Email Config (editable)</li>
           <li>Service requests: /request → Leads inbox</li>
           <li>CMS API: /api/cms</li>
-          <li>Live chat API: /api/live-chat</li>
+          <li>Live chat API: /api/live-chat (admin + staff agents)</li>
           <li>AI assist API: /api/ai</li>
+          <li>Payments: Paystack live checkout + invoice deposits (M-Pesa / PayPal credentials still config-only)</li>
         </ul>
         <div className="mt-4 flex flex-wrap gap-3 text-sm">
+          <Link to="/admin/email" className="text-brand-300">
+            → Email Config
+          </Link>
+          <Link to="/admin/payments" className="text-brand-300">
+            → Payment methods
+          </Link>
           <Link to="/admin/leads" className="text-brand-300">
             → Leads
           </Link>
           <Link to="/admin/live-chat" className="text-brand-300">
             → Live Chat
           </Link>
-          <Link to="/request" className="text-brand-300">
-            → Public request flow
-          </Link>
         </div>
       </Panel>
     )
   }
 
+  if (module === 'profile') {
+    return <SiteProfileEditor mode="both" />
+  }
+
   if (module === 'design') {
-    return (
-      <Panel title="Design Studio" description="Brand system and content surfaces you can edit live.">
-        <ul className="space-y-2 text-sm text-slate-300">
-          <li>Fonts: Outfit (display) + DM Sans (body)</li>
-          <li>Accent: cyan brand scale on deep slate</li>
-          <li>Edit Home/About copy → Page Editor</li>
-          <li>Edit packages → Product Pricing</li>
-          <li>Banners & scenes → Site Photos</li>
-        </ul>
-        <div className="mt-4 flex flex-wrap gap-3 text-sm">
-          <Link to="/admin/pages" className="text-brand-300">
-            → Page Editor
-          </Link>
-          <Link to="/admin/shop" className="text-brand-300">
-            → Product Pricing
-          </Link>
-          <Link to="/admin/media" className="text-brand-300">
-            → Site Photos
-          </Link>
-        </div>
-      </Panel>
-    )
+    return <DesignStudioModule />
   }
 
   if (module === 'security') {
@@ -1341,39 +1757,20 @@ export function AdminModulePage({ module }: { module: string }) {
       <Panel title="Security" description="Three separate access lanes — do not mix them.">
         <ul className="list-disc space-y-2 pl-5 text-sm text-slate-300">
           <li>
-            Admin panel — owner password (`EllinesGodMode2026` default). Override with matching
-            `VITE_ADMIN_PASSWORD` (frontend build) and `ADMIN_API_KEY` (Pages Functions). Keep private.
+            Admin panel (/admin) — owner God Mode password. Set matching `VITE_ADMIN_PASSWORD`
+            (frontend build) and `ADMIN_API_KEY` (Pages Functions). Never commit production secrets.
           </li>
-          <li>
-            Staff (/staff) — employee accounts created here under Users. Own login.
-          </li>
-          <li>
-            Clients (/account) — customers for pricing & packages. Public register/login.
-          </li>
+          <li>Staff (/staff) — employee accounts created under Users. Own email/password login.</li>
+          <li>Clients (/account) — customers for pricing & packages. Public register/login.</li>
           <li>Roles: super_admin | admin | staff | customer · passwords PBKDF2-hashed in KV</li>
-          <li>Rotate secrets in Cloudflare Pages environment variables</li>
+          <li>Rotate secrets in Cloudflare Pages environment variables after first deploy</li>
         </ul>
-        <Link to="/admin/users" className="mt-4 inline-block text-sm text-brand-300">
-          → Users & roles
-        </Link>
-      </Panel>
-    )
-  }
-
-  if (module === 'profile') {
-    return (
-      <Panel title="Profile" description="Signed-in admin session.">
-        <p className="text-sm text-slate-300">Role: Admin</p>
-        <p className="mt-2 text-sm text-slate-400">
-          Staff employees use /staff with their own accounts. Clients use /account for pricing &
-          packages.
-        </p>
         <div className="mt-4 flex flex-wrap gap-3 text-sm">
-          <Link to="/admin/leads" className="text-brand-300">
-            → Leads
+          <Link to="/admin/users" className="text-brand-300">
+            → Users & roles
           </Link>
-          <Link to="/admin/live-chat" className="text-brand-300">
-            → Live Chat
+          <Link to="/admin/permissions" className="text-brand-300">
+            → Permissions matrix
           </Link>
         </div>
       </Panel>
