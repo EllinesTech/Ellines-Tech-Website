@@ -13,6 +13,7 @@ import {
 import { fetchShop, submitServiceRequest } from '@/lib/cmsApi'
 import { isInstantCheckoutPackage } from '@/lib/checkoutPackages'
 import { startPaystackCheckout } from '@/lib/paystackApi'
+import { loadAuthUser } from '@/lib/auth'
 import { loadPublishedServices, type CatalogService } from '@/lib/servicesCatalog'
 import { siteConfig } from '@/data/site'
 
@@ -44,16 +45,23 @@ type Intent = 'buy' | 'request' | 'quote'
 
 export function RequestServicePage() {
   const [params] = useSearchParams()
-  const [step, setStep] = useState(0)
-  const [intent, setIntent] = useState<Intent>(
-    (params.get('intent') as Intent) || 'request',
-  )
-  const [packageId, setPackageId] = useState(params.get('package') || '')
+  const initialPackageId = params.get('package') || ''
+  const initialPay = params.get('pay') === '1'
+  const initialIntent = (params.get('intent') as Intent) || 'request'
+  const [step, setStep] = useState(() => {
+    // Pay now from pricing: skip intent/package/confirm — one checkout screen.
+    if (initialPay && initialPackageId && initialIntent === 'buy') return 2
+    if (initialPackageId) return 1
+    return 0
+  })
+  const [intent, setIntent] = useState<Intent>(initialIntent)
+  const [packageId, setPackageId] = useState(initialPackageId)
   const [serviceSlug, setServiceSlug] = useState(params.get('service') || '')
   const [packages, setPackages] = useState(() => withGroupDefaults(starterPricingPackages))
   const [services, setServices] = useState<CatalogService[]>([])
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
+  const authUser = loadAuthUser()
+  const [name, setName] = useState(authUser?.name || '')
+  const [email, setEmail] = useState(authUser?.email || '')
   const [phone, setPhone] = useState('')
   const [company, setCompany] = useState('')
   const [budget, setBudget] = useState('')
@@ -63,7 +71,7 @@ export function RequestServicePage() {
   const [done, setDone] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [privacyOk, setPrivacyOk] = useState(false)
-  const [wantPayNow, setWantPayNow] = useState(params.get('pay') === '1')
+  const [wantPayNow, setWantPayNow] = useState(initialPay)
   const [currency, setCurrency] = useState<'KES' | 'USD'>('KES')
 
   useEffect(() => {
@@ -90,19 +98,29 @@ export function RequestServicePage() {
   const canInstantPay =
     intent === 'buy' && Boolean(selectedPackage && isInstantCheckoutPackage(selectedPackage))
 
+  /** Pricing “Pay now”: package already chosen — one screen, then Paystack popup. */
+  const expressCheckout =
+    initialPay && intent === 'buy' && Boolean(initialPackageId) && canInstantPay
+
   useEffect(() => {
     if (!canInstantPay) setWantPayNow(false)
-  }, [canInstantPay])
+    else if (expressCheckout) setWantPayNow(true)
+  }, [canInstantPay, expressCheckout])
 
-  async function submit() {
+  async function submit(payOverride?: boolean) {
     setError('')
     if (!privacyOk) {
       setError('Please accept the privacy notice to continue.')
       return
     }
+    const shouldPay = Boolean(payOverride ?? (wantPayNow && canInstantPay))
+    if (shouldPay && (!name.trim() || !email.includes('@'))) {
+      setError('Name and valid email are required to pay')
+      return
+    }
     setSubmitting(true)
     try {
-      if (wantPayNow && selectedPackage && canInstantPay) {
+      if (shouldPay && selectedPackage && canInstantPay) {
         await startPaystackCheckout({
           type: 'checkout',
           email,
@@ -200,50 +218,54 @@ export function RequestServicePage() {
       <section className="section-padding">
         <div className="section-container max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-400">
-            Professional intake
+            {expressCheckout ? 'Express checkout' : 'Professional intake'}
           </p>
           <h1 className="mt-3 font-display text-3xl font-bold text-white sm:text-4xl">
-            Request or buy a service
+            {expressCheckout ? 'Pay for your package' : 'Request or buy a service'}
           </h1>
           <p className="mt-3 text-slate-400">
-            A short brief so we can quote accurately — same flow used by modern product studios.
+            {expressCheckout
+              ? 'Confirm your details and pay securely on this page — no redirect maze.'
+              : 'A short brief so we can quote accurately — same flow used by modern product studios.'}
           </p>
 
-          <ol className="mt-10 flex items-center gap-2 sm:gap-3">
-            {steps.map((label, i) => (
-              <li key={label} className="flex flex-1 items-center gap-2 last:flex-none sm:gap-3">
-                <span
-                  className={cn(
-                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border font-display text-xs font-bold transition-colors',
-                    i < step && 'border-brand-400/40 bg-brand-500/20 text-brand-200',
-                    i === step && 'border-brand-400/60 bg-brand-400 text-slate-950',
-                    i > step && 'border-white/10 bg-white/[0.03] text-slate-500',
-                  )}
-                >
-                  {i < step ? <Check className="h-4 w-4" /> : i + 1}
-                </span>
-                <span
-                  className={cn(
-                    'hidden text-[11px] font-semibold uppercase tracking-[0.14em] sm:block',
-                    i === step ? 'text-white' : 'text-slate-500',
-                  )}
-                >
-                  {label}
-                </span>
-                {i < steps.length - 1 && (
+          {!expressCheckout && (
+            <ol className="mt-10 flex items-center gap-2 sm:gap-3">
+              {steps.map((label, i) => (
+                <li key={label} className="flex flex-1 items-center gap-2 last:flex-none sm:gap-3">
                   <span
                     className={cn(
-                      'h-px flex-1 transition-colors',
-                      i < step ? 'bg-brand-400/40' : 'bg-white/10',
+                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border font-display text-xs font-bold transition-colors',
+                      i < step && 'border-brand-400/40 bg-brand-500/20 text-brand-200',
+                      i === step && 'border-brand-400/60 bg-brand-400 text-slate-950',
+                      i > step && 'border-white/10 bg-white/[0.03] text-slate-500',
                     )}
-                  />
-                )}
-              </li>
-            ))}
-          </ol>
+                  >
+                    {i < step ? <Check className="h-4 w-4" /> : i + 1}
+                  </span>
+                  <span
+                    className={cn(
+                      'hidden text-[11px] font-semibold uppercase tracking-[0.14em] sm:block',
+                      i === step ? 'text-white' : 'text-slate-500',
+                    )}
+                  >
+                    {label}
+                  </span>
+                  {i < steps.length - 1 && (
+                    <span
+                      className={cn(
+                        'h-px flex-1 transition-colors',
+                        i < step ? 'bg-brand-400/40' : 'bg-white/10',
+                      )}
+                    />
+                  )}
+                </li>
+              ))}
+            </ol>
+          )}
 
           <div className="mt-8 rounded-[1.5rem] border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.015] p-6 sm:p-8">
-            {step === 0 && (
+            {step === 0 && !expressCheckout && (
               <div className="space-y-4">
                 <h2 className="font-display text-xl font-semibold text-white">What do you need?</h2>
                 {(
@@ -273,7 +295,7 @@ export function RequestServicePage() {
               </div>
             )}
 
-            {step === 1 && (
+            {step === 1 && !expressCheckout && (
               <div className="space-y-4">
                 <h2 className="font-display text-xl font-semibold text-white">
                   {intent === 'buy' ? 'Choose a package' : 'Select a starting point'}
@@ -380,6 +402,23 @@ export function RequestServicePage() {
             {step === 2 && (
               <div className="space-y-4">
                 <h2 className="font-display text-xl font-semibold text-white">Your details</h2>
+                {expressCheckout && selectedPackage && (
+                  <div className="rounded-xl border border-brand-400/25 bg-brand-500/[0.08] px-4 py-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-300">
+                      Paying now
+                    </p>
+                    <p className="mt-1 font-medium text-white">
+                      {selectedPackage.groupName || selectedPackage.name}
+                      {selectedPackage.tierLabel
+                        ? ` — ${selectedPackage.tierLabel}`
+                        : ''}
+                    </p>
+                    <p className="mt-0.5 font-display text-lg font-semibold tabular-nums text-brand-200">
+                      {selectedPackage.currency}{' '}
+                      {Number(selectedPackage.price).toLocaleString()}
+                    </p>
+                  </div>
+                )}
                 <div className="grid gap-5 sm:grid-cols-2">
                   <Field label="Full name" htmlFor="req-name">
                     <input
@@ -423,75 +462,122 @@ export function RequestServicePage() {
                       className={fieldClass}
                     />
                   </Field>
-                  <Field label="Budget range" htmlFor="req-budget" optional>
-                    <select
-                      id="req-budget"
-                      value={budget}
-                      onChange={(e) => setBudget(e.target.value)}
-                      className={selectClass}
-                    >
-                      <option value="">Select a range…</option>
-                      {budgets.map((b) => (
-                        <option key={b} value={b}>
-                          {b}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                  <Field label="Timeline" htmlFor="req-timeline" optional>
-                    <select
-                      id="req-timeline"
-                      value={timeline}
-                      onChange={(e) => setTimeline(e.target.value)}
-                      className={selectClass}
-                    >
-                      <option value="">Select a timeline…</option>
-                      {timelines.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
+                  {!expressCheckout && (
+                    <>
+                      <Field label="Budget range" htmlFor="req-budget" optional>
+                        <select
+                          id="req-budget"
+                          value={budget}
+                          onChange={(e) => setBudget(e.target.value)}
+                          className={selectClass}
+                        >
+                          <option value="">Select a range…</option>
+                          {budgets.map((b) => (
+                            <option key={b} value={b}>
+                              {b}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                      <Field label="Timeline" htmlFor="req-timeline" optional>
+                        <select
+                          id="req-timeline"
+                          value={timeline}
+                          onChange={(e) => setTimeline(e.target.value)}
+                          className={selectClass}
+                        >
+                          <option value="">Select a timeline…</option>
+                          {timelines.map((t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                    </>
+                  )}
                 </div>
-                <Field
-                  label="Project notes"
-                  htmlFor="req-message"
-                  optional
-                  hint="Goals, constraints, or links to references — the more context, the sharper the quote."
-                >
-                  <textarea
-                    id="req-message"
-                    rows={4}
-                    placeholder="Describe goals, constraints, or links to references…"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    className={fieldClass}
-                  />
-                </Field>
-                <div className="flex flex-wrap gap-2">
-                  <Button type="button" variant="secondary" onClick={() => setStep(1)}>
-                    Back
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      if (!name.trim() || !email.includes('@')) {
-                        setError('Name and valid email are required')
-                        return
-                      }
-                      setError('')
-                      setStep(3)
-                    }}
-                    icon
+                {!expressCheckout && (
+                  <Field
+                    label="Project notes"
+                    htmlFor="req-message"
+                    optional
+                    hint="Goals, constraints, or links to references — the more context, the sharper the quote."
                   >
-                    Review
-                  </Button>
-                </div>
+                    <textarea
+                      id="req-message"
+                      rows={4}
+                      placeholder="Describe goals, constraints, or links to references…"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      className={fieldClass}
+                    />
+                  </Field>
+                )}
+                {expressCheckout && (
+                  <>
+                    <label className="flex items-start gap-3 text-sm leading-relaxed text-slate-400">
+                      <input
+                        type="checkbox"
+                        checked={privacyOk}
+                        onChange={(e) => setPrivacyOk(e.target.checked)}
+                        className="mt-1 accent-cyan-400"
+                        required
+                      />
+                      <span>
+                        I agree that Ellines Tech may collect and process this information under the{' '}
+                        <Link to="/privacy" className="text-brand-300 hover:text-brand-200">
+                          Privacy Policy
+                        </Link>
+                        .
+                      </span>
+                    </label>
+                    <p className="text-xs text-slate-500">
+                      Paystack opens on this page. Card / mobile money — deposit and full-pay invoices
+                      still work from your invoice link.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button href="/pricing" variant="secondary">
+                        Change package
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => void submit(true)}
+                        disabled={submitting || !privacyOk}
+                        icon
+                      >
+                        {submitting
+                          ? 'Opening checkout…'
+                          : `Pay ${selectedPackage?.currency || 'KES'} ${Number(selectedPackage?.price || 0).toLocaleString()}`}
+                      </Button>
+                    </div>
+                  </>
+                )}
+                {!expressCheckout && (
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" variant="secondary" onClick={() => setStep(1)}>
+                      Back
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        if (!name.trim() || !email.includes('@')) {
+                          setError('Name and valid email are required')
+                          return
+                        }
+                        setError('')
+                        setStep(3)
+                      }}
+                      icon
+                    >
+                      Review
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 
-            {step === 3 && (
+            {step === 3 && !expressCheckout && (
               <div className="space-y-4">
                 <h2 className="font-display text-xl font-semibold text-white">Confirm request</h2>
                 <dl className="space-y-2 text-sm">
@@ -538,7 +624,7 @@ export function RequestServicePage() {
                 </dl>
                 <p className="text-xs text-slate-500">
                   {wantPayNow && canInstantPay
-                    ? 'You will be redirected to Paystack to pay this fixed package now. Custom project work still uses the request → invoice path.'
+                    ? 'Paystack opens on this page so you can pay this fixed package now. Custom project work still uses the request → invoice path.'
                     : 'Payment instructions (M-Pesa / invoice) are shared after we confirm scope. No card charge on this form unless you choose Pay now on an eligible package.'}
                 </p>
                 {canInstantPay && (
@@ -600,10 +686,15 @@ export function RequestServicePage() {
                   <Button type="button" variant="secondary" onClick={() => setStep(2)}>
                     Back
                   </Button>
-                  <Button type="button" onClick={submit} disabled={submitting || !privacyOk} icon>
+                  <Button
+                    type="button"
+                    onClick={() => void submit()}
+                    disabled={submitting || !privacyOk}
+                    icon
+                  >
                     {submitting
                       ? wantPayNow && canInstantPay
-                        ? 'Opening Paystack…'
+                        ? 'Opening checkout…'
                         : 'Sending…'
                       : wantPayNow && canInstantPay
                         ? 'Pay with Paystack'

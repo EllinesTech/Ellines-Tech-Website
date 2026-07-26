@@ -284,7 +284,8 @@ export function AdminPaymentsModule() {
         <p className="text-xs text-slate-400">
           Hub URLs (configure in Paystack dashboard): callback{' '}
           <code className="text-slate-300">https://ellines.co.ke/pay/return</code>, webhook{' '}
-          <code className="text-slate-300">https://ellines.co.ke/api/paystack/webhook</code>. Prefer
+          <code className="text-slate-300">https://ellines.co.ke/api/paystack/webhook</code>. Checkout
+          prefers Paystack Inline (on-site popup); hosted redirect remains the fallback. Prefer
           storing the secret as Cloudflare Pages secret <code className="text-slate-300">PAYSTACK_SECRET_KEY</code>.
         </p>
         <div className="grid gap-3 sm:grid-cols-2">

@@ -22,6 +22,7 @@ import {
   saveAuthSession,
   type AuthUser,
 } from '@/lib/auth'
+import { startPaystackCheckout } from '@/lib/paystackApi'
 import { cn } from '@/lib/utils'
 
 type PortalTab = 'overview' | 'requests' | 'invoices' | 'support' | 'profile'
@@ -57,6 +58,7 @@ export function AccountPage() {
   >([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [profileName, setProfileName] = useState('')
+  const [payingId, setPayingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -69,6 +71,29 @@ export function AccountPage() {
       .then(setInvoices)
       .catch(() => setInvoices([]))
   }, [user])
+
+  async function payInvoice(inv: Invoice, kind: 'full' | 'deposit' = 'full') {
+    if (!inv.clientEmail) {
+      setError('Invoice is missing a billing email — open the invoice link to pay.')
+      return
+    }
+    setError('')
+    setPayingId(`${inv.id}:${kind}`)
+    try {
+      await startPaystackCheckout({
+        type: kind === 'deposit' ? 'deposit' : 'invoice',
+        email: inv.clientEmail,
+        name: inv.clientName || user?.name,
+        invoiceId: inv.id,
+        publicToken: inv.publicToken,
+        currency: inv.currency || 'KES',
+        brand: 'tech',
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not start payment')
+      setPayingId(null)
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -276,6 +301,11 @@ export function AccountPage() {
                   <h2 className="font-display text-xl font-bold tracking-tight text-white">
                     Invoices &amp; receipts
                   </h2>
+                  {error && (
+                    <p className="mt-4 rounded-xl border border-amber-400/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                      {error}
+                    </p>
+                  )}
                   <ul className="mt-6 divide-y divide-white/8 border-y border-white/10">
                     {invoices.map((inv) => {
                       const remaining = Math.max(
@@ -313,12 +343,36 @@ export function AccountPage() {
                               {inv.status}
                             </span>
                             {unpaid && (
-                              <Button
-                                href={`/invoice/${inv.id}?token=${inv.publicToken}`}
-                                size="sm"
-                              >
-                                Pay
-                              </Button>
+                              <>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  disabled={payingId !== null}
+                                  onClick={() => void payInvoice(inv, 'full')}
+                                >
+                                  {payingId === `${inv.id}:full`
+                                    ? 'Opening…'
+                                    : `Pay ${inv.currency} ${remaining.toLocaleString()}`}
+                                </Button>
+                                {remaining >= 2 && (
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="secondary"
+                                    disabled={payingId !== null}
+                                    onClick={() => void payInvoice(inv, 'deposit')}
+                                  >
+                                    {payingId === `${inv.id}:deposit` ? 'Opening…' : '50% deposit'}
+                                  </Button>
+                                )}
+                                <Button
+                                  href={`/invoice/${inv.id}?token=${inv.publicToken}`}
+                                  size="sm"
+                                  variant="ghost"
+                                >
+                                  View
+                                </Button>
+                              </>
                             )}
                           </div>
                         </li>

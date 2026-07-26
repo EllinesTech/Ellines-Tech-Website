@@ -5,23 +5,34 @@ import { isAdminAuthed } from '@/lib/engagementStore'
 let cache: Promise<CmsPage[]> | null = null
 let cachedForAdmin = false
 
-function loadRoutePages(includeDrafts: boolean): Promise<CmsPage[]> {
-  return fetchPages(!includeDrafts)
-    .then((list) => list.filter((p) => Boolean(normalizeRoutePath(p.path))))
-    .catch(() => [])
+function onlyRoutePages(list: CmsPage[]) {
+  return list.filter((p) => Boolean(normalizeRoutePath(p.path)))
+}
+
+async function load(admin: boolean): Promise<CmsPage[]> {
+  if (admin) {
+    try {
+      return onlyRoutePages(await fetchPages(false))
+    } catch {
+      /* admin key rejected — fall back to the public list */
+    }
+  }
+  try {
+    return onlyRoutePages(await fetchPages(true))
+  } catch {
+    return []
+  }
 }
 
 /**
- * Published CMS content attached to real site routes. Admins additionally get
- * drafts so an unpublished page can be previewed before going live.
+ * CMS content attached to real site routes. Admins also get drafts so an
+ * unpublished page can be previewed before going live.
  */
 export function loadPublishedRoutePages(): Promise<CmsPage[]> {
   const admin = isAdminAuthed()
   if (!cache || cachedForAdmin !== admin) {
     cachedForAdmin = admin
-    cache = admin
-      ? loadRoutePages(true).then((list) => (list.length ? list : loadRoutePages(false)))
-      : loadRoutePages(false)
+    cache = load(admin)
   }
   return cache
 }

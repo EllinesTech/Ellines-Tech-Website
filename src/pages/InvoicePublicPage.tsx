@@ -254,7 +254,7 @@ export function InvoicePublicPage() {
                       disabled={paying !== null}
                     >
                       {paying === 'full'
-                        ? 'Redirecting…'
+                        ? 'Opening checkout…'
                         : `Pay ${invoice.currency} ${remaining.toLocaleString()}`}
                     </Button>
                     {remaining >= 2 && (
@@ -265,13 +265,13 @@ export function InvoicePublicPage() {
                         disabled={paying !== null}
                       >
                         {paying === 'deposit'
-                          ? 'Redirecting…'
+                          ? 'Opening checkout…'
                           : `Pay 50% deposit (${invoice.currency} ${Math.round(remaining * 0.5).toLocaleString()})`}
                       </Button>
                     )}
                   </div>
                   <p className="text-xs text-slate-500">
-                    Secure checkout via Paystack (card / mobile money where available).
+                    Secure Paystack checkout opens on this page (card / mobile money where available).
                   </p>
                   {payError && (
                     <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
