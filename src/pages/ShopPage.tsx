@@ -14,6 +14,7 @@ import {
   type PricingServiceGroup,
 } from '@/data/pricingPackages'
 import { packagePosterMap, posterForPackage } from '@/data/posterMap'
+import { cn } from '@/lib/utils'
 
 function normalizePackages(list: PricingPackage[]): PricingPackage[] {
   const retired = new Set<string>(retiredPricingIds)
@@ -35,9 +36,11 @@ function normalizePackages(list: PricingPackage[]): PricingPackage[] {
 function ServicePricingCard({
   group,
   initialVariantId,
+  showCategory,
 }: {
   group: PricingServiceGroup
   initialVariantId?: string
+  showCategory: boolean
 }) {
   const defaultId =
     (initialVariantId && group.variants.some((v) => v.id === initialVariantId)
@@ -55,8 +58,8 @@ function ServicePricingCard({
   const multi = group.variants.length > 1
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-b from-white/[0.1] to-surface-elevated/90 shadow-[0_22px_55px_-28px_rgba(0,0,0,0.9)] ring-1 ring-inset ring-white/[0.05] transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-400/45 hover:shadow-[0_28px_60px_-22px_rgba(34,211,238,0.3)]">
-      <div className="relative aspect-[16/10] overflow-hidden bg-slate-950">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/12 bg-gradient-to-b from-white/[0.08] to-surface-elevated/95 shadow-[0_22px_55px_-28px_rgba(0,0,0,0.9)] ring-1 ring-inset ring-white/[0.04] transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-400/40 hover:shadow-[0_28px_60px_-22px_rgba(34,211,238,0.28)]">
+      <div className="relative aspect-[16/10] shrink-0 overflow-hidden bg-slate-950">
         <img
           key={poster}
           src={poster}
@@ -76,7 +79,7 @@ function ServicePricingCard({
             }
           }}
         />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-slate-950/10" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/25 to-slate-950/10" />
         <img
           src="/logos/logo-mark-nav.png"
           alt=""
@@ -84,25 +87,19 @@ function ServicePricingCard({
           height={36}
           className="absolute right-3 top-3 h-9 w-9 rounded-lg border border-white/15 bg-slate-950/75 object-contain p-1 shadow-lg backdrop-blur-md sm:right-4 sm:top-4"
         />
-        <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5 sm:left-4">
-          {multi ? (
-            <span className="rounded-md border border-brand-400/35 bg-slate-950/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-200 backdrop-blur-md">
-              {group.variants.length} options
-            </span>
-          ) : (
-            selected?.level && (
-              <span className="rounded-md border border-brand-400/35 bg-slate-950/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-200 backdrop-blur-md">
-                {selected.level}
-              </span>
-            )
-          )}
-          <span className="rounded-md border border-white/15 bg-slate-950/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-300 backdrop-blur-md">
-            {group.category}
+        {multi && (
+          <span className="absolute bottom-3 left-3 rounded-md border border-brand-400/35 bg-slate-950/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-200 backdrop-blur-md sm:left-4">
+            {group.variants.length} options
           </span>
-        </div>
+        )}
       </div>
 
-      <div className="flex flex-1 flex-col p-5 sm:p-6">
+      <div className="flex min-h-0 flex-1 flex-col p-5 sm:p-6">
+        {showCategory && (
+          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+            {group.category}
+          </p>
+        )}
         <h3 className="font-display text-lg font-bold leading-snug text-white transition-colors group-hover:text-brand-200 sm:text-xl">
           {group.groupName}
         </h3>
@@ -114,7 +111,7 @@ function ServicePricingCard({
               Choose your option
             </p>
             <div
-              className="max-h-[13.5rem] space-y-1.5 overflow-y-auto pr-1"
+              className="h-[11.5rem] space-y-1 overflow-y-auto overscroll-contain pr-0.5 [scrollbar-width:thin]"
               role="radiogroup"
               aria-label={`${group.groupName} tiers`}
             >
@@ -123,11 +120,12 @@ function ServicePricingCard({
                 return (
                   <label
                     key={v.id}
-                    className={`flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 transition ${
+                    className={cn(
+                      'flex cursor-pointer items-start gap-2.5 rounded-lg border px-2.5 py-2 transition',
                       active
-                        ? 'border-brand-400/55 bg-brand-500/10 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.15)]'
-                        : 'border-white/10 bg-white/[0.02] hover:border-white/20'
-                    }`}
+                        ? 'border-brand-400/50 bg-brand-500/[0.12] shadow-[inset_0_0_0_1px_rgba(34,211,238,0.12)]'
+                        : 'border-white/[0.08] bg-white/[0.015] hover:border-white/18',
+                    )}
                   >
                     <input
                       type="radio"
@@ -138,14 +136,16 @@ function ServicePricingCard({
                       className="mt-1 h-3.5 w-3.5 shrink-0 accent-cyan-400"
                     />
                     <span className="min-w-0 flex-1">
-                      <span className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-semibold text-white">{v.tierLabel}</span>
-                        <span className="shrink-0 font-display text-sm font-semibold tabular-nums text-brand-200">
+                      <span className="flex items-baseline justify-between gap-3">
+                        <span className="truncate text-sm font-semibold leading-tight text-white">
+                          {v.tierLabel}
+                        </span>
+                        <span className="shrink-0 font-display text-sm font-semibold tabular-nums leading-tight text-brand-200">
                           {v.currency} {Number(v.price).toLocaleString()}
                         </span>
                       </span>
                       {(v.experienceBand || v.level) && (
-                        <span className="mt-0.5 block text-[11px] leading-snug text-slate-500">
+                        <span className="mt-0.5 block truncate text-[11px] leading-snug text-slate-500">
                           {v.experienceBand || v.level}
                         </span>
                       )}
@@ -157,26 +157,22 @@ function ServicePricingCard({
           </fieldset>
         ) : null}
 
-        <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-300">
+        <p className="mt-3 line-clamp-3 min-h-[3.75rem] text-sm leading-relaxed text-slate-300">
           {selected?.description || group.description}
         </p>
 
-        <div className="mt-5 border-t border-white/12 pt-4">
-          <p className="font-display text-2xl font-semibold tracking-tight text-white sm:text-[1.65rem]">
-            {multi && (
-              <span className="mr-1.5 text-xs font-medium uppercase tracking-[0.12em] text-slate-400">
-                Selected
-              </span>
-            )}
-            <span className="text-brand-200">{selected?.currency || group.currency}</span>{' '}
-            {Number(selected?.price ?? group.fromPrice).toLocaleString()}
-          </p>
-          {multi && (
-            <p className="mt-1 text-xs text-slate-500">
-              From {group.currency} {group.fromPrice.toLocaleString()} · pick the tier that fits
-              your pocket and needs
+        <div className="mt-auto border-t border-white/10 pt-4">
+          <div className="flex items-baseline justify-between gap-3">
+            <p className="font-display text-2xl font-semibold tracking-tight text-white sm:text-[1.65rem]">
+              <span className="text-brand-200">{selected?.currency || group.currency}</span>{' '}
+              {Number(selected?.price ?? group.fromPrice).toLocaleString()}
             </p>
-          )}
+            {multi && (
+              <p className="shrink-0 text-right text-[11px] leading-snug text-slate-500">
+                From {group.currency} {group.fromPrice.toLocaleString()}
+              </p>
+            )}
+          </div>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button
               href={`/request?intent=buy&package=${encodeURIComponent(selected?.id || '')}`}
@@ -197,6 +193,7 @@ function ServicePricingCard({
 export function PricingPage() {
   const [products, setProducts] = useState<PricingPackage[]>([])
   const [error, setError] = useState('')
+  const [activeCategory, setActiveCategory] = useState<string>('All')
   const user = loadAuthUser()
   const preselect = useMemo(() => {
     if (typeof window === 'undefined') return ''
@@ -222,6 +219,18 @@ export function PricingPage() {
   const groups = useMemo(() => groupPricingPackages(products), [products])
   const categories = useMemo(() => orderedCategoriesFromGroups(groups), [groups])
 
+  const visibleGroups = useMemo(() => {
+    if (activeCategory === 'All') return groups
+    return groups.filter((g) => g.category === activeCategory)
+  }, [groups, activeCategory])
+
+  // Prefer category that contains a deep-linked package
+  useEffect(() => {
+    if (!preselect || groups.length === 0) return
+    const match = groups.find((g) => g.variants.some((v) => v.id === preselect))
+    if (match) setActiveCategory(match.category)
+  }, [preselect, groups])
+
   return (
     <>
       <SEO
@@ -238,7 +247,7 @@ export function PricingPage() {
             align="center"
             className="mb-8"
           />
-          <div className="mb-12 flex flex-wrap justify-center gap-3">
+          <div className="mb-10 flex flex-wrap justify-center gap-3">
             <Button href="/request?intent=buy" icon>
               Buy a package
             </Button>
@@ -259,32 +268,84 @@ export function PricingPage() {
             </p>
           )}
 
-          {categories.map((category) => (
-            <div key={category} className="mb-14">
-              <h2 className="mb-6 font-display text-lg font-semibold tracking-wide text-brand-300">
-                {category}
+          {categories.length > 0 && (
+            <nav
+              className="mb-10 flex flex-wrap justify-center gap-x-1 gap-y-1 border-b border-white/10"
+              aria-label="Filter by category"
+            >
+              {['All', ...categories].map((cat) => {
+                const active = activeCategory === cat
+                const count =
+                  cat === 'All'
+                    ? groups.length
+                    : groups.filter((g) => g.category === cat).length
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setActiveCategory(cat)}
+                    className={cn(
+                      'relative -mb-px px-3 py-2.5 text-sm font-medium transition-colors',
+                      active
+                        ? 'text-brand-200'
+                        : 'text-slate-400 hover:text-slate-200',
+                    )}
+                    aria-pressed={active}
+                  >
+                    {cat}
+                    <span
+                      className={cn(
+                        'ml-1.5 text-[11px] tabular-nums',
+                        active ? 'text-brand-400/80' : 'text-slate-600',
+                      )}
+                    >
+                      {count}
+                    </span>
+                    {active && (
+                      <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-brand-400" />
+                    )}
+                  </button>
+                )
+              })}
+            </nav>
+          )}
+
+          {activeCategory !== 'All' && (
+            <div className="mb-6 flex items-end justify-between gap-4">
+              <h2 className="font-display text-xl font-semibold tracking-tight text-white sm:text-2xl">
+                {activeCategory}
               </h2>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {groups
-                  .filter((g) => g.category === category)
-                  .map((g) => (
-                    <ServicePricingCard
-                      key={g.groupId}
-                      group={g}
-                      initialVariantId={
-                        preselect && g.variants.some((v) => v.id === preselect)
-                          ? preselect
-                          : undefined
-                      }
-                    />
-                  ))}
-              </div>
+              <p className="text-sm text-slate-500">
+                {visibleGroups.length}{' '}
+                {visibleGroups.length === 1 ? 'service' : 'services'}
+              </p>
             </div>
-          ))}
+          )}
+
+          <div className="grid auto-rows-fr grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
+            {visibleGroups.map((g) => (
+              <ServicePricingCard
+                key={g.groupId}
+                group={g}
+                showCategory={activeCategory === 'All'}
+                initialVariantId={
+                  preselect && g.variants.some((v) => v.id === preselect)
+                    ? preselect
+                    : undefined
+                }
+              />
+            ))}
+          </div>
 
           {groups.length === 0 && (
             <p className="text-center text-slate-400">
               Pricing is being updated. Contact us for a custom quote.
+            </p>
+          )}
+
+          {groups.length > 0 && visibleGroups.length === 0 && (
+            <p className="text-center text-slate-400">
+              No packages in this category yet.
             </p>
           )}
         </div>
