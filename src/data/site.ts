@@ -83,8 +83,8 @@ export const siteConfig = {
       description:
         'Quality rattan furniture for homes and commercial spaces across Kenya — the commerce brand of Ellines Group.',
       url: 'https://rattanfurniture.ellines.co.ke/',
-      status: 'operating' as const,
-      statusLabel: 'Operating',
+      status: 'live' as const,
+      statusLabel: 'Live',
       image: '/business-logos/ellines-rattan.png',
       accent: 'from-emerald-600/25 via-teal-900/10 to-transparent',
       mark: '/business-logos/ellines-rattan.png',
