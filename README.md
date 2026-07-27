@@ -65,14 +65,25 @@ Project: `ellines-tech-website` (Direct Upload). Pushes to `main` deploy via Git
 |--------|---------|
 | `CLOUDFLARE_API_TOKEN` | API token with **Cloudflare Pages — Edit** |
 | `CLOUDFLARE_ACCOUNT_ID` | Account id from the Cloudflare dashboard |
+| `VITE_GA_MEASUREMENT_ID` | Optional GA4 id (`G-…`) — baked into the client build |
+| `VITE_GOOGLE_SITE_VERIFICATION` | Optional Search Console meta verification content |
+| `VITE_BOOKING_URL` | Optional Cal.com / Calendly URL (else WhatsApp booking) |
+| `VITE_SENTRY_DSN` | Optional Sentry browser DSN |
 
 **Pages production env vars** (dashboard → Settings → Environment variables; see `.env.example`):
 
 - Required: `ADMIN_API_KEY`
 - Email: `RESEND_API_KEY` (optional `RESEND_FROM`)
 - Paystack: `PAYSTACK_SECRET_KEY` (optional `PAYSTACK_WEBHOOK_SECRET`, `PAYSTACK_HUB_ORIGIN`)
+- Notify: `LEADS_NOTIFY_EMAIL` / `ORDERS_NOTIFY_EMAIL` (`tech@ellines.co.ke`), `CAREERS_NOTIFY_EMAIL`
 
 Custom domains: `ellines.co.ke`, `www.ellines.co.ke`, `tech.ellines.co.ke`. SPA routing: `public/_redirects`.
+
+**After deploy — Search / local trust (ops):**
+
+1. [Google Search Console](https://search.google.com/search-console) → add `https://tech.ellines.co.ke` → HTML tag verification → put the content value in `VITE_GOOGLE_SITE_VERIFICATION` → redeploy → submit `sitemap.xml`
+2. [Google Analytics](https://analytics.google.com) → create GA4 property → put Measurement ID in `VITE_GA_MEASUREMENT_ID` → redeploy
+3. [Google Business Profile](https://business.google.com) → claim Nyeri (and Nairobi if applicable) with `tech.ellines.co.ke` + `info@ellines.co.ke`
 
 **Optional later — native Git connect (dashboard OAuth only):** Workers & Pages → `ellines-tech-website` → Settings → Builds → Connect to Git → `EllinesTech/Ellines-Tech-Website` → branch `main`, build `npm run build`, output `dist`. Then disable the Actions workflow to avoid double deploys. (API cannot attach Git to an existing Direct Upload project.)
 

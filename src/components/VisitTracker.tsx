@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { trackVisit } from '@/lib/cmsApi'
+import { initAnalytics, trackPageView } from '@/lib/analytics'
 import { hasAnalyticsConsent, loadConsent } from '@/lib/consent'
 
 export function VisitTracker() {
@@ -8,8 +9,11 @@ export function VisitTracker() {
   const [allowed, setAllowed] = useState(() => hasAnalyticsConsent())
 
   useEffect(() => {
-    const sync = () => setAllowed(hasAnalyticsConsent())
-    sync()
+    initAnalytics()
+    const sync = () => {
+      setAllowed(hasAnalyticsConsent())
+      initAnalytics()
+    }
     window.addEventListener('et:consent', sync)
     window.addEventListener('storage', sync)
     return () => {
@@ -20,7 +24,9 @@ export function VisitTracker() {
 
   useEffect(() => {
     if (!allowed || !loadConsent()) return
-    trackVisit(location.pathname + location.search)
+    const path = location.pathname + location.search
+    trackVisit(path)
+    trackPageView(path)
   }, [location.pathname, location.search, allowed])
 
   return null

@@ -14,6 +14,13 @@ export const siteConfig = {
   phones: ['+254 728 807 213', '+254 748 255 466'] as const,
   phone: '+254 728 807 213',
   whatsapp: '+254748255466',
+  /**
+   * Meeting booking URL. Prefer Cal.com / Calendly via VITE_BOOKING_URL;
+   * otherwise WhatsApp with a prefilled booking message.
+   */
+  bookingUrl:
+    String(import.meta.env.VITE_BOOKING_URL || '').trim() ||
+    'https://wa.me/254748255466?text=Hi%20Ellines%20Tech%20%E2%80%94%20I%27d%20like%20to%20book%20a%20meeting.',
   /** Short two-city line — see src/data/locations.ts for the full address records. */
   address: locationLine,
   /** Full street address of the head office, for invoices and structured data. */

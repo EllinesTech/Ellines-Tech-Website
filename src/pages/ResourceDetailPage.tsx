@@ -100,6 +100,22 @@ export function ResourceDetailPage() {
           { name: 'Resources', path: '/resources' },
           { name: article.title, path: `/resources/${article.slug}` },
         ]}
+        jsonLd={{
+          '@type': 'Article',
+          headline: article.seoTitle || article.title,
+          description: article.seoDescription || article.excerpt,
+          dateModified: article.updatedAt || undefined,
+          author: { '@type': 'Organization', name: 'Ellines Tech' },
+          publisher: {
+            '@type': 'Organization',
+            name: 'Ellines Tech',
+            logo: {
+              '@type': 'ImageObject',
+              url: 'https://tech.ellines.co.ke/logos/logo-mark.png',
+            },
+          },
+          mainEntityOfPage: `https://tech.ellines.co.ke/resources/${article.slug}`,
+        }}
       />
 
       <ArticleShell

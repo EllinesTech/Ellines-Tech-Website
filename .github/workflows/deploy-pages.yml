@@ -6,6 +6,12 @@
 #   CLOUDFLARE_API_TOKEN   Account API token with Pages Edit (and Workers if needed)
 #   CLOUDFLARE_ACCOUNT_ID  Cloudflare account id
 #
+# Optional Vite build secrets (public measurement IDs — still store as Actions secrets):
+#   VITE_GA_MEASUREMENT_ID          GA4 ID (G-XXXXXXXX)
+#   VITE_GOOGLE_SITE_VERIFICATION   Search Console meta tag content
+#   VITE_BOOKING_URL                Cal.com / Calendly URL (else WhatsApp booking)
+#   VITE_SENTRY_DSN                 Sentry browser DSN
+#
 # Optional one-click Git later (dashboard OAuth only):
 #   dash.cloudflare.com → Workers & Pages → ellines-tech-website → Settings → Builds
 #   → Connect to Git → EllinesTech/Ellines-Tech-Website → main / npm run build / dist
@@ -44,6 +50,12 @@ jobs:
         run: npm ci
 
       - name: Build
+        env:
+          # Public client id (safe in workflow). Override via repo secret when set.
+          VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID || 'G-PZQ4SNSL56' }}
+          VITE_GOOGLE_SITE_VERIFICATION: ${{ secrets.VITE_GOOGLE_SITE_VERIFICATION }}
+          VITE_BOOKING_URL: ${{ secrets.VITE_BOOKING_URL }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
         run: npm run build
 
       - name: Deploy to Cloudflare Pages

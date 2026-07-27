@@ -42,10 +42,12 @@ export function Footer() {
     return [primary, ...siteConfig.emails.filter((e) => e !== primary)]
   }, [profile.email])
   const phones = useMemo(() => {
+    const digits = (value: string) => value.replace(/\D/g, '')
     const primary = profile.phone || siteConfig.phone
     const wa = profile.whatsapp || siteConfig.phones[1]
-    return [primary, ...siteConfig.phones.filter((p) => p !== primary && p !== wa), wa].filter(
-      (p, i, arr) => p && arr.indexOf(p) === i,
+    const list = [primary, ...siteConfig.phones.filter((p) => p !== primary), wa]
+    return list.filter(
+      (p, i, arr) => p && arr.findIndex((other) => digits(other) === digits(p)) === i,
     )
   }, [profile.phone, profile.whatsapp])
 

@@ -120,9 +120,12 @@ export function ContactPage() {
     {
       icon: CalendarClock,
       label: 'Book a meeting',
-      value: 'Schedule a call',
-      note: 'Pick a time that works',
-      href: `mailto:${email}?subject=Meeting%20Request`,
+      value: siteConfig.bookingUrl.includes('wa.me') ? 'WhatsApp scheduling' : 'Pick a time',
+      note: siteConfig.bookingUrl.includes('wa.me')
+        ? 'Message us to lock a slot'
+        : 'Open the calendar',
+      href: siteConfig.bookingUrl,
+      external: true,
       accent: 'text-sky-300 bg-sky-500/10 ring-sky-400/25',
     },
   ]
@@ -135,13 +138,20 @@ export function ContactPage() {
       href: `mailto:${addr}`,
       external: false,
     })),
-    ...[phone, ...siteConfig.phones.filter((p) => p !== phone && p !== whatsapp)].map((p) => ({
-      icon: Phone,
-      label: 'Phone',
-      value: p,
-      href: `tel:${p.replace(/\s/g, '')}`,
-      external: false,
-    })),
+    ...[phone, ...siteConfig.phones.filter((p) => p !== phone)]
+      .filter(
+        (p, i, arr) =>
+          p &&
+          p.replace(/\D/g, '') !== whatsapp.replace(/\D/g, '') &&
+          arr.findIndex((other) => other.replace(/\D/g, '') === p.replace(/\D/g, '')) === i,
+      )
+      .map((p) => ({
+        icon: Phone,
+        label: 'Phone',
+        value: p,
+        href: `tel:${p.replace(/\s/g, '')}`,
+        external: false,
+      })),
     {
       icon: MessageCircle,
       label: 'WhatsApp',

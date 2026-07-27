@@ -2,9 +2,11 @@ import fs from 'node:fs'
 
 const servicesSrc = fs.readFileSync('src/data/services.ts', 'utf8')
 const productsSrc = fs.readFileSync('src/data/products.ts', 'utf8')
+const knowledgeSrc = fs.readFileSync('src/data/knowledge.ts', 'utf8')
 const svc = [...servicesSrc.matchAll(/slug:\s*'([^']+)'/g)].map((m) => m[1])
 const prod = [...productsSrc.matchAll(/slug:\s*'([^']+)'/g)].map((m) => m[1])
-const today = '2026-07-26'
+const resources = [...knowledgeSrc.matchAll(/slug:\s*'([^']+)'/g)].map((m) => m[1])
+const today = new Date().toISOString().slice(0, 10)
 const base = 'https://tech.ellines.co.ke'
 const pages = [
   ['/', 1.0, 'weekly'],
@@ -39,6 +41,11 @@ for (const s of svc) {
 for (const p of prod) {
   xml += `  <url><loc>${base}/products/${p}</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>\n`
 }
+for (const slug of resources) {
+  xml += `  <url><loc>${base}/resources/${slug}</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.65</priority></url>\n`
+}
 xml += '</urlset>\n'
 fs.writeFileSync('public/sitemap.xml', xml)
-console.log(`Wrote sitemap: ${pages.length} pages, ${svc.length} services, ${prod.length} products`)
+console.log(
+  `Wrote sitemap: ${pages.length} pages, ${svc.length} services, ${prod.length} products, ${resources.length} resources`,
+)
