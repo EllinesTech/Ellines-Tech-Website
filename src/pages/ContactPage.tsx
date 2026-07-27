@@ -91,6 +91,9 @@ export function ContactPage() {
     }
   }
 
+  const isExternalHref = (href: string) =>
+    /^https?:\/\//i.test(href) || href.includes('wa.me')
+
   const channels = [
     {
       icon: MessageCircle,
@@ -98,7 +101,6 @@ export function ContactPage() {
       value: whatsapp,
       note: 'Fastest reply',
       href: waHref,
-      external: true,
       accent: 'text-emerald-300 bg-emerald-500/10 ring-emerald-400/25',
     },
     {
@@ -125,10 +127,12 @@ export function ContactPage() {
         ? 'Message us to lock a slot'
         : 'Open the calendar',
       href: siteConfig.bookingUrl,
-      external: true,
       accent: 'text-sky-300 bg-sky-500/10 ring-sky-400/25',
     },
-  ]
+  ].map((channel) => ({
+    ...channel,
+    external: isExternalHref(channel.href),
+  }))
 
   const directLines = [
     ...[email, ...siteConfig.emails.filter((e) => e !== email)].map((addr) => ({

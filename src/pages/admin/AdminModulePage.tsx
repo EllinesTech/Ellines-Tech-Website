@@ -33,6 +33,7 @@ import {
   createAdminUser,
   fetchActivity,
   fetchAnalytics,
+  fetchOpsStatus,
   fetchInvoices,
   fetchLeads,
   fetchNewsletter,
@@ -1862,6 +1863,120 @@ function SecurityPasswordModule() {
   )
 }
 
+function IntegrationsStatusModule() {
+  const [ops, setOps] = useState<Awaited<ReturnType<typeof fetchOpsStatus>> | null>(null)
+  const [payReady, setPayReady] = useState<boolean | null>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([
+      fetchOpsStatus(),
+      fetch('/api/paystack/initialize')
+        .then((r) => r.json())
+        .then((d) => Boolean(d?.paystack?.ready))
+        .catch(() => false),
+    ])
+      .then(([status, ready]) => {
+        if (cancelled) return
+        setOps(status)
+        setPayReady(ready)
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Could not load status')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const rows = [
+    {
+      label: 'Resend email',
+      ok: ops?.emailConfigured,
+      detail: ops?.emailConfigured
+        ? ops.resendFromSet
+          ? 'API key + from address set'
+          : 'API key set (from address defaulting)'
+        : 'Missing RESEND_API_KEY',
+    },
+    {
+      label: 'Lead / order notify',
+      ok: ops?.leadsNotifySet,
+      detail: ops?.leadsNotifySet ? 'LEADS/ORDERS notify set' : 'Using default tech@ fallback',
+    },
+    {
+      label: 'SMS (Africa’s Talking)',
+      ok: ops?.smsConfigured,
+      detail: !ops?.smsConfigured
+        ? 'Not configured — email OTP still works'
+        : ops.smsSandbox
+          ? 'Sandbox only (test numbers)'
+          : 'Live SMS credentials set',
+    },
+    {
+      label: 'Paystack checkout',
+      ok: payReady === true || ops?.paystackSecretSet,
+      detail:
+        payReady === true
+          ? 'Enabled and ready'
+          : ops?.paystackSecretSet
+            ? 'Secret set — enable in Payment methods if checkout fails'
+            : 'Secret missing or Paystack disabled',
+    },
+    {
+      label: 'Google Analytics',
+      ok: true,
+      detail: 'GA4 G-PZQ4SNSL56 (consent-gated)',
+    },
+  ]
+
+  return (
+    <Panel title="Integrations" description="Live readiness of email, SMS, payments, and analytics.">
+      {error && <p className="mb-3 text-sm text-rose-300">{error}</p>}
+      <ul className="space-y-2 text-sm">
+        {rows.map((row) => (
+          <li
+            key={row.label}
+            className="flex items-start justify-between gap-3 rounded-xl border border-white/10 px-3 py-2"
+          >
+            <span>
+              <span className="font-medium text-white">{row.label}</span>
+              <span className="mt-0.5 block text-xs text-slate-400">{row.detail}</span>
+            </span>
+            <span
+              className={
+                row.ok
+                  ? 'shrink-0 text-xs font-semibold uppercase tracking-wide text-emerald-300'
+                  : 'shrink-0 text-xs font-semibold uppercase tracking-wide text-amber-300'
+              }
+            >
+              {ops || payReady !== null ? (row.ok ? 'Ready' : 'Check') : '…'}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-4 text-xs text-slate-500">
+        M-Pesa / PayPal remain config-only. Live chat and AI use /api/live-chat and /api/ai.
+      </p>
+      <div className="mt-4 flex flex-wrap gap-3 text-sm">
+        <Link to="/admin/email" className="text-brand-300">
+          → Email Config
+        </Link>
+        <Link to="/admin/payments" className="text-brand-300">
+          → Payment methods
+        </Link>
+        <Link to="/admin/leads" className="text-brand-300">
+          → Leads
+        </Link>
+        <Link to="/admin/live-chat" className="text-brand-300">
+          → Live Chat
+        </Link>
+      </div>
+    </Panel>
+  )
+}
+
 export function AdminModulePage({ module }: { module: string }) {
   if (module === 'chat-settings') return <AdminChatPage />
   if (module === 'settings' || module === 'site-controls') return <AdminSettingsPage />
@@ -1926,35 +2041,7 @@ export function AdminModulePage({ module }: { module: string }) {
   }
 
   if (module === 'integrations') {
-    return (
-      <Panel
-        title="Integrations"
-        description="Live endpoints and channels wired into Ellines Tech."
-      >
-        <ul className="space-y-2 text-sm text-slate-300">
-          <li>Public email / WhatsApp → Email Config (editable)</li>
-          <li>Service requests: /request → Leads inbox</li>
-          <li>CMS API: /api/cms</li>
-          <li>Live chat API: /api/live-chat (admin + staff agents)</li>
-          <li>AI assist API: /api/ai</li>
-          <li>Payments: Paystack live checkout + invoice deposits (M-Pesa / PayPal credentials still config-only)</li>
-        </ul>
-        <div className="mt-4 flex flex-wrap gap-3 text-sm">
-          <Link to="/admin/email" className="text-brand-300">
-            → Email Config
-          </Link>
-          <Link to="/admin/payments" className="text-brand-300">
-            → Payment methods
-          </Link>
-          <Link to="/admin/leads" className="text-brand-300">
-            → Leads
-          </Link>
-          <Link to="/admin/live-chat" className="text-brand-300">
-            → Live Chat
-          </Link>
-        </div>
-      </Panel>
-    )
+    return <IntegrationsStatusModule />
   }
 
   if (module === 'profile') {

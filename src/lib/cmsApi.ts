@@ -568,6 +568,21 @@ export async function fetchAnalytics() {
   return data.analytics
 }
 
+export type OpsStatus = {
+  emailConfigured: boolean
+  resendFromSet: boolean
+  smsConfigured: boolean
+  smsSandbox: boolean
+  leadsNotifySet: boolean
+  careersNotifySet: boolean
+  paystackSecretSet: boolean
+}
+
+export async function fetchOpsStatus(): Promise<OpsStatus> {
+  const data = await cmsFetch('resource=ops', { headers: elevatedHeaders() })
+  return data as OpsStatus
+}
+
 export async function backupCms() {
   return cmsFetch('resource=backup', {
     method: 'POST',

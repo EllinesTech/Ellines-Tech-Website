@@ -16,6 +16,8 @@ Parent: Ellines Group (Ellines Tech, Ellines Haven, Ellines Rattan)
 - [Portfolio](https://tech.ellines.co.ke/portfolio): Selected work
 - [Success stories](https://tech.ellines.co.ke/success-stories): Case outcomes
 - [Pricing](https://tech.ellines.co.ke/pricing): Packages and shop
+- [Shop](https://tech.ellines.co.ke/shop): Instant packages
+- [Request](https://tech.ellines.co.ke/request): Quote or buy a package
 - [Resources](https://tech.ellines.co.ke/resources): Knowledge hub
 - [Careers](https://tech.ellines.co.ke/careers): Open roles
 - [Contact](https://tech.ellines.co.ke/contact): Briefs and inquiries

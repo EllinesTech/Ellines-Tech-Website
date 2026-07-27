@@ -68,7 +68,28 @@ export function CmsPageView() {
         title={page.seoTitle || page.title}
         description={page.seoDescription || page.excerpt}
         path={`/p/${page.slug}`}
+        type="article"
         noindex={page.status !== 'published'}
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: page.title, path: `/p/${page.slug}` },
+        ]}
+        jsonLd={{
+          '@type': 'Article',
+          headline: page.seoTitle || page.title,
+          description: page.seoDescription || page.excerpt,
+          dateModified: page.updatedAt || undefined,
+          author: { '@type': 'Organization', name: siteConfig.name },
+          publisher: {
+            '@type': 'Organization',
+            name: siteConfig.name,
+            logo: {
+              '@type': 'ImageObject',
+              url: `${siteConfig.url}/logos/logo-mark.png`,
+            },
+          },
+          mainEntityOfPage: `${siteConfig.url}/p/${page.slug}`,
+        }}
       />
 
       {page.status !== 'published' && (

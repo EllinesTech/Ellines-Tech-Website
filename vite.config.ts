@@ -4,7 +4,19 @@ import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    {
+      name: 'et-html-env-inject',
+      transformIndexHtml(html) {
+        const verify = String(process.env.VITE_GOOGLE_SITE_VERIFICATION || '').trim()
+        if (!verify) return html
+        const tag = `    <meta name="google-site-verification" content="${verify.replace(/"/g, '')}" />\n`
+        return html.replace('</head>', `${tag}  </head>`)
+      },
+    },
+  ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

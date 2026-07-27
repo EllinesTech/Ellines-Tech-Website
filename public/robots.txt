@@ -9,5 +9,7 @@ Disallow: /staff/
 Disallow: /account
 Disallow: /account/
 Disallow: /invoice/
+Disallow: /pay/
+Disallow: /pay
 
 Sitemap: https://tech.ellines.co.ke/sitemap.xml

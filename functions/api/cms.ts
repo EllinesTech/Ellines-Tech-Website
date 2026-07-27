@@ -822,6 +822,21 @@ export async function onRequestGet(context) {
     return json({ activity: await getJson(env, 'cms:activity', []) })
   }
 
+  if (resource === 'ops') {
+    if (!(await staffOrGod(request, env))) return json({ error: 'unauthorized' }, 401)
+    const atUser = String(env.AT_USERNAME || '').trim()
+    const atKey = String(env.AT_API_KEY || '').trim()
+    return json({
+      emailConfigured: Boolean(String(env.RESEND_API_KEY || '').trim()),
+      resendFromSet: Boolean(String(env.RESEND_FROM || '').trim()),
+      smsConfigured: Boolean(atUser && atKey),
+      smsSandbox: atUser.toLowerCase() === 'sandbox',
+      leadsNotifySet: Boolean(String(env.LEADS_NOTIFY_EMAIL || env.ORDERS_NOTIFY_EMAIL || '').trim()),
+      careersNotifySet: Boolean(String(env.CAREERS_NOTIFY_EMAIL || '').trim()),
+      paystackSecretSet: Boolean(String(env.PAYSTACK_SECRET_KEY || '').trim()),
+    })
+  }
+
   if (resource === 'leads') {
     const actor = await staffOrGod(request, env)
     if (!actor) return json({ error: 'unauthorized' }, 401)

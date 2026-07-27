@@ -1,11 +1,23 @@
 import fs from 'node:fs'
 
+function publishedSlugs(src) {
+  // Match objects that declare slug + status published (order-independent within ~400 chars).
+  const blocks = src.split(/\{\s*\n/)
+  const slugs = []
+  for (const block of blocks) {
+    const slug = block.match(/slug:\s*'([^']+)'/)?.[1]
+    const status = block.match(/status:\s*'([^']+)'/)?.[1]
+    if (slug && (!status || status === 'published')) slugs.push(slug)
+  }
+  return [...new Set(slugs)]
+}
+
 const servicesSrc = fs.readFileSync('src/data/services.ts', 'utf8')
 const productsSrc = fs.readFileSync('src/data/products.ts', 'utf8')
 const knowledgeSrc = fs.readFileSync('src/data/knowledge.ts', 'utf8')
-const svc = [...servicesSrc.matchAll(/slug:\s*'([^']+)'/g)].map((m) => m[1])
-const prod = [...productsSrc.matchAll(/slug:\s*'([^']+)'/g)].map((m) => m[1])
-const resources = [...knowledgeSrc.matchAll(/slug:\s*'([^']+)'/g)].map((m) => m[1])
+const svc = publishedSlugs(servicesSrc)
+const prod = publishedSlugs(productsSrc)
+const resources = publishedSlugs(knowledgeSrc)
 const today = new Date().toISOString().slice(0, 10)
 const base = 'https://tech.ellines.co.ke'
 const pages = [
