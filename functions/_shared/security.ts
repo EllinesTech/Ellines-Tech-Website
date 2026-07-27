@@ -28,7 +28,7 @@ const ALLOWED_ORIGINS = new Set([
   'https://ellines.co.ke',
   'https://tech.ellines.co.ke',
   'https://haven.ellines.co.ke',
-  'https://rattan.ellines.co.ke',
+  'https://rattanfurniture.ellines.co.ke',
 ])
 
 export const ALLOWED_HEADERS = 'Content-Type, X-Admin-Key, X-User-Token'

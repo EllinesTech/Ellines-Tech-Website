@@ -82,7 +82,7 @@ export const siteConfig = {
       role: 'Furniture',
       description:
         'Quality rattan furniture for homes and commercial spaces across Kenya — the commerce brand of Ellines Group.',
-      url: 'https://rattan.ellines.co.ke',
+      url: 'https://rattanfurniture.ellines.co.ke',
       status: 'operating' as const,
       statusLabel: 'Operating',
       image: '/business-logos/ellines-rattan.png',

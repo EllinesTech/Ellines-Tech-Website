@@ -684,7 +684,7 @@ function companyProfileBody(a) {
         <div class="panel plain" style="text-align:center">
           <div class="media contain"><img src="${a(ASSETS.rattan)}" alt="Ellines Rattan" /></div>
           <h3 style="margin-top:8px">Ellines Rattan</h3>
-          <p class="muted" style="font-size:11px;margin:0">Rattan furniture · rattan.ellines.co.ke</p>
+          <p class="muted" style="font-size:11px;margin:0">Rattan furniture · rattanfurniture.ellines.co.ke</p>
         </div>
       </div>
       <div class="cta-band">

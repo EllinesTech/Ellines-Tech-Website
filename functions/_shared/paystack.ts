@@ -9,7 +9,7 @@ export const PAYSTACK_PUBLIC_KEY_DEFAULT =
 export const BRAND_ORIGINS = {
   haven: 'https://haven.ellines.co.ke',
   tech: 'https://tech.ellines.co.ke',
-  rattan: 'https://rattan.ellines.co.ke',
+  rattan: 'https://rattanfurniture.ellines.co.ke',
 }
 
 export const INSTANT_CHECKOUT_CATEGORIES = new Set([

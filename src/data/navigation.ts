@@ -156,7 +156,7 @@ export const footerNavigation = {
   group: [
     { label: 'Ellines Tech', href: 'https://tech.ellines.co.ke' },
     { label: 'Ellines Haven', href: 'https://haven.ellines.co.ke/' },
-    { label: 'Ellines Rattan (Furniture)', href: 'https://rattan.ellines.co.ke' },
+    { label: 'Ellines Rattan (Furniture)', href: 'https://rattanfurniture.ellines.co.ke' },
   ],
   resources: [
     { label: 'Articles', href: '/resources#articles' },
