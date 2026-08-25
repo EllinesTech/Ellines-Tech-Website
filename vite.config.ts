@@ -25,12 +25,51 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          motion: ['framer-motion'],
+        manualChunks(id) {
+          // Admin pages are heavy (100KB+) - split separately
+          if (id.includes('src/pages/admin/')) {
+            return 'admin'
+          }
+          // Staff pages split
+          if (id.includes('src/pages/staff/')) {
+            return 'staff'
+          }
+          // Large admin components
+          if (id.includes('src/components/admin/')) {
+            return 'admin-components'
+          }
+          // Engagement features (chat, etc)
+          if (id.includes('src/components/engagement/')) {
+            return 'engagement'
+          }
+          
+          // Vendor dependencies - split by library
+          if (id.includes('node_modules')) {
+            // Framer motion is 124KB - keep separate
+            if (id.includes('framer-motion')) {
+              return 'motion'
+            }
+            // Icons library
+            if (id.includes('lucide-react')) {
+              return 'icons'
+            }
+            // React core
+            if (id.includes('react-dom')) {
+              return 'react-dom'
+            }
+            if (id.includes('react-router')) {
+              return 'router'
+            }
+            if (id.includes('react')) {
+              return 'react'
+            }
+            // Other node_modules
+            return 'vendor'
+          }
         },
       },
     },
+    chunkSizeWarningLimit: 300, // Warn if any chunk exceeds 300KB
   },
   server: {
     port: 5174,

@@ -34,7 +34,9 @@ export function AdminLiveChatPage({ agentName = 'Admin' }: { agentName?: string 
 
   useEffect(() => {
     refreshList()
-    const t = setInterval(refreshList, 4000)
+    // Optimized: Increased from 4s to 8s to reduce server load and network requests
+    // Consider implementing WebSockets for real-time updates in future
+    const t = setInterval(refreshList, 8000)
     return () => clearInterval(t)
   }, [])
 

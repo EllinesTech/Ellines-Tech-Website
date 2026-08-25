@@ -108,25 +108,31 @@ export function HomePage() {
   const { home: liveHome } = useSiteCopy()
 
   useEffect(() => {
-    void loadPublishedServices().then(setServices)
-    void loadPublishedProducts().then((list) =>
-      setFeaturedProducts(list.filter((p) => p.highlights && p.image).slice(0, 4)),
-    )
-    void loadPublishedPortfolio().then((list) => setFeaturedPortfolio(list.slice(0, 6)))
-    void loadClientBrands().then(setBrands)
-    void fetchReviews()
-      .then((list) => {
-        if (Array.isArray(list) && list.length) {
-          setTestimonials(
-            list.map((r) => ({
-              quote: String((r as { quote?: string }).quote || ''),
-              name: String((r as { name?: string }).name || ''),
-              role: String((r as { role?: string }).role || ''),
-            })),
-          )
-        }
-      })
-      .catch(() => undefined)
+    // Optimized: Combined all API calls into a single Promise.all for parallel loading
+    Promise.all([
+      loadPublishedServices(),
+      loadPublishedProducts(),
+      loadPublishedPortfolio(),
+      loadClientBrands(),
+      fetchReviews().catch(() => []),
+    ]).then(([services, products, portfolio, brands, reviews]) => {
+      setServices(services)
+      setFeaturedProducts(products.filter((p) => p.highlights && p.image).slice(0, 4))
+      setFeaturedPortfolio(portfolio.slice(0, 6))
+      setBrands(brands)
+      
+      if (Array.isArray(reviews) && reviews.length) {
+        setTestimonials(
+          reviews.map((r) => ({
+            quote: String((r as { quote?: string }).quote || ''),
+            name: String((r as { name?: string }).name || ''),
+            role: String((r as { role?: string }).role || ''),
+          })),
+        )
+      }
+    }).catch((error) => {
+      console.error('Failed to load homepage data:', error)
+    })
   }, [])
 
   return (
@@ -238,10 +244,10 @@ export function HomePage() {
             {stats.map((stat, i) => (
               <motion.div
                 key={stat.label}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
                 viewport={{ once: true, margin: '-40px' }}
-                transition={{ delay: i * 0.07, duration: 0.45 }}
+                transition={{ delay: i * 0.05, duration: 0.4 }}
                 className={cn(
                   'text-center sm:px-6 sm:text-left sm:first:pl-0',
                   i % 2 === 1 && 'border-l border-white/10',
@@ -264,6 +270,8 @@ export function HomePage() {
           src={siteConfig.media.banners.homeStory}
           alt="Ellines Tech — Your Idea. Our Code."
           className="absolute inset-0 h-full w-full object-cover object-[center_40%]"
+          loading="lazy"
+          decoding="async"
           initial={{ scale: 1.06 }}
           whileInView={{ scale: 1 }}
           viewport={{ once: true }}
@@ -312,10 +320,10 @@ export function HomePage() {
             {valueProps.map((item, i) => (
               <motion.div
                 key={item.title}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
+                transition={{ delay: i * 0.06 }}
                 className="group overflow-hidden rounded-[1.35rem] border border-white/10 bg-surface-elevated/30"
               >
                 <div className="relative aspect-[3/2] overflow-hidden bg-slate-950">
@@ -324,6 +332,7 @@ export function HomePage() {
                     alt=""
                     className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                     loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/35 to-transparent" />
                   <div className="absolute bottom-4 left-4 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/25 text-brand-200 ring-1 ring-brand-400/35 backdrop-blur-md">
@@ -361,10 +370,10 @@ export function HomePage() {
             {brands.map((brand, i) => (
               <motion.div
                 key={brand.id}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.04 }}
+                transition={{ delay: i * 0.03 }}
                 className="group flex flex-col items-center gap-3 text-center"
               >
                 <div className="flex h-16 w-full items-center justify-center">
@@ -373,6 +382,7 @@ export function HomePage() {
                     alt={brand.name}
                     className="max-h-12 w-auto max-w-[85%] object-contain opacity-75 transition duration-500 group-hover:scale-[1.04] group-hover:opacity-100"
                     loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <p className="font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600 transition-colors group-hover:text-slate-400">
@@ -475,6 +485,7 @@ export function HomePage() {
                 alt={siteConfig.founder.name}
                 className="h-14 w-14 rounded-full object-cover object-top ring-2 ring-brand-400/25 sm:h-16 sm:w-16"
                 loading="lazy"
+                decoding="async"
               />
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-400">
@@ -502,6 +513,7 @@ export function HomePage() {
               alt="Ellines Tech software craft"
               className="absolute inset-0 h-full w-full object-contain object-center"
               loading="lazy"
+              decoding="async"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-transparent to-slate-950/40 lg:to-slate-950/80" />
           </div>
@@ -578,10 +590,10 @@ export function HomePage() {
             {testimonials.slice(0, 6).map((item, i) => (
               <motion.blockquote
                 key={item.name}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: i * 0.04 }}
                 className="flex h-full flex-col rounded-[1.35rem] border border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent p-6"
               >
                 <p className="flex-1 text-sm leading-relaxed text-slate-300">“{item.quote}”</p>
@@ -615,10 +627,10 @@ export function HomePage() {
             {industries.slice(0, 6).map((industry, i) => (
               <motion.div
                 key={industry.slug}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
                 viewport={{ once: true, margin: '-60px' }}
-                transition={{ delay: (i % 3) * 0.07, duration: 0.5 }}
+                transition={{ delay: (i % 3) * 0.05, duration: 0.4 }}
               >
                 <Link
                   to={`/industries#${industry.slug}`}
@@ -629,6 +641,7 @@ export function HomePage() {
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-[900ms] ease-out group-hover:scale-[1.06]"
                     loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/55 to-slate-950/10" />
                   <div className="relative w-full p-4 sm:p-5">
