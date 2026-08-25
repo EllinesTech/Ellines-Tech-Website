@@ -131,17 +131,14 @@ export function ServiceDetailPage() {
           ) : null}
           <div className="mt-8 flex flex-wrap gap-3">
             <Button href={`/request?intent=request&service=${service.slug}`} icon>
-              Request this service
+              Get started — free quote
             </Button>
             <Button
-              href={
-                service.pricingGroupId
-                  ? `/pricing?group=${encodeURIComponent(service.pricingGroupId)}`
-                  : '/pricing'
-              }
+              href={`https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi Ellines Tech — I'm interested in ${service.name}`)}`}
+              external
               variant="secondary"
             >
-              View pricing
+              WhatsApp us
             </Button>
           </div>
         </div>
@@ -172,15 +169,29 @@ export function ServiceDetailPage() {
             <aside className="lg:col-span-5">
               <div className="rounded-[1.5rem] border border-white/10 bg-gradient-to-b from-white/[0.05] to-transparent p-6 sm:p-8">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-400">
-                  Why Ellines Tech
+                  Why clients pick us
                 </p>
                 <h3 className="mt-3 font-display text-xl font-semibold text-white">
-                  {category.description}
+                  Fast, transparent, and built to earn you money
                 </h3>
-                <p className="mt-4 text-sm leading-relaxed text-slate-400">
-                  We execute meticulously from start to finish — clear communication, modern
-                  tooling, and outcomes aligned with your vision.
-                </p>
+                <ul className="mt-5 space-y-3 text-sm text-slate-300">
+                  <li className="flex items-start gap-2.5">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
+                    Reply within hours — projects start the same week
+                  </li>
+                  <li className="flex items-start gap-2.5">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
+                    Fixed-price packages — know your cost before we start
+                  </li>
+                  <li className="flex items-start gap-2.5">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
+                    M-Pesa and card payments accepted
+                  </li>
+                  <li className="flex items-start gap-2.5">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
+                    24/7 support after launch — we don't disappear
+                  </li>
+                </ul>
                 <dl className="mt-6 divide-y divide-white/8 border-y border-white/8 text-sm">
                   <div className="flex items-baseline justify-between gap-4 py-3">
                     <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">

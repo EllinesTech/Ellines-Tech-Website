@@ -33,43 +33,43 @@ export const aboutStory = {
 } as const
 
 export const homeCopy = {
-  storyEyebrow: 'About Our Company',
-  storyTitle: 'We execute our ideas from start to finish',
+  storyEyebrow: 'How we work',
+  storyTitle: 'Your idea becomes a live product — fast',
   storyBody:
-    'We bring ideas to life meticulously — every detail perfected along the way. Our team collaborates closely with you, transforming concepts into actionable plans. With a focus on quality and innovation, we navigate each phase of the project and deliver results that align with your vision.',
-  whyEyebrow: 'Company benefits',
-  whyTitle: 'Why you should choose our services',
+    'Most businesses lose time and money to slow agencies, vague scope, and poor communication. We fix that. You get a dedicated team, a written plan before any work starts, and a shipped product you can show to customers — not just a Figma file.',
+  whyEyebrow: 'Why clients choose us',
+  whyTitle: 'Built for businesses that need results, not just reports',
   whyBody:
-    'Expert, tailored solutions that drive innovation and ensure your success. Our team brings industry experience, reliable support, and the latest technologies — always prioritizing your unique goals.',
+    'We focus on outcomes: more leads, faster systems, and technology that pays for itself. No jargon, no endless revisions — just work that ships and generates value from day one.',
 } as const
 
 export const valueProps = [
   {
     icon: 'Sparkles' as const,
-    title: 'Perfect Business Solutions',
+    title: 'Get a website that earns money',
     description:
-      'Tailored systems for your operations — built for efficiency, clarity, and lasting impact across every part of the business.',
+      'Not just a pretty site — a lead-generating machine with clear CTAs, fast load times, and copy that converts visitors into paying clients.',
     image: '/media/scenes/solutions.png',
   },
   {
     icon: 'Zap' as const,
-    title: 'Business Growth Planning',
+    title: 'Launch in days, not months',
     description:
-      'Strategy and technology planning that identifies opportunities and turns them into actionable roadmaps you can execute.',
+      'Most projects kick off within the week. You get demos at every stage, and we don\'t disappear after delivery — we\'re reachable 24/7.',
     image: '/media/scenes/about.png',
   },
   {
     icon: 'Shield' as const,
-    title: 'Strategic Development',
+    title: 'Automate the work that drains you',
     description:
-      'End-to-end product and software development that positions you for long-term success in competitive markets.',
+      'AI tools and custom software that eliminate manual tasks — freeing your team to focus on growth, not spreadsheets.',
     image: '/media/scenes/strategy.png',
   },
   {
     icon: 'Globe2' as const,
-    title: 'Expert Tech Services',
+    title: 'Transparent pricing, no surprises',
     description:
-      'Ongoing expertise across software, AI, cloud, and digital delivery — so your technology keeps performing as you scale.',
+      'Fixed-price packages for most services. You know the cost before any work starts — no hidden fees, no scope-creep shocks.',
     image: '/media/scenes/workspace.png',
   },
 ] as const

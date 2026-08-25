@@ -185,7 +185,7 @@ export function HomePage() {
 
               <p className="mt-7 max-w-md text-lg leading-relaxed text-slate-300/95 sm:text-xl">
                 {liveHome.heroSub ||
-                  'Software applications, mobile apps, and digital solutions — executed from start to finish for businesses that need technology built to last.'}
+                  'We build websites, apps, and AI tools that help Kenyan businesses get more clients and earn more — fast turnaround, transparent pricing, and support that doesn\'t vanish after launch.'}
               </p>
 
               <motion.div
@@ -195,10 +195,10 @@ export function HomePage() {
                 className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center"
               >
                 <Button href="/request" size="lg" icon>
-                  Request a service
+                  Get a free quote
                 </Button>
-                <Button href="/pricing" variant="secondary" size="lg">
-                  View pricing
+                <Button href="/services" variant="secondary" size="lg">
+                  See all services
                 </Button>
               </motion.div>
 
@@ -212,6 +212,10 @@ export function HomePage() {
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
                   Online 24/7 · Nyeri &amp; Nairobi
                 </span>
+                <span>·</span>
+                <span>Reply within a few hours</span>
+                <span>·</span>
+                <span>Projects start this week</span>
               </motion.p>
             </motion.div>
 
@@ -229,6 +233,33 @@ export function HomePage() {
             Explore
             <ChevronDown className="h-4 w-4 animate-bounce text-brand-400/70 transition-colors group-hover:text-brand-300" />
           </motion.a>
+        </div>
+      </section>
+
+      {/* Urgency / trust strip — answers "should I trust this?" before scrolling */}
+      <section className="border-b border-white/5 bg-surface/60 py-4">
+        <div className="section-container">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center text-xs text-slate-400">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              <span className="font-semibold text-emerald-300">We reply within a few hours</span>
+            </span>
+            <span className="hidden sm:block text-white/10">|</span>
+            <span>50+ projects delivered across Kenya</span>
+            <span className="hidden sm:block text-white/10">|</span>
+            <span>Fixed-price packages — no surprise bills</span>
+            <span className="hidden sm:block text-white/10">|</span>
+            <span>M-Pesa &amp; card payments accepted</span>
+            <span className="hidden sm:block text-white/10">|</span>
+            <a
+              href={waHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-brand-300 underline-offset-2 hover:underline"
+            >
+              WhatsApp us now →
+            </a>
+          </div>
         </div>
       </section>
 
@@ -295,11 +326,11 @@ export function HomePage() {
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-slate-300">{liveHome.storyBody}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button href="/about" icon>
-                Our Story
+              <Button href="/request" icon>
+                Get a free quote
               </Button>
-              <Button href="/request" variant="secondary">
-                Start a project
+              <Button href="/services" variant="secondary">
+                Browse services
               </Button>
             </div>
           </motion.div>
@@ -437,8 +468,8 @@ export function HomePage() {
           <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
             <SectionHeader
               eyebrow="Services"
-              title="End-to-end technology services"
-              description="Design, development, AI, marketing, and cyber security — open any service for full details."
+              title="What can we build for you?"
+              description="Tell us what you need — website, app, AI tool, or brand. Most projects start within the week. Browse all 28 services below or request a custom quote."
             />
             <Button href="/services" variant="ghost" icon>
               View All Services
@@ -457,7 +488,7 @@ export function HomePage() {
                   image={serviceImage(service)}
                   href={`/services/${service.slug}`}
                   index={i % 3}
-                  cta="Explore service"
+                  cta="Get this service"
                   badge={
                     <MediaBadge>
                       <Icon className="h-5 w-5" />
@@ -466,6 +497,20 @@ export function HomePage() {
                 />
               )
             })}
+          </div>
+          <div className="mt-10 flex flex-col items-center gap-3 rounded-[1.35rem] border border-brand-400/20 bg-brand-500/[0.06] p-6 text-center sm:flex-row sm:justify-between sm:text-left">
+            <div>
+              <p className="font-display text-lg font-semibold text-white">Not sure which service you need?</p>
+              <p className="mt-1 text-sm text-slate-400">Describe your goal and we'll recommend the right package — free, no commitment.</p>
+            </div>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+              <Button href="/request?intent=quote" size="sm" icon>
+                Get a free quote
+              </Button>
+              <Button href={waHref} external size="sm" variant="secondary">
+                WhatsApp us
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -556,18 +601,18 @@ export function HomePage() {
           >
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-400">
-                Next step
+                Ready to start?
               </p>
               <p className="mt-1.5 font-display text-lg font-semibold text-white sm:text-xl">
-                Pick a package — or send a brief and we&apos;ll scope it.
+                Get a free quote in hours — projects kick off this week.
               </p>
             </div>
             <div className="flex flex-wrap gap-2.5">
-              <Button href="/pricing" size="sm" icon>
-                View pricing
+              <Button href="/request" size="sm" icon>
+                Get a free quote
               </Button>
-              <Button href="/request" size="sm" variant="secondary">
-                Request a service
+              <Button href={waHref} external size="sm" variant="secondary">
+                WhatsApp us
               </Button>
             </div>
           </motion.div>
@@ -753,11 +798,11 @@ export function HomePage() {
       <section className="section-padding border-t border-white/5">
         <div className="section-container space-y-8">
           <CtaPanel
-            eyebrow="Start today"
-            title="Ready to transform your business?"
-            description={`We're here 24/7 for demos and services. Request a quote or WhatsApp us at ${profile.whatsapp || siteConfig.phones[1]}.`}
-            primary={{ label: 'Request a service', href: '/request' }}
-            secondary={{ label: 'WhatsApp us', href: waHref, external: true, variant: 'secondary' }}
+            eyebrow="Start today — projects begin this week"
+            title="Ready to grow your business with technology?"
+            description={`We reply within a few hours, 24/7. Get a free quote — no commitment required. Or WhatsApp us directly at ${profile.whatsapp || siteConfig.phones[1]}.`}
+            primary={{ label: 'Get a free quote', href: '/request' }}
+            secondary={{ label: 'WhatsApp us now', href: waHref, external: true, variant: 'secondary' }}
             className="border-brand-500/25 from-brand-900/80 to-sky-950/90 p-8 sm:p-12 lg:p-14 [&_h2]:text-3xl sm:[&_h2]:text-4xl lg:[&_h2]:text-5xl"
           />
           <div className="grid gap-8 sm:grid-cols-2 sm:items-end">

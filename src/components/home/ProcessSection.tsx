@@ -6,23 +6,23 @@ import { SectionHeader } from '@/components/ui/SectionHeader'
 const steps = [
   {
     icon: MessageSquare,
-    title: 'Brief',
-    body: 'Share goals, constraints, and success criteria through our request flow or chat.',
+    title: 'Tell us what you need',
+    body: 'Share your goals and budget in 2 minutes — by form, chat, or WhatsApp. No long discovery calls required.',
   },
   {
     icon: Search,
-    title: 'Scope',
-    body: 'We map the work, timeline, and investment — no vague retainers without a plan.',
+    title: 'Get a clear scope & price',
+    body: 'We respond within hours with a fixed price and timeline. No vague retainers, no surprise invoices.',
   },
   {
     icon: PenLine,
-    title: 'Build',
-    body: 'Design and engineering in tight loops with demos you can actually react to.',
+    title: 'We build it',
+    body: 'Design and development with regular demos you can review and react to — you\'re always in control.',
   },
   {
     icon: Rocket,
-    title: 'Launch',
-    body: 'Ship to production, hand over clearly, and stay available 24/7 when you need us.',
+    title: 'Launch & grow',
+    body: 'Go live fast and start generating results. We stay available 24/7 for support, updates, and new features.',
   },
 ]
 
@@ -35,9 +35,9 @@ export function ProcessSection({
     <section className="section-padding border-t border-white/5 bg-surface/30">
       <div className="section-container">
         <SectionHeader
-          eyebrow="How we work"
-          title="A clear path from idea to shipped product"
-          description="The same operating rhythm used by premium product studios — brief, scope, build, launch."
+          eyebrow="How it works"
+          title="From idea to income — in 4 simple steps"
+          description="No lengthy onboarding, no confusing processes. You describe what you need, we price it clearly, build it fast, and support it after launch."
           align="center"
           className="mb-14"
         />
@@ -65,7 +65,7 @@ export function ProcessSection({
         </div>
         <div className="mt-12 flex justify-center">
           <Button href={ctaHref} size="lg" icon>
-            Start a request
+            Get a free quote now
           </Button>
         </div>
       </div>

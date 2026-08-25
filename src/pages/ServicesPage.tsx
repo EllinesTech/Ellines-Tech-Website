@@ -85,19 +85,18 @@ export function ServicesPage() {
               Our services
             </p>
             <h1 className="mt-5 font-display text-[2.5rem] font-extrabold leading-[1.03] tracking-[-0.035em] text-white sm:text-5xl lg:text-[3.5rem]">
-              Technology services
-              <span className="mt-1 block text-gradient">built to ship</span>
+              The tech work your business
+              <span className="mt-1 block text-gradient">needs to grow</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300/95">
-              Design, development, AI, marketing, security, and career documents — scoped
-              professionally with transparent pricing.
+              Websites that convert, apps that automate, AI that saves time — and a team that stays available after launch. Fixed-price packages, transparent quotes, and fast turnaround.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <Button href="/request" size="lg" icon>
-                Request a service
+              <Button href="/request?intent=quote" size="lg" icon>
+                Get a free quote
               </Button>
-              <Button href="/pricing" variant="secondary" size="lg">
-                Product pricing
+              <Button href={`https://wa.me/${siteConfig.whatsapp.replace(/\D/g, '')}`} external variant="secondary" size="lg">
+                WhatsApp us
               </Button>
             </div>
           </motion.div>
@@ -177,11 +176,11 @@ export function ServicesPage() {
       <section className="section-padding border-t border-white/5">
         <div className="section-container">
           <CtaPanel
-            eyebrow="Not sure which service fits?"
-            title="Describe the outcome — we'll scope the work"
-            description="Send a short brief and we'll recommend the right service and price. Replies within a few hours, 24/7."
-            primary={{ label: 'Send a brief', href: '/contact#quote' }}
-            secondary={{ label: 'WhatsApp us', href: waHref, external: true }}
+            eyebrow="Free quote — no commitment"
+            title="Tell us what you need and we'll scope it"
+            description="Share a brief description of your project. We'll reply with a clear price and timeline — within a few hours, 24/7."
+            primary={{ label: 'Get a free quote', href: '/request?intent=quote' }}
+            secondary={{ label: 'WhatsApp us now', href: waHref, external: true }}
           />
         </div>
       </section>
