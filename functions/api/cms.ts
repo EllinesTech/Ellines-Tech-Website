@@ -2410,6 +2410,12 @@ LinkedIn: ${application.linkedinUrl || '—'}<br/>Portfolio: ${application.portf
     return json({ ok: true })
   }
 
+  if (action === 'reset_site_copy') {
+    await putJson(env, 'cms:site-copy', defaultSiteCopy())
+    await logActivity(env, { type: 'site', message: 'Reset site copy to current defaults' })
+    return json({ ok: true, reset: true })
+  }
+
   if (action === 'save_knowledge_article') {
     const articles = await loadKnowledgeArticles(env)
     const article = body.article
@@ -3141,10 +3147,10 @@ function defaultSiteCopy() {
     home: {
       heroHeadline: 'Ellines Tech',
       heroSub:
-        'Software applications, mobile apps, and digital solutions — executed from start to finish.',
-      storyTitle: 'We execute our ideas from start to finish',
+        'We build websites, apps, and AI tools that help Kenyan businesses get more clients and earn more — fast turnaround, transparent pricing, and support that doesn\'t vanish after launch.',
+      storyTitle: 'Your idea becomes a live product — fast',
       storyBody:
-        'We bring ideas to life meticulously — quality, innovation, and results aligned with your vision.',
+        'Most businesses lose time and money to slow agencies, vague scope, and poor communication. We fix that. You get a dedicated team, a written plan before any work starts, and a shipped product you can show to customers — not just a Figma file.',
       groupTitle: 'Ellines Group',
       groupBody:
         'Ellines Group is the parent company behind Ellines Tech, Ellines Haven, and Ellines Rattan — technology, publishing, and furniture under one vision.',
