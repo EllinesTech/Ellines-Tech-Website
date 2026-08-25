@@ -99,7 +99,12 @@ export function ChatWidget() {
   // Hydrate chat knowledge from CMS, then fill any gaps from shipped defaults
   // so newer capability FAQs (payments, integrations, timelines) land even when
   // KV still holds an older shorter seed.
+  // Only fetch when the widget is first opened — avoids a cold API call on every
+  // page load even for users who never open the chat.
+  const faqsLoaded = useRef(false)
   useEffect(() => {
+    if (!open || faqsLoaded.current) return
+    faqsLoaded.current = true
     let cancelled = false
     void fetchChatFaqs()
       .then((list) => {
@@ -125,11 +130,14 @@ export function ChatWidget() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [open])
 
-  // Poll live session when in human mode
+  // Poll live session when in human mode — only while open and actively waiting.
+  // 5 s is responsive enough for human chat without hammering the edge.
   useEffect(() => {
     if (!open || mode !== 'human' || !session?.id) return
+    // Stop polling once the agent has responded and the session is live to save
+    // on unnecessary requests; restart if the user sends another message.
     const t = setInterval(async () => {
       try {
         const fresh = await getLiveSession(session.id)
@@ -137,7 +145,7 @@ export function ChatWidget() {
       } catch {
         /* ignore transient */
       }
-    }, 2500)
+    }, 5000)
     return () => clearInterval(t)
   }, [open, mode, session?.id])
 

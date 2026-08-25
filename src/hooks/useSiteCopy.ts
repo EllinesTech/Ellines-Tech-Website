@@ -37,13 +37,41 @@ type SiteCopy = {
   }[]
 }
 
+// Module-level cache: fetched once per session, shared across all components
+// that call useSiteCopy. Previously every consumer (HomePage, AboutPage, etc.)
+// fired its own independent network request — this caused 3-5 redundant calls
+// on pages that compose multiple hooks.
+let siteCopyCache: SiteCopy | null = null
+let siteCopyPromise: Promise<SiteCopy> | null = null
+
+function loadSiteCopy(): Promise<SiteCopy> {
+  if (siteCopyCache) return Promise.resolve(siteCopyCache)
+  if (!siteCopyPromise) {
+    siteCopyPromise = fetchSiteCopy()
+      .then((data: unknown) => {
+        siteCopyCache = (data as SiteCopy) || {}
+        return siteCopyCache as SiteCopy
+      })
+      .catch(() => {
+        siteCopyPromise = null // allow retry on next call
+        return {} as SiteCopy
+      })
+  }
+  return siteCopyPromise as Promise<SiteCopy>
+}
+
 export function useSiteCopy() {
-  const [copy, setCopy] = useState<SiteCopy>({})
+  const [copy, setCopy] = useState<SiteCopy>(() => siteCopyCache ?? {})
 
   useEffect(() => {
-    fetchSiteCopy()
-      .then((data) => setCopy(data || {}))
-      .catch(() => undefined)
+    if (siteCopyCache) return // already loaded — no fetch needed
+    let active = true
+    loadSiteCopy().then((data) => {
+      if (active) setCopy(data)
+    })
+    return () => {
+      active = false
+    }
   }, [])
 
   return {

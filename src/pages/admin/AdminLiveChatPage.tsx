@@ -34,9 +34,11 @@ export function AdminLiveChatPage({ agentName = 'Admin' }: { agentName?: string 
 
   useEffect(() => {
     refreshList()
-    // Optimized: Increased from 4s to 8s to reduce server load and network requests
-    // Consider implementing WebSockets for real-time updates in future
-    const t = setInterval(refreshList, 8000)
+    // Poll only when the tab is visible — pauses automatically when user
+    // switches away, preventing background hammering of the edge.
+    const t = setInterval(() => {
+      if (!document.hidden) refreshList()
+    }, 8000)
     return () => clearInterval(t)
   }, [])
 

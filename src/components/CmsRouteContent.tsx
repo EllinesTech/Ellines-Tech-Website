@@ -32,13 +32,22 @@ export function CmsRouteContent({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true
+    // loadPublishedRoutePages is already cached — only fires a real fetch once
+    // per session (or when the admin auth state changes). Re-calling on every
+    // pathname change only hit the cache, but we can be even cheaper: load once
+    // on mount and trust the in-memory cache for subsequent navigation.
     loadPublishedRoutePages().then((list) => {
       if (active) setPages(list)
     })
     return () => {
       active = false
     }
-  }, [location.pathname])
+    // NOTE: intentionally omitting location.pathname — the cache is keyed by
+    // admin state, not route. Re-fetching on every navigation was firing a new
+    // API call on every page-to-page navigate because the old promise had already
+    // resolved and the effect re-ran, bypassing the cache with a new Promise.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const page = pages ? findRoutePage(pages, location.pathname) : undefined
   if (!page) return <>{children}</>
