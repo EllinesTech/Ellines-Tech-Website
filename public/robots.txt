@@ -11,5 +11,9 @@ Disallow: /account/
 Disallow: /invoice/
 Disallow: /pay/
 Disallow: /pay
+Disallow: /api/
 
+# Sitemaps
 Sitemap: https://tech.ellines.co.ke/sitemap.xml
+Sitemap: https://ellines.co.ke/sitemap.xml
+Sitemap: https://www.ellines.co.ke/sitemap.xml
