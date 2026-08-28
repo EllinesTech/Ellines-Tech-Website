@@ -320,6 +320,126 @@ const pages = [
       url: `${BASE_URL}/services/resume-building`,
     },
   },
+  {
+    path: '/services/web-design',
+    title: 'Web Design Kenya | Professional Website Design | Ellines Tech',
+    description:
+      'Professional web design in Kenya — responsive, fast, and conversion-focused websites for businesses. Nyeri & Nairobi. Get a free quote from Ellines Tech.',
+    keywords:
+      'web design Kenya, website design Nairobi, website design Nyeri, professional web designer Kenya, responsive web design Kenya, business website design Kenya',
+    h1: 'Professional Web Design in Kenya',
+    body: 'Ellines Tech designs professional, mobile-responsive websites for businesses in Kenya. Services include landing pages, multi-page business sites, e-commerce design, UI/UX, and brand-aligned web design. Based in Nyeri, serving Nairobi and all of Kenya.',
+    breadcrumbs: [
+      { name: 'Home', path: '/' },
+      { name: 'Services', path: '/services' },
+      { name: 'Web Design', path: '/services/web-design' },
+    ],
+    jsonLd: {
+      '@type': 'Service',
+      name: 'Web Design',
+      serviceType: 'Web Design',
+      provider: { '@id': `${BASE_URL}/#organization` },
+      areaServed: ['KE', 'Africa'],
+      url: `${BASE_URL}/services/web-design`,
+    },
+  },
+  {
+    path: '/services/cyber-security',
+    title: 'Cyber Security Services Kenya | Ellines Tech',
+    description:
+      'Cyber security services in Kenya — security assessments, vulnerability remediation, hardening, and secure architecture. Protect your business with Ellines Tech.',
+    keywords:
+      'cyber security Kenya, cyber security Nairobi, security assessment Kenya, IT security Kenya, vulnerability testing Kenya, data security Kenya',
+    h1: 'Cyber Security Services in Kenya',
+    body: 'Ellines Tech provides cyber security services for Kenyan businesses: security assessments, vulnerability testing and remediation, system hardening, security monitoring, and secure architecture design. Protecting websites, applications, and business data.',
+    breadcrumbs: [
+      { name: 'Home', path: '/' },
+      { name: 'Services', path: '/services' },
+      { name: 'Cyber Security', path: '/services/cyber-security' },
+    ],
+    jsonLd: {
+      '@type': 'Service',
+      name: 'Cyber Security',
+      serviceType: 'Cyber Security',
+      provider: { '@id': `${BASE_URL}/#organization` },
+      areaServed: ['KE', 'Africa'],
+      url: `${BASE_URL}/services/cyber-security`,
+    },
+  },
+  {
+    path: '/faq',
+    title: 'FAQ — Ellines Tech Kenya | Common Questions Answered',
+    description:
+      'Answers to common questions about Ellines Tech services — pricing, timelines, how to start, payment methods, and support. Kenya IT company.',
+    keywords:
+      'Ellines Tech FAQ, IT company Kenya questions, web design pricing Kenya, software development timeline Kenya, how to hire IT company Kenya',
+    h1: 'Frequently Asked Questions — Ellines Tech',
+    body: 'Common questions about Ellines Tech: How fast can we start? Most projects begin within the week. What does it cost? Fixed-price packages from KES 1,000 for career documents to larger custom software builds. How do I pay? M-Pesa and card accepted. Do you offer support after launch? Yes — 24/7 availability for demos, fixes, and follow-up work.',
+    breadcrumbs: [
+      { name: 'Home', path: '/' },
+      { name: 'FAQ', path: '/faq' },
+    ],
+    jsonLd: {
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'How fast can Ellines Tech start my project?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Most service requests get a scoped reply within a few hours. Smaller deliverables can begin the same week; larger builds get a written plan first.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'What payment methods does Ellines Tech accept?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'We accept M-Pesa, card payments via Paystack, and bank transfer. Fixed-price packages can be paid directly online.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Does Ellines Tech offer support after project delivery?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes — we stay available 24/7 for demos, fixes, and follow-up work. Support is part of how we ship, not an afterthought.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Where is Ellines Tech located?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Ellines Tech is based in Nyeri, Kenya (head office) with a Nairobi presence for client meetings. We serve clients across Kenya and Africa remotely.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How much does a website cost at Ellines Tech?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Starter business websites begin from KES 15,000. E-commerce, web apps, and custom platforms are priced based on scope. Get a free quote at tech.ellines.co.ke/request.',
+          },
+        },
+      ],
+    },
+  },
+  {
+    path: '/solutions',
+    title: 'IT Solutions for Kenyan Businesses | Ellines Tech',
+    description:
+      'End-to-end technology solutions for startups, SMEs, healthcare, education, and enterprises in Kenya. Software, AI, cloud, and digital transformation from Ellines Tech.',
+    keywords:
+      'IT solutions Kenya, technology solutions Kenya, startup IT solutions Kenya, SME software Kenya, digital transformation solutions Kenya, business technology Kenya',
+    h1: 'Technology Solutions for Kenyan Businesses',
+    body: 'Ellines Tech delivers end-to-end technology solutions for Kenyan businesses across every growth stage: startup IT packages, SME software systems, healthcare platforms, school management, SACCO systems, AI automation, and full digital transformation. From Nyeri and Nairobi, serving all of Kenya and Africa.',
+    breadcrumbs: [
+      { name: 'Home', path: '/' },
+      { name: 'Solutions', path: '/solutions' },
+    ],
+    jsonLd: null,
+  },
 ]
 
 /**
