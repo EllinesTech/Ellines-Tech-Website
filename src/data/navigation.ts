@@ -154,6 +154,7 @@ export const footerNavigation = {
     { label: 'All Services', href: '/services' },
   ],
   group: [
+    { label: 'Ellines Group', href: 'https://ellines.co.ke/' },
     { label: 'Ellines Tech', href: 'https://tech.ellines.co.ke' },
     { label: 'Ellines Haven', href: 'https://haven.ellines.co.ke/' },
     { label: 'Ellines Rattan (Furniture)', href: 'https://rattanfurniture.ellines.co.ke/' },
