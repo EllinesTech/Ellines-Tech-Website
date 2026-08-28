@@ -8,7 +8,7 @@ declare global {
 }
 
 /** Public GA4 measurement id — override at build with VITE_GA_MEASUREMENT_ID if needed. */
-const GA_ID = String(import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-PZQ4SNSL56').trim()
+const GA_ID = String(import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-5YYGFN77YS').trim()
 const SITE_VERIFY = String(import.meta.env.VITE_GOOGLE_SITE_VERIFICATION || '').trim()
 
 let gaReady = false
